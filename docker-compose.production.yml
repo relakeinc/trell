@@ -1,0 +1,61 @@
+# Trell API + DB — production (trepi.relake.co)
+# Deploy: docker compose -f docker-compose.production.yml up -d --build
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-trell}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-trell}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trell} -d ${POSTGRES_DB:-trell}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    command: ["sh", "-c", "cd apps/api && pnpm db:push --skip-generate"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-trell}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-trell}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-trell}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-trell}
+      PORT: "8787"
+      TRELL_ADMIN_KEY: ${TRELL_ADMIN_KEY:?Set TRELL_ADMIN_KEY}
+      TRELL_PK_PREFIX: ${TRELL_PK_PREFIX:-pk}
+      TRELL_SK_PREFIX: ${TRELL_SK_PREFIX:-sk}
+      TRELL_RATE_LIMIT_MAX: ${TRELL_RATE_LIMIT_MAX:-300}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://trell.relake.co}
+    command: ["sh", "-c", "cd apps/api && pnpm start"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:8787:8787"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8787/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  pg_data:

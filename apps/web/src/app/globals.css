@@ -1,0 +1,223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+
+  /* Sidebar dimensions (from Dub.co) */
+  --sidebar-groups-width: 64px;
+  --sidebar-areas-width: 240px;
+  --sidebar-width: 304px;
+
+  /* Orbit-style card border */
+  --border-card: rgb(0 0 0 / 0.08);
+}
+
+body {
+  @apply bg-neutral-200 text-trell-ink-default antialiased;
+}
+
+/* ── Buttons (Dub-style) ────────────────────────────────────── */
+
+.trell-btn {
+  @apply inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg border px-3 text-sm font-medium transition-all;
+}
+
+/* Primary: dark bg, white text */
+.trell-btn-primary {
+  @apply trell-btn border-black bg-black text-white hover:bg-neutral-800 hover:ring-4 hover:ring-neutral-200;
+}
+
+/* Secondary: bordered */
+.trell-btn-secondary {
+  @apply trell-btn border-trell-line-default bg-white text-trell-ink hover:bg-neutral-100;
+}
+
+/* Outline: transparent bg */
+.trell-btn-outline {
+  @apply trell-btn border-transparent text-trell-ink-default hover:bg-neutral-900/5;
+}
+
+/* Danger */
+.trell-btn-danger {
+  @apply trell-btn border-red-500 bg-red-500 text-white hover:bg-red-600 hover:ring-4 hover:ring-red-100;
+}
+
+/* ── Inputs (Dub-style) ─────────────────────────────────────── */
+
+.trell-input {
+  @apply w-full rounded-lg border border-trell-line-default bg-white px-3 py-2 text-sm outline-none transition-all placeholder:text-trell-ink-muted focus:border-trell-ink focus:ring-4 focus:ring-neutral-100;
+}
+
+/* ── Cards ──────────────────────────────────────────────────── */
+
+.trell-card {
+  @apply rounded-xl border border-trell-line bg-white;
+}
+
+.trell-card-sm {
+  @apply rounded-lg border border-trell-line bg-white;
+}
+
+/* ── Sidebar rail (Dub: narrow icon column on the gray frame) ── */
+
+.trell-sidebar-rail-btn {
+  @apply flex size-10 items-center justify-center rounded-lg text-trell-ink-subtle transition-colors hover:bg-neutral-900/5 active:bg-neutral-900/10;
+}
+
+.trell-sidebar-rail-btn-active {
+  @apply trell-sidebar-rail-btn bg-white;
+}
+
+/* ── Sidebar nav panel (Dub: neutral card with sections) ─────── */
+
+.trell-sidebar-panel {
+  @apply flex h-full w-full flex-col rounded-xl bg-neutral-100 text-neutral-500;
+}
+
+.trell-sidebar-item {
+  @apply flex h-8 items-center justify-between rounded-lg px-2.5 text-sm leading-none transition-[background-color,color] duration-75 hover:bg-neutral-900/5 active:bg-neutral-900/10;
+}
+
+.trell-sidebar-item-active {
+  @apply bg-blue-100/50 font-medium text-blue-600 hover:bg-blue-100/80 active:bg-blue-100;
+}
+
+.trell-sidebar-section {
+  @apply mb-1 px-3 text-sm text-neutral-500;
+}
+
+/* ── Page layout (Dub: gray frame + white rounded card) ─────── */
+
+.trell-page {
+  @apply flex h-screen gap-2 bg-neutral-200 p-2;
+}
+
+.trell-main-frame {
+  @apply flex h-full min-w-0 flex-1;
+}
+
+.trell-main {
+  @apply min-w-0 flex-1 overflow-y-auto rounded-xl bg-white;
+}
+
+.trell-header {
+  @apply sticky top-0 z-10 flex items-center justify-between border-b border-trell-line bg-white/90 px-4 py-3 backdrop-blur sm:px-6;
+}
+
+.trell-content {
+  @apply px-4 py-4 sm:px-6;
+}
+
+.trell-nav-tabs {
+  @apply mb-3 flex items-center gap-2 border-b border-trell-line bg-white;
+}
+
+.trell-nav-tabs-btn {
+  @apply flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700;
+}
+
+.trell-badge {
+  @apply inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold;
+}
+
+/* ── Scrollbar hide (Dub: panels hide native scrollbar) ────── */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Icon animations ──────────────────────────────────────────── */
+/* Animated icons: vertices/corners animate on hover of parent */
+
+@keyframes icon-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes icon-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes icon-slide-right {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(2px); }
+}
+
+@keyframes icon-slide-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2px); }
+}
+
+@keyframes icon-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
+/* Arrow icons: subtle slide on hover */
+.trell-icon-arrow svg {
+  transition: transform 0.2s ease;
+}
+
+.trell-icon-arrow:hover svg {
+  animation: icon-slide-right 0.6s ease infinite;
+}
+
+/* Refresh icon: spin on hover */
+.trell-icon-refresh svg {
+  transition: transform 0.2s ease;
+}
+
+.trell-icon-refresh:hover svg {
+  animation: icon-rotate 0.8s linear infinite;
+}
+
+/* Close icon: wiggle on hover */
+.trell-icon-close svg {
+  transition: transform 0.2s ease;
+}
+
+.trell-icon-close:hover svg {
+  animation: icon-wiggle 0.4s ease;
+}
+
+/* Logout icon: slide out on hover */
+.trell-icon-logout svg {
+  transition: transform 0.2s ease;
+}
+
+.trell-icon-logout:hover svg {
+  animation: icon-slide-right 0.5s ease;
+}
+
+/* Export icon: pulse on hover */
+.trell-icon-export svg {
+  transition: transform 0.2s ease;
+}
+
+.trell-icon-export:hover svg {
+  animation: icon-pulse 0.5s ease;
+}
+
+/* ── Content fade-in ──────────────────────────────────────────── */
+
+@keyframes trell-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+

@@ -1,0 +1,15 @@
+# Keep the Docker build context small (builder rebuilds deps from source).
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/coverage
+.git
+.gitignore
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+docs
+tmp
