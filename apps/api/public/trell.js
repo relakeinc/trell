@@ -318,6 +318,65 @@
     send(ev);
   }, true);
 
+  // ── Auto-Track: Scroll Depth ────────────────────────────────
+  if (AUTO_TRACK) {
+    var scrollMilestones = { 25: false, 50: false, 75: false, 100: false };
+    var maxScrollDepth = 0;
+    var scrollThrottle = null;
+
+    function getScrollDepth() {
+      var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      var scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      if (scrollHeight <= 0) return 0;
+      return Math.min(Math.round((scrollTop / scrollHeight) * 100), 100);
+    }
+
+    function checkScrollDepth() {
+      var depth = getScrollDepth();
+      if (depth > maxScrollDepth) maxScrollDepth = depth;
+
+      Object.keys(scrollMilestones).forEach(function (milestone) {
+        var m = Number(milestone);
+        if (!scrollMilestones[m] && depth >= m) {
+          scrollMilestones[m] = true;
+          var ev = buildBase();
+          ev.type = "scroll_depth";
+          ev.properties = { depth: m, maxDepth: 100 };
+          send(ev);
+        }
+      });
+    }
+
+    window.addEventListener("scroll", function () {
+      if (scrollThrottle) return;
+      scrollThrottle = setTimeout(function () {
+        scrollThrottle = null;
+        checkScrollDepth();
+      }, 200);
+    }, { passive: true });
+  }
+
+  // ── Auto-Track: Time on Page ────────────────────────────────
+  if (AUTO_TRACK) {
+    var pageLoadTime = Date.now();
+
+    function trackPageExit() {
+      var durationMs = Date.now() - pageLoadTime;
+      var ev = buildBase();
+      ev.type = "page_exit";
+      ev.properties = { durationMs: durationMs, maxScrollDepth: typeof maxScrollDepth !== "undefined" ? maxScrollDepth : 0 };
+      try {
+        var blob = new Blob([JSON.stringify(ev)], { type: "application/json" });
+        navigator.sendBeacon(INGEST_URL, blob);
+      } catch (_) { send(ev); }
+    }
+
+    window.addEventListener("beforeunload", trackPageExit);
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "hidden") trackPageExit();
+    });
+  }
+
   // ── Auto-Track: Form Abandon (beforeunload) ─────────────────
   window.addEventListener("beforeunload", function () {
     var forms = document.querySelectorAll("form[data-trell-form-id], form[id]");

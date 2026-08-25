@@ -16,6 +16,8 @@ export const EVENT_TYPES = [
   "form_success",
   "form_abandon",
   "cta_click",
+  "scroll_depth",
+  "page_exit",
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];
