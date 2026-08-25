@@ -13,7 +13,7 @@ export default function TrackingSettingsPage() {
 
   const pk = project?.pk ?? "pk_YOUR_KEY";
   const script = `<!-- Trell Tracking -->
-<script src="https://cdn.rell.co/trell.js"
+<script src="https://trepi.relake.co/sdk/trell.js"
   data-pk="${pk}"
   data-auto-track="true"
   defer></script>`;

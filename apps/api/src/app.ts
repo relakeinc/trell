@@ -1,4 +1,6 @@
 import { Hono } from "hono";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import type { ApiConfig } from "./config";
 import type { Repo } from "./repositories/types";
 import { RateLimiter } from "./middleware/ratelimit";
@@ -18,6 +20,8 @@ export interface AppDeps {
   limiter?: RateLimiter;
 }
 
+let cachedSdk: string | null = null;
+
 export function createApp(deps: AppDeps): Hono {
   const app = new Hono();
   const ingest = makeIngest(deps);
@@ -36,6 +40,21 @@ export function createApp(deps: AppDeps): Hono {
   });
 
   app.get("/health", (c) => c.json({ ok: true }));
+
+  // Serve tracking SDK
+  app.get("/sdk/trell.js", async (c) => {
+    if (!cachedSdk) {
+      try {
+        cachedSdk = await readFile(join(import.meta.dirname, "../public/trell.js"), "utf-8");
+      } catch {
+        return c.text("SDK not found", 404);
+      }
+    }
+    c.header("Content-Type", "application/javascript; charset=utf-8");
+    c.header("Cache-Control", "public, max-age=3600, s-maxage=3600");
+    c.header("Access-Control-Allow-Origin", "*");
+    return c.body(cachedSdk);
+  });
 
   // Public ingestion (pk auth).
   app.options("/v1/ingest", (c) => ingest.preflight(c));
