@@ -111,7 +111,7 @@ function ago(iso: string | null): string {
 export default function AnalyticsPage() {
   const { slug } = useParams<{ slug: string }>();
   const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
-  const [to, setTo] = useState(localInput(new Date()));
+  const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000))); // tomorrow to cover all of today
   const [interval, setInterval] = useState("day");
   const [dim, setDim] = useState<(typeof DIMS)[number]>("page");
   const [loading, setLoading] = useState(true);

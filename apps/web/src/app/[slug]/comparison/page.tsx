@@ -51,7 +51,7 @@ export default function ComparisonPage() {
   const { slug } = useParams<{ slug: string }>();
   const [projectId, setProjectId] = useState<string | null>(null);
   const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
-  const [to, setTo] = useState(localInput(new Date()));
+  const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000)));
   const [compFrom, setCompFrom] = useState(localInput(new Date(Date.now() - 14 * 86400000)));
   const [compTo, setCompTo] = useState(localInput(new Date(Date.now() - 7 * 86400000)));
   const [comparison, setComparison] = useState<ComparisonResult | null>(null);

@@ -64,7 +64,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState<DrillEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
-  const [to, setTo] = useState(localInput(new Date()));
+  const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000)));
 
   useEffect(() => {
     fetch("/api/projects")

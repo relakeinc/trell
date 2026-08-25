@@ -39,7 +39,7 @@ export default function FunnelsPage() {
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editingFunnel, setEditingFunnel] = useState<SavedFunnel | null>(null);
   const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
-  const [to, setTo] = useState(localInput(new Date()));
+  const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000)));
 
   const qs = `from=${from}&to=${to}`;
 
