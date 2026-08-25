@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOutAction } from "@/app/actions";
 import { Icon } from "./Icon";
+import { TrellLogo } from "./TrellLogo";
 import { WorkspaceIcon } from "./WorkspaceIcon";
 import { CreateProjectModal } from "./CreateProjectModal";
 
@@ -88,11 +89,11 @@ export function ProjectSidebar({
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-neutral-100"
             >
-              <WorkspaceIcon name={projectName} variant={logoVariant} size={28} className="shrink-0 rounded-lg" />
+              <TrellLogo className="h-6 w-auto shrink-0" />
               <span className="text-[17px] font-semibold tracking-tight text-neutral-900 truncate">
                 {projectName}
               </span>
-              <span className={`ml-auto flex size-6 shrink-0 items-center justify-center rounded bg-neutral-200 transition-all duration-200 ${dropdownOpen ? "rotate-180" : ""}`}>
+              <span className={`ml-auto flex size-6 shrink-0 items-center justify-center rounded-md bg-neutral-200 transition-all duration-200 ${dropdownOpen ? "rotate-180" : ""}`}>
                 <Icon
                   name="arrow-down-01"
                   size={14}

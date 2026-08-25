@@ -69,7 +69,7 @@ export default function SettingsLayout({
                   className="group flex w-full items-center rounded-lg px-2 py-1.5 text-[17px] font-semibold tracking-tight text-neutral-900 transition-colors hover:bg-neutral-200/70"
                 >
                   <span className="truncate">Settings</span>
-                  <span className="ml-auto flex size-6 shrink-0 items-center justify-center rounded bg-neutral-200 transition-colors group-hover:bg-neutral-300">
+                  <span className="ml-auto flex size-6 shrink-0 items-center justify-center rounded-md bg-neutral-200 transition-colors group-hover:bg-neutral-300">
                     <Icon name="arrow-right-01" size={14} className="rotate-180 text-neutral-500" />
                   </span>
                 </Link>
