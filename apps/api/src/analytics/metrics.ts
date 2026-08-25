@@ -23,6 +23,14 @@ export interface MetricsSummary {
   startConversionRate: number | null;
   /** avg(success.ts - start.ts) per session+form, in ms — null when no matched pair */
   avgTimeToCompleteMs: number | null;
+  /** sessions with only 1 pageview / total sessions */
+  bounceRate: number | null;
+  /** total pageviews / total sessions */
+  pagesPerSession: number | null;
+  /** avg scroll depth from scroll_depth events, 0-100 */
+  avgScrollDepth: number | null;
+  /** avg time on page from page_exit events, in ms */
+  avgTimeOnPageMs: number | null;
 }
 
 export interface TimelinePoint {
@@ -71,11 +79,18 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
     conversionRate: null,
     startConversionRate: null,
     avgTimeToCompleteMs: null,
+    bounceRate: null,
+    pagesPerSession: null,
+    avgScrollDepth: null,
+    avgTimeOnPageMs: null,
   };
 
   const sessions = new Set<string>();
   const visitors = new Set<string>();
   const timeGroups = new Map<string, { start?: number; success?: number }>();
+  const pageviewCounts = new Map<string, number>(); // sessionId → pageview count
+  const scrollDepths: number[] = [];
+  const pageExitDurations: number[] = [];
 
   for (const e of events) {
     m.events++;
@@ -90,6 +105,21 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
       case "form_abandon": m.abandons++; break;
       case "cta_click": m.ctaClicks++; break;
       case "field_interaction": m.fieldInteractions++; break;
+      case "scroll_depth": {
+        const depth = (e.properties as Record<string, unknown>)?.depth;
+        if (typeof depth === "number") scrollDepths.push(depth);
+        break;
+      }
+      case "page_exit": {
+        const dur = (e.properties as Record<string, unknown>)?.durationMs;
+        if (typeof dur === "number") pageExitDurations.push(dur);
+        break;
+      }
+      case "pageview": {
+        const prev = pageviewCounts.get(e.sessionId) || 0;
+        pageviewCounts.set(e.sessionId, prev + 1);
+        break;
+      }
       default: break;
     }
 
@@ -120,6 +150,30 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
     }
   }
   m.avgTimeToCompleteMs = count > 0 ? sum / count : null;
+
+  // Bounce rate: sessions with only 1 pageview
+  let bounceCount = 0;
+  for (const pvCount of pageviewCounts.values()) {
+    if (pvCount <= 1) bounceCount++;
+  }
+  m.bounceRate = sessions.size > 0 ? bounceCount / sessions.size : null;
+
+  // Pages per session
+  let totalPageviews = 0;
+  for (const pvCount of pageviewCounts.values()) {
+    totalPageviews += pvCount;
+  }
+  m.pagesPerSession = sessions.size > 0 ? totalPageviews / sessions.size : null;
+
+  // Avg scroll depth
+  if (scrollDepths.length > 0) {
+    m.avgScrollDepth = scrollDepths.reduce((a, b) => a + b, 0) / scrollDepths.length;
+  }
+
+  // Avg time on page
+  if (pageExitDurations.length > 0) {
+    m.avgTimeOnPageMs = pageExitDurations.reduce((a, b) => a + b, 0) / pageExitDurations.length;
+  }
 
   return m;
 }

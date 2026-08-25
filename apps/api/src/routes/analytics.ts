@@ -205,5 +205,31 @@ export function makeAnalytics(repo: Repo) {
       const result = computeFunnel(events, funnel.steps);
       return sendOk(c, 200, { funnel: { id: funnel.id, name: funnel.name }, ...result });
     }),
+
+    realtime: guard(async (c: Context): Promise<Response> => {
+      const projectId = c.get("projectId");
+      const now = Date.now();
+      const thirtySecAgo = new Date(now - 30_000);
+      const filter = { from: thirtySecAgo, to: new Date(now) };
+      const events = await repo.getEventsForAnalytics(projectId, filter);
+
+      // Group by type
+      const byType: Record<string, number> = {};
+      const recent = events.slice(-10).reverse().map((e) => ({
+        type: e.type,
+        page: e.page,
+        ts: e.ts.toISOString(),
+      }));
+
+      for (const e of events) {
+        byType[e.type] = (byType[e.type] || 0) + 1;
+      }
+
+      return sendOk(c, 200, {
+        count: events.length,
+        byType,
+        recent,
+      });
+    }),
   };
 }

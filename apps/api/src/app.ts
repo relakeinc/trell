@@ -70,6 +70,7 @@ export function createApp(deps: AppDeps): Hono {
   app.get("/v1/projects/:id/forms", skAuth(deps.repo), (c) => analytics.forms(c));
   app.get("/v1/projects/:id/events", skAuth(deps.repo), (c) => analytics.events(c));
   app.get("/v1/projects/:id/funnel-live", skAuth(deps.repo), (c) => analytics.funnelLive(c));
+  app.get("/v1/projects/:id/realtime", skAuth(deps.repo), (c) => analytics.realtime(c));
 
   // Funnels CRUD
   app.get("/v1/projects/:id/funnels", skAuth(deps.repo), (c) => funnels.list(c));

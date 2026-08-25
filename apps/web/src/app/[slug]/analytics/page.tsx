@@ -20,6 +20,10 @@ interface Metrics {
   conversionRate: number | null;
   startConversionRate: number | null;
   avgTimeToCompleteMs: number | null;
+  bounceRate: number | null;
+  pagesPerSession: number | null;
+  avgScrollDepth: number | null;
+  avgTimeOnPageMs: number | null;
 }
 
 interface TimelinePoint {
@@ -223,6 +227,14 @@ export default function AnalyticsPage() {
         <MetricCell label="Conversions" value={metrics?.successes ?? 0} loading={loading} color="text-green-600" />
         <MetricCell label="Conversion rate" value={pct(metrics?.conversionRate ?? null)} loading={loading} color="text-blue-500" />
         <MetricCell label="Avg time" value={human(metrics?.avgTimeToCompleteMs ?? null)} loading={loading} color="text-green-600" />
+      </div>
+
+      {/* Secondary KPIs */}
+      <div className="mb-6 grid grid-cols-2 divide-x divide-trell-line overflow-hidden rounded-xl border border-trell-line bg-white sm:grid-cols-4">
+        <MetricCell label="Bounce rate" value={pct(metrics?.bounceRate ?? null)} loading={loading} color="text-orange-500" />
+        <MetricCell label="Pages/session" value={(metrics?.pagesPerSession ?? 0).toFixed(1)} loading={loading} color="text-purple-500" />
+        <MetricCell label="Avg scroll" value={metrics?.avgScrollDepth != null ? Math.round(metrics.avgScrollDepth) + "%" : "—"} loading={loading} color="text-cyan-600" />
+        <MetricCell label="Avg time on page" value={human(metrics?.avgTimeOnPageMs ?? null)} loading={loading} color="text-teal-600" />
       </div>
 
       {/* Area chart */}
