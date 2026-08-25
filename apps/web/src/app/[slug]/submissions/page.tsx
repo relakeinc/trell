@@ -18,9 +18,24 @@ interface Submission {
   os: string | null;
 }
 
-function fieldEntries(fields: Record<string, unknown> | null): [string, string][] {
+function fieldEntries(fields: unknown): [string, string][] {
   if (!fields || typeof fields !== "object") return [];
-  return Object.entries(fields).filter(([k]) => k !== "fields").map(([k, v]) => [k, String(v ?? "")]);
+  const obj = fields as Record<string, unknown>;
+
+  // New format: properties.fields = {name: "John", email: "..."}
+  if (obj.fields && typeof obj.fields === "object") {
+    return Object.entries(obj.fields as Record<string, unknown>).map(([k, v]) => [k, String(v ?? "")]);
+  }
+
+  // Old format: properties = {form: {id: "..."}, ...other keys}
+  // Extract everything except metadata keys
+  const skip = new Set(["form"]);
+  return Object.entries(obj)
+    .filter(([k]) => !skip.has(k))
+    .map(([k, v]) => {
+      if (typeof v === "object" && v !== null) return [k, JSON.stringify(v)];
+      return [k, String(v ?? "")];
+    });
 }
 
 export default function SubmissionsPage() {

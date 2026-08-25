@@ -297,7 +297,7 @@ export default function AnalyticsPage() {
         <PanelCard title="Forms">
           <table className="w-full text-sm">
             <tbody>
-              {forms.map((f) => (
+              {forms.slice(0, 10).map((f) => (
                 <tr key={f.id} className="border-b border-trell-line last:border-0">
                   <td className="py-2 font-medium text-trell-ink">{f.name ?? f.id}</td>
                   <td className="py-2 text-right text-trell-ink-muted">{f.events}</td>

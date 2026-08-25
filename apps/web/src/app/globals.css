@@ -108,6 +108,7 @@ body {
 
 .trell-content {
   @apply px-4 py-4 sm:px-6;
+  animation: trell-fade-in 0.2s ease-out;
 }
 
 .trell-nav-tabs {
@@ -115,7 +116,20 @@ body {
 }
 
 .trell-nav-tabs-btn {
-  @apply flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700;
+  @apply flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-500 transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-700;
+}
+
+/* ── Sidebar nav link transitions ─────────────────────────── */
+.trell-sidebar-link {
+  @apply flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-all duration-200;
+}
+
+.trell-sidebar-link:hover {
+  @apply bg-neutral-100;
+}
+
+.trell-sidebar-link.active {
+  @apply bg-blue-50 font-medium text-blue-600;
 }
 
 .trell-badge {
