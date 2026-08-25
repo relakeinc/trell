@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useProject } from "../../../_components/ProjectContext";
+import { useProject } from "../../_components/ProjectContext";
 
 const PRO_MONTHLY_ID = process.env.NEXT_PUBLIC_POLAR_PRO_MONTHLY_ID ?? "";
 
