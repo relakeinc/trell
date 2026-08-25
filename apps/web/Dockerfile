@@ -10,6 +10,9 @@ COPY packages ./packages
 COPY apps ./apps
 RUN pnpm install --frozen-lockfile
 
+# Generate Prisma client for the web app (schema copied from api)
+RUN cd apps/web && npx prisma generate
+
 # Build shared (types/constants), generate the Prisma client (schema lives in apps/api),
 # then build the Next.js dashboard.
 RUN pnpm --filter @trell/shared build
