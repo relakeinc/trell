@@ -5,8 +5,6 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { useProject } from "../../_components/ProjectContext";
 
-const PRO_MONTHLY_ID = process.env.NEXT_PUBLIC_POLAR_PRO_MONTHLY_ID ?? "";
-
 interface Plan {
   id: string;
   name: string;
@@ -15,8 +13,6 @@ interface Plan {
   features: { label: string; icon: string }[];
   recommended?: boolean;
 }
-
-const VIDEO = "video";
 
 const PLANS: Plan[] = [
   {
@@ -71,21 +67,17 @@ export default function BillingPlansPage() {
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   const [upgrading, setUpgrading] = useState(false);
 
-  async function handleCheckout() {
-    if (!PRO_MONTHLY_ID) {
-      alert("Product ID not configured");
-      return;
-    }
+  async function handleCheckout(plan: "pro_monthly" | "pro_yearly") {
     setUpgrading(true);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: PRO_MONTHLY_ID }),
+        body: JSON.stringify({ plan }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
-      else alert("Failed to start checkout");
+      else alert(data.error || "Failed to start checkout");
     } catch {
       alert("Failed to start checkout");
     } finally {
@@ -154,7 +146,7 @@ export default function BillingPlansPage() {
                 ))}
               </div>
               <button
-                onClick={() => plan.id === "pro" && handleCheckout()}
+                onClick={() => plan.id === "pro" && handleCheckout(cycle === "monthly" ? "pro_monthly" : "pro_yearly")}
                 disabled={plan.id !== "pro" || upgrading}
                 className={`mt-5 h-9 w-full rounded-lg text-sm font-medium transition-colors ${
                   plan.id === "pro"
@@ -162,7 +154,7 @@ export default function BillingPlansPage() {
                     : "bg-neutral-100 text-neutral-500"
                 } disabled:opacity-60`}
               >
-                {plan.id === "pro" ? "Upgrade to Pro" : "Current plan"}
+                {plan.id === "pro" ? (cycle === "monthly" ? "Upgrade to Pro" : "Upgrade to Pro (Yearly)") : "Current plan"}
               </button>
             </div>
           ))}
@@ -173,7 +165,7 @@ export default function BillingPlansPage() {
       <div className="overflow-hidden rounded-xl border border-neutral-200">
         {FEATURE_ROWS.map((group) => (
           <div key={group.section} className="border-b border-neutral-200 last:border-b-0">
-            <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-5 py-3">
+            <div className="flex items-center justify-between px-5 py-3">
               <div className="flex items-center gap-2 text-sm font-medium text-neutral-900">
                 <Icon name={group.icon} size={16} className="text-neutral-500" />
                 {group.section}
@@ -184,10 +176,10 @@ export default function BillingPlansPage() {
             </div>
             <div className="divide-y divide-neutral-100">
               {group.rows.map((row) => (
-                <div key={row.name} className="grid grid-cols-[1fr_1fr_1fr] items-center px-5 py-3">
+                <div key={row.name} className="grid grid-cols-[1fr_85px_85px] items-center px-5 py-2">
                   <div className="text-sm text-neutral-700">{row.name}</div>
-                  <div className="text-sm text-neutral-600 max-w-[110px]">{row.free}</div>
-                  <div className={`rounded-md px-3 py-1 text-sm ${row.proHigh ? "text-blue-600" : "text-neutral-600"}`}>{row.pro}</div>
+                  <div className="pr-4 text-right text-sm text-neutral-500">{row.free}</div>
+                  <div className="rounded-md bg-blue-50/60 px-3 py-1.5 text-center text-sm text-neutral-700">{row.pro}</div>
                 </div>
               ))}
             </div>
