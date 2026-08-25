@@ -87,18 +87,16 @@ export function ProjectSidebar({
           <div className="relative mb-5 px-1" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-neutral-100"
+              className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-neutral-100"
             >
-              <TrellLogo className="h-6 w-auto shrink-0" />
-              <span className="text-[17px] font-semibold tracking-tight text-neutral-900 truncate">
-                {projectName}
-              </span>
-              <span className={`ml-auto flex size-6 shrink-0 items-center justify-center rounded-md bg-neutral-200 transition-all duration-200 ${dropdownOpen ? "rotate-180" : ""}`}>
-                <Icon
-                  name="arrow-down-01"
-                  size={14}
-                  className="text-neutral-500"
-                />
+              <TrellLogo className="h-5 w-auto shrink-0" />
+              <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                <span className="text-[17px] font-semibold tracking-tight text-neutral-900 truncate">
+                  {projectName}
+                </span>
+                <span className={`flex size-5 shrink-0 items-center justify-center rounded-md bg-neutral-200 transition-all duration-200 ${dropdownOpen ? "rotate-180" : ""}`}>
+                  <Icon name="arrow-down-01" size={12} className="text-neutral-500" />
+                </span>
               </span>
             </button>
 
