@@ -73,6 +73,9 @@ model Project {
   name            String
   slug            String   @unique
   plan            String   @default("free") // "free" | "pro"
+  polarCustomerId String?         // Polar customer ID
+  subscriptionId  String?         // Polar subscription ID
+  planExpiresAt   DateTime?       // subscription period end
   publishableKey  String   @unique // pk_... (safe to expose to the browser)
   apiKeyHash      String          // sha256 of sk_... (never store/return the plain sk)
   apiKeyEncrypted String?         // encrypted sk_... so the dashboard can call the API server-side (never sent to the browser)
