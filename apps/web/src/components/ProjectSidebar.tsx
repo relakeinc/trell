@@ -26,6 +26,11 @@ const NAV_SECTIONS: {
       { label: "Analytics", href: "analytics", icon: "analytics" },
       { label: "Funnels", href: "funnels", icon: "funnels" },
       { label: "Comparison", href: "comparison", icon: "comparison" },
+    ],
+  },
+  {
+    label: "Data",
+    items: [
       { label: "Events", href: "events", icon: "events" },
       { label: "Submissions", href: "submissions", icon: "send" },
     ],
@@ -91,9 +96,9 @@ export function ProjectSidebar({
             >
               <TrellLogo className="h-5 w-auto shrink-0" />
               <span className="flex items-center gap-1.5">
-                <span className="text-[17px] font-semibold tracking-tight text-neutral-900 truncate">
+                {/* <span className="text-[17px] font-semibold tracking-tight text-neutral-900 truncate">
                   {projectName}
-                </span>
+                </span> */}
                 <span className={`flex size-5 shrink-0 items-center justify-center rounded-md bg-neutral-200 transition-all duration-200 ${dropdownOpen ? "rotate-180" : ""}`}>
                   <Icon name="arrow-down-01" size={12} className="text-neutral-500" />
                 </span>
@@ -175,7 +180,10 @@ export function ProjectSidebar({
           ))}
 
           {/* Settings */}
-          <div className="flex flex-col gap-1">
+          <div className="mb-6 flex flex-col gap-1">
+            <div className="mb-2 px-3 text-[13px] text-neutral-400">
+              Settings
+            </div>
             <Link
               href={`/${projectSlug}/settings/general`}
               className={`group flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[14px] leading-none transition-all duration-100 ${
