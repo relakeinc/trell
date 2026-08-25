@@ -192,11 +192,15 @@ export default function AnalyticsPage() {
     const n = series.length;
     if (n === 0) return { line: "", area: "" };
     const pts = series.map((p, i) => ({
-      x: n <= 1 ? 5 : (i / (n - 1)) * 95 + 2.5,
+      x: n <= 1 ? 10 : (i / (n - 1)) * 90 + 5,
       y: 100 - (p.views / areaMax) * 100,
     }));
     if (pts.length === 1) {
-      return { line: `M${pts[0]!.x},${pts[0]!.y}`, area: `M${pts[0]!.x},100 L${pts[0]!.x},${pts[0]!.y} L${pts[0]!.x},100 Z` };
+      const p = pts[0]!;
+      return {
+        line: `M${p.x - 8},${p.y} L${p.x + 8},${p.y}`,
+        area: `M${p.x - 8},${p.y} L${p.x + 8},${p.y} L${p.x + 8},100 L${p.x - 8},100 Z`,
+      };
     }
     const catmull = pts.map((p, i) => {
       const prev = pts[i - 1] ?? p;
@@ -290,13 +294,13 @@ export default function AnalyticsPage() {
               <path d={chartPath.area} fill="url(#trell-area)" />
             )}
             {chartPath.line && (
-              <path d={chartPath.line} fill="none" stroke="#2563eb" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              <path d={chartPath.line} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
             )}
             {series.length > 0 && chartPath.line && (
               <circle
-                cx={series.length > 1 ? 97.5 : 5}
+                cx={series.length > 1 ? 95 : 10}
                 cy={100 - (series[series.length - 1]!.views / areaMax) * 100}
-                r="2"
+                r="2.5"
                 fill="#2563eb"
                 vectorEffect="non-scaling-stroke"
               />
