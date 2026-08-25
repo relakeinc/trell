@@ -76,7 +76,7 @@ export default function BillingSettingsPage() {
         </div>
         <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
           <span className="text-xs text-trell-ink-muted">Resets {resetDate()}</span>
-          {isFree && <span className="text-xs text-trell-ink-muted">Upgrade to Pro for 100K events/mo</span>}
+          {isFree && <span className="text-xs text-trell-ink-muted">Upgrade to Pro for 50K events/mo</span>}
         </div>
       </div>
 
@@ -104,7 +104,7 @@ export default function BillingSettingsPage() {
         </div>
         <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
           <span className="text-xs text-trell-ink-muted">Lifetime limit</span>
-          {isFree && <span className="text-xs text-trell-ink-muted">Upgrade to Pro for 50 domains</span>}
+          {isFree && <span className="text-xs text-trell-ink-muted">Upgrade to Pro for 100 domains</span>}
         </div>
       </div>
     </div>

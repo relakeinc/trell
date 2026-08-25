@@ -8,7 +8,7 @@ import { deliverWebhooks } from "../lib/webhook-delivery";
 
 const PLAN_LIMITS = {
   free: { events: 5000 },
-  pro: { events: 100000 },
+  pro: { events: 50000 },
 } as const;
 
 export interface IngestDeps {
