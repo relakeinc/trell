@@ -1,4 +1,5 @@
-# Trell API + DB — production (trepi.relake.co)
+# Trell — production full stack (web + api + db) behind nginx.
+# Web: trell.relake.co  |  API: trepi.relake.co
 # Deploy: docker compose -f docker-compose.production.yml up -d --build
 
 services:
@@ -55,6 +56,34 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-trell}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-trell}
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID:?Set AUTH_GOOGLE_ID}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET:?Set AUTH_GOOGLE_SECRET}
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET}
+      AUTH_URL: ${PUBLIC_URL}
+      NEXTAUTH_URL: ${PUBLIC_URL}
+      AUTH_TRUST_HOST: "true"
+      TRELL_API_URL: http://api:8787
+      TRELL_ENC_KEY: ${TRELL_ENC_KEY:?Set TRELL_ENC_KEY}
+    command: ["sh", "-c", "cd apps/web && pnpm start"]
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/signin').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
     restart: unless-stopped
 
 volumes:
