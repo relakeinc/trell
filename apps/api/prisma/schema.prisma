@@ -25,6 +25,7 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  onboardingStep Int      @default(0) // 0=not started, 1=project created, 2=keys seen, 3=done
   accounts      Account[]
   sessions      Session[]
   memberships   ProjectUser[]

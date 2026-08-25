@@ -12,19 +12,17 @@ export default async function Home() {
   const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
   const projects = await svc.listAccessibleProjects(session.user.id);
 
+  // First-time users without a project (or an incomplete onboarding) are
+  // routed to the onboarding flow to configure their first project.
   if (projects.length === 0) {
-    return (
-      <main className="flex min-h-screen items-center justify-center px-4">
-        <div className="text-center">
-          <h1 className="text-xl font-semibold text-neutral-900">
-            Welcome to Trell
-          </h1>
-          <p className="mt-2 text-sm text-neutral-500">
-            Create your first project to get started.
-          </p>
-        </div>
-      </main>
-    );
+    redirect("/onboarding");
+  }
+
+  // Existing users with projects but incomplete onboarding resume where they
+  // left off.
+  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { onboardingStep: true } });
+  if ((user?.onboardingStep ?? 0) < 3) {
+    redirect("/onboarding");
   }
 
   redirect(`/${projects[0]!.slug}/analytics`);
