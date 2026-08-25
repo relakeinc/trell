@@ -8,7 +8,7 @@ import { useProject } from "../_components/ProjectContext";
 interface ApiKey {
   id: string;
   name: string;
-  publicKey: string;
+  keyPrefix: string;
   createdAt: string;
 }
 
@@ -18,7 +18,7 @@ export default function ApiKeysSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
-  const [newKey, setNewKey] = useState<string | null>(null);
+  const [newKey, setNewKey] = useState<{ publicKey: string; secret: string } | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,8 +40,8 @@ export default function ApiKeysSettingsPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setNewKey(data.key);
-        setKeys((prev) => [...prev, { id: data.key.id, name: data.key.name, publicKey: data.key.publicKey, createdAt: data.key.createdAt }]);
+        setNewKey({ publicKey: data.key.publicKey, secret: data.secret });
+        setKeys((prev) => [...prev, { id: data.key.id, name: data.key.name, keyPrefix: data.key.publicKey.slice(0, 12), createdAt: data.key.createdAt }]);
         setName("");
         toast.success("API key created");
       } else {
@@ -80,22 +80,29 @@ export default function ApiKeysSettingsPage() {
         <h1 className="text-lg font-semibold text-trell-ink">API Keys</h1>
       </div>
 
-      {/* New Key Banner */}
       {newKey && (
         <div className="rounded-lg border border-green-200 bg-green-50 p-4">
           <div className="flex items-start gap-3">
             <Icon name="checkCircle" size={16} className="mt-0.5 text-green-600" />
             <div className="flex-1">
               <div className="text-sm font-medium text-green-900">API key created</div>
-              <div className="mt-1 text-xs text-green-700">Copy this key now — it won&apos;t be shown again.</div>
-              <code className="mt-2 block break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-green-800 ring-1 ring-green-200">{newKey}</code>
+              <div className="mt-1 text-xs text-green-700">Copy these keys now — the secret key won&apos;t be shown again.</div>
+              <div className="mt-2 flex flex-col gap-2">
+                <div>
+                  <span className="text-[11px] font-medium text-green-700">Publishable Key</span>
+                  <code className="block break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-green-800 ring-1 ring-green-200">{newKey.publicKey}</code>
+                </div>
+                <div>
+                  <span className="text-[11px] font-medium text-green-700">Secret Key</span>
+                  <code className="block break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-green-800 ring-1 ring-green-200">{newKey.secret}</code>
+                </div>
+              </div>
             </div>
             <button onClick={() => setNewKey(null)} className="text-green-600 hover:text-green-800"><Icon name="close" size={14} /></button>
           </div>
         </div>
       )}
 
-      {/* Create Key */}
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
         <div className="border-b border-trell-line px-4 py-3">
           <span className="text-sm font-medium text-trell-ink">Create New Key</span>
@@ -110,7 +117,6 @@ export default function ApiKeysSettingsPage() {
         </div>
       </div>
 
-      {/* Existing Keys */}
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
         <div className="border-b border-trell-line px-4 py-3">
           <span className="text-sm font-medium text-trell-ink">Existing Keys</span>
@@ -126,7 +132,7 @@ export default function ApiKeysSettingsPage() {
                     <Icon name="keyRound" size={14} className="text-trell-ink-muted" />
                     <div>
                       <div className="text-sm font-medium text-trell-ink">{k.name}</div>
-                      <div className="text-xs text-trell-ink-muted">{k.publicKey.slice(0, 12)}… · Created {new Date(k.createdAt).toLocaleDateString()}</div>
+                      <div className="text-xs text-trell-ink-muted">{k.keyPrefix}… · Created {new Date(k.createdAt).toLocaleDateString()}</div>
                     </div>
                   </div>
                   <button disabled={deleting === k.id} onClick={() => deleteKey(k.id)} className="flex items-center gap-1 text-xs text-trell-ink-muted transition-colors hover:text-red-600 disabled:opacity-40">

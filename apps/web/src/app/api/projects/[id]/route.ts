@@ -20,7 +20,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
 
   const project = await prisma.project.findUnique({
     where: { id },
-    select: { id: true, name: true, slug: true, plan: true, publishableKey: true, domains: true, createdAt: true },
+    select: { id: true, name: true, slug: true, plan: true, publishableKey: true, domains: true, logoVariant: true, createdAt: true },
   });
   if (!project) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
@@ -36,6 +36,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
       plan: project.plan,
       pk: project.publishableKey,
       domains: parseDomains(project.domains),
+      logoVariant: project.logoVariant,
       createdAt: project.createdAt,
     },
     installation: {
@@ -59,7 +60,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
   if (!(await authorize(id, session.user.id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
-  const body = (await req.json()) as { name?: string; slug?: string; addDomain?: string; removeDomain?: string };
+  const body = (await req.json()) as { name?: string; slug?: string; addDomain?: string; removeDomain?: string; logoVariant?: number };
   const project = await prisma.project.findUnique({ where: { id }, select: { domains: true, slug: true, plan: true } });
   if (!project) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
@@ -85,6 +86,12 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       if (exists) return NextResponse.json({ error: "invalid_slug", message: "This slug is already taken" }, { status: 400 });
     }
     updateData.slug = trimmed;
+  }
+
+  // Update logo variant
+  if (body.logoVariant !== undefined) {
+    const v = Math.max(0, Math.min(7, Math.floor(body.logoVariant)));
+    updateData.logoVariant = v;
   }
 
   // Domain operations

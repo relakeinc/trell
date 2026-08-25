@@ -6,14 +6,11 @@ import { Icon } from "@/components/Icon";
 import { WorkspaceIcon, WORKSPACE_ICON_COUNT } from "@/components/WorkspaceIcon";
 import { useProject } from "../_components/ProjectContext";
 
-function getLogoVariant(projectId: string): number {
-  if (typeof window === "undefined") return 0;
-  const v = localStorage.getItem(`trell-logo-${projectId}`);
-  return v ? parseInt(v, 10) || 0 : 0;
-}
-
-function setLogoVariant(projectId: string, variant: number) {
-  localStorage.setItem(`trell-logo-${projectId}`, String(variant));
+function getBaseDomain(): string {
+  if (typeof window === "undefined") return "trell.co";
+  const h = window.location.hostname;
+  const parts = h.split(".");
+  return parts.length > 2 ? parts.slice(1).join(".") : h;
 }
 
 export default function GeneralSettingsPage() {
@@ -31,7 +28,7 @@ export default function GeneralSettingsPage() {
   const slugValue = project ? (slug || project.slug) : "";
 
   useEffect(() => {
-    if (project) setLogoVariantState(getLogoVariant(project.id));
+    if (project) setLogoVariantState(project.logoVariant);
   }, [project]);
 
   if (loading || !project) return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
@@ -89,7 +86,7 @@ export default function GeneralSettingsPage() {
           </div>
           <div className="mt-2 flex items-center gap-1.5 text-xs text-trell-ink-muted">
             <Icon name="globe" size={14} />
-            <span>trell.co/<span className="font-medium text-trell-ink">{slugValue}</span></span>
+            <span>{getBaseDomain()}/<span className="font-medium text-trell-ink">{slugValue}</span></span>
           </div>
         </div>
         <div className="mt-4 flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
@@ -138,9 +135,11 @@ export default function GeneralSettingsPage() {
         </div>
         <div className="flex items-center justify-end border-t border-trell-line bg-neutral-50/80 px-5 py-3">
           <button
-            onClick={() => {
-              setLogoVariant(project.id, logoVariant);
-              toast.success("Logo saved");
+            onClick={async () => {
+              const ok = await toast.promise(
+                saveProject({ logoVariant }),
+                { loading: "Saving…", success: "Logo saved", error: "Failed to save" }
+              );
             }}
             className="trell-btn-outline h-8 cursor-pointer px-3 text-xs"
           >

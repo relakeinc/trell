@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { newApiKeys } from "@/lib/serverKeys";
 import { encrypt } from "@/lib/crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 /** Create the user's first project during onboarding and advance the step. */
 export async function POST(req: Request) {
@@ -21,6 +22,12 @@ export async function POST(req: Request) {
 
   const { pk, sk, skHash } = newApiKeys("pk", "sk");
   const slug = slugify(name);
+
+  // Generate a default API key
+  const defaultPk = `pk_${randomBytes(16).toString("hex")}`;
+  const defaultSk = `sk_${randomBytes(16).toString("hex")}`;
+  const defaultKeyHash = createHash("sha256").update(defaultSk).digest("hex");
+  const defaultKeyPrefix = defaultPk.slice(0, 12);
 
   const project = await prisma.$transaction(async (tx) => {
     const org = await tx.organization.upsert({
@@ -41,6 +48,15 @@ export async function POST(req: Request) {
     });
     await tx.projectUser.create({
       data: { projectId: p.id, userId, role: "owner" },
+    });
+    // Create default API key
+    await tx.apiKey.create({
+      data: {
+        projectId: p.id,
+        name: "Default",
+        keyHash: defaultKeyHash,
+        keyPrefix: defaultKeyPrefix,
+      },
     });
     return p;
   });

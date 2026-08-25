@@ -10,6 +10,7 @@ export interface ProjectData {
   plan: string;
   pk: string;
   domains: string[];
+  logoVariant: number;
   createdAt: string;
 }
 
@@ -25,7 +26,7 @@ interface ProjectContextValue {
   usage: UsageData | null;
   loading: boolean;
   refresh: () => void;
-  saveProject: (updates: { name?: string; slug?: string }) => Promise<boolean>;
+  saveProject: (updates: { name?: string; slug?: string; logoVariant?: number }) => Promise<boolean>;
   setProject: (p: ProjectData) => void;
 }
 
@@ -67,7 +68,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const saveProject = useCallback(async (updates: { name?: string; slug?: string }): Promise<boolean> => {
+  const saveProject = useCallback(async (updates: { name?: string; slug?: string; logoVariant?: number }): Promise<boolean> => {
     if (!project) return false;
     try {
       const res = await fetch(`/api/projects/${project.id}`, {

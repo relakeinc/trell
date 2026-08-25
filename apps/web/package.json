@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "echo \"no linter yet\" && exit 0",
     "test": "vitest run",
-    "e2e": "tsx scripts/e2e.ts"
+    "e2e": "tsx scripts/e2e.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

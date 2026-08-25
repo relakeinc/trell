@@ -35,11 +35,13 @@ export function ProjectSidebar({
   projectName,
   projects,
   userEmail,
+  logoVariant = 0,
 }: {
   projectSlug: string;
   projectName: string;
   projects: SidebarProject[];
   userEmail: string;
+  logoVariant?: number;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -112,7 +114,7 @@ export function ProjectSidebar({
                           : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
                       }`}
                     >
-                    <WorkspaceIcon name={p.name} size={24} className="rounded-md" />
+                    <WorkspaceIcon name={p.name} variant={logoVariant} size={24} className="rounded-md" />
                       <span className="truncate">{p.name}</span>
                       {p.slug === projectSlug && (
                         <Icon name="chart-2" size={14} className="ml-auto text-blue-400" />

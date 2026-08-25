@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getAllProjects, getProjectBySlug } from "@/lib/project";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
+import { prisma } from "@/lib/prisma";
 
 export default async function ProjectLayout({
   children,
@@ -19,6 +20,12 @@ export default async function ProjectLayout({
     getAllProjects(),
   ]);
 
+  // Fetch logoVariant from DB
+  const projectData = await prisma.project.findUnique({
+    where: { slug },
+    select: { logoVariant: true },
+  });
+
   return (
     <div className="trell-page">
       <aside className="flex h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-xl bg-neutral-100 py-2 pr-2">
@@ -27,6 +34,7 @@ export default async function ProjectLayout({
           projectName={project.name}
           projects={projects}
           userEmail={session.user.email ?? ""}
+          logoVariant={projectData?.logoVariant ?? 0}
         />
       </aside>
       <div className="trell-main-frame">
