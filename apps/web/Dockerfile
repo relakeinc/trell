@@ -19,7 +19,8 @@ RUN pnpm --filter @trell/web build
 # Runtime: reuse the built repo (self-host; size can be trimmed later with pnpm deploy).
 FROM node:22-slim
 ENV NODE_ENV=production PNPM_HOME="/pnpm" PATH="/pnpm:$PATH"
-RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/* \
+  && corepack enable && corepack prepare pnpm@10.33.0 --activate
 WORKDIR /repo
 COPY --from=builder /repo ./
 EXPOSE 3000
