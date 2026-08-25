@@ -87,10 +87,10 @@ export function ProjectSidebar({
           <div className="relative mb-5 px-1" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-neutral-100"
+              className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-neutral-100"
             >
               <TrellLogo className="h-5 w-auto shrink-0" />
-              <span className="flex min-w-0 flex-1 items-center gap-1.5">
+              <span className="flex items-center gap-1.5">
                 <span className="text-[17px] font-semibold tracking-tight text-neutral-900 truncate">
                   {projectName}
                 </span>
