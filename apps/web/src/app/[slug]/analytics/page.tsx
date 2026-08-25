@@ -190,18 +190,14 @@ export default function AnalyticsPage() {
   const areaMax = useMemo(() => Math.max(1, ...series.map((p) => p.views)), [series]);
   const chartPath = useMemo(() => {
     const n = series.length;
-    if (n === 0) return { line: "", area: "", dot: null };
+    if (n === 0) return { line: "", area: "" };
     const pts = series.map((p, i) => ({
-      x: n <= 1 ? 10 : (i / (n - 1)) * 90 + 5,
+      x: (i / (n - 1)) * 90 + 5,
       y: 100 - (p.views / areaMax) * 100,
     }));
-    if (pts.length === 1) {
-      const p = pts[0]!;
-      return {
-        line: "",
-        area: "",
-        dot: p,
-      };
+    if (n === 1) {
+      const y = pts[0]!.y;
+      return { line: `M5,${y} L95,${y}`, area: `M5,${y} L95,${y} L95,100 L5,100 Z` };
     }
     const catmull = pts.map((p, i) => {
       const prev = pts[i - 1] ?? p;
@@ -220,7 +216,7 @@ export default function AnalyticsPage() {
       line += ` C${prev.cp2x},${prev.cp2y} ${c.cp1x},${c.cp1y} ${c.p.x},${c.p.y}`;
     }
     const area = `${line} L${catmull[catmull.length - 1]!.p.x},100 L${catmull[0]!.p.x},100 Z`;
-    return { line, area, dot: null };
+    return { line, area };
   }, [series, areaMax]);
 
   const totalBreakdown = breakdown.reduce((a, r) => a + r.count, 0);
@@ -291,23 +287,11 @@ export default function AnalyticsPage() {
             {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
               <line key={pct} x1="0" y1={pct * 50} x2="100" y2={pct * 50} stroke="#e5e7eb" strokeWidth="0.3" strokeDasharray={pct === 0 ? "0" : "0.8 0.8"} />
             ))}
-            {chartPath.dot ? (
-              <circle
-                cx={chartPath.dot.x}
-                cy={chartPath.dot.y}
-                r="4"
-                fill="#2563eb"
-                vectorEffect="non-scaling-stroke"
-              />
-            ) : (
-              <>
-                {chartPath.area && (
-                  <path d={chartPath.area} fill="url(#trell-area)" />
-                )}
-                {chartPath.line && (
-                  <path d={chartPath.line} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-                )}
-              </>
+            {chartPath.area && (
+              <path d={chartPath.area} fill="url(#trell-area)" />
+            )}
+            {chartPath.line && (
+              <path d={chartPath.line} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
             )}
           </svg>
         </div>
