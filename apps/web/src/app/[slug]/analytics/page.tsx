@@ -188,13 +188,34 @@ export default function AnalyticsPage() {
   }, [fetchAll]);
 
   const areaMax = useMemo(() => Math.max(1, ...series.map((p) => p.views)), [series]);
-  const areaPoints = useMemo(() => {
+  const chartPath = useMemo(() => {
     const n = series.length;
-    return series.map((p, i) => {
-      const x = n <= 1 ? 0 : (i / (n - 1)) * 100;
-      const y = 100 - (p.views / areaMax) * 100;
-      return `${x},${y}`;
+    if (n === 0) return { line: "", area: "" };
+    const pts = series.map((p, i) => ({
+      x: n <= 1 ? 5 : (i / (n - 1)) * 95 + 2.5,
+      y: 100 - (p.views / areaMax) * 100,
+    }));
+    if (pts.length === 1) {
+      return { line: `M${pts[0]!.x},${pts[0]!.y}`, area: `M${pts[0]!.x},100 L${pts[0]!.x},${pts[0]!.y} L${pts[0]!.x},100 Z` };
+    }
+    const catmull = pts.map((p, i) => {
+      const prev = pts[i - 1] ?? p;
+      const next = pts[i + 1] ?? p;
+      const tension = 0.3;
+      const cp1x = p.x - (next.x - prev.x) * tension;
+      const cp1y = p.y - (next.y - prev.y) * tension;
+      const cp2x = p.x + (next.x - prev.x) * tension;
+      const cp2y = p.y + (next.y - prev.y) * tension;
+      return { p, cp1x, cp1y, cp2x, cp2y };
     });
+    let line = `M${catmull[0]!.p.x},${catmull[0]!.p.y}`;
+    for (let i = 1; i < catmull.length; i++) {
+      const c = catmull[i]!;
+      const prev = catmull[i - 1]!;
+      line += ` C${prev.cp2x},${prev.cp2y} ${c.cp1x},${c.cp1y} ${c.p.x},${c.p.y}`;
+    }
+    const area = `${line} L${catmull[catmull.length - 1]!.p.x},100 L${catmull[0]!.p.x},100 Z`;
+    return { line, area };
   }, [series, areaMax]);
 
   const totalBreakdown = breakdown.reduce((a, r) => a + r.count, 0);
@@ -257,22 +278,27 @@ export default function AnalyticsPage() {
           <svg viewBox="0 0 100 50" preserveAspectRatio="none" className="h-56 w-full">
             <defs>
               <linearGradient id="trell-area" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2563eb" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+                <stop offset="0%" stopColor="#2563eb" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#2563eb" stopOpacity="0.01" />
               </linearGradient>
             </defs>
             {/* Horizontal grid lines */}
             {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
-              <line key={pct} x1="0" y1={pct * 50} x2="100" y2={pct * 50} stroke="#e5e7eb" strokeWidth="0.3" />
+              <line key={pct} x1="0" y1={pct * 50} x2="100" y2={pct * 50} stroke="#e5e7eb" strokeWidth="0.3" strokeDasharray={pct === 0 ? "0" : "0.8 0.8"} />
             ))}
-            <polygon points={`0,50 ${areaPoints.join(" ")} 100,50`} fill="url(#trell-area)" />
-            <polyline points={areaPoints.join(" ")} fill="none" stroke="#2563eb" strokeWidth="1.5" />
-            {series.length > 0 && (
+            {chartPath.area && (
+              <path d={chartPath.area} fill="url(#trell-area)" />
+            )}
+            {chartPath.line && (
+              <path d={chartPath.line} fill="none" stroke="#2563eb" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            )}
+            {series.length > 0 && chartPath.line && (
               <circle
-                cx={series.length > 1 ? 100 : 50}
-                cy={areaPoints[areaPoints.length - 1]?.split(",")[1] ?? 0}
-                r="1.5"
+                cx={series.length > 1 ? 97.5 : 5}
+                cy={100 - (series[series.length - 1]!.views / areaMax) * 100}
+                r="2"
                 fill="#2563eb"
+                vectorEffect="non-scaling-stroke"
               />
             )}
           </svg>
