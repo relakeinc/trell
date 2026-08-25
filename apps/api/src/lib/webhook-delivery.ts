@@ -1,14 +1,21 @@
 import { createHmac } from "node:crypto";
-import { prisma } from "./prisma.js";
+import { PrismaClient } from "@prisma/client";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAYS_MS = [1_000, 5_000, 30_000];
+
+let _prisma: PrismaClient | null = null;
+function getPrisma() {
+  if (!_prisma) _prisma = new PrismaClient();
+  return _prisma;
+}
 
 export async function deliverWebhooks(
   projectId: string,
   event: string,
   payload: Record<string, unknown>,
 ) {
+  const prisma = getPrisma();
   const webhooks = await prisma.webhook.findMany({
     where: { projectId, enabled: true, events: { has: event } },
   });
@@ -18,11 +25,12 @@ export async function deliverWebhooks(
   const deliverables = webhooks.slice(0, 10); // cap at 10
 
   await Promise.allSettled(
-    deliverables.map((wh) => deliverOne(wh, event, payload)),
+    deliverables.map((wh) => deliverOne(prisma, wh, event, payload)),
   );
 }
 
 async function deliverOne(
+  prisma: PrismaClient,
   webhook: { id: string; url: string; secret: string },
   event: string,
   payload: Record<string, unknown>,
