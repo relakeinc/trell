@@ -25,6 +25,7 @@ import {
   Download,
   XCircle,
   Send,
+  Check,
   type LucideIcon,
 } from "lucide-react";
 import type { JSX } from "react";
@@ -229,6 +230,7 @@ const ICON_MAP: Record<string, LucideIcon | ((props: { size?: number | string; c
   upload: Upload,
   download: Download,
   send: Send,
+  check: Check,
 };
 
 /** Maps icon names to their animation CSS class */
