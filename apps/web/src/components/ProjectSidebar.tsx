@@ -26,6 +26,7 @@ const NAV_SECTIONS: {
       { label: "Funnels", href: "funnels", icon: "funnels" },
       { label: "Comparison", href: "comparison", icon: "comparison" },
       { label: "Events", href: "events", icon: "events" },
+      { label: "Submissions", href: "submissions", icon: "events" },
     ],
   },
 ];

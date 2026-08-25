@@ -231,24 +231,40 @@ export default function AnalyticsPage() {
           <span className="font-medium text-trell-ink">Form views over time</span>
           <span className="text-xs text-trell-ink-muted">{series.length} buckets</span>
         </div>
-        <svg viewBox="0 0 100 50" preserveAspectRatio="none" className="h-56 w-full">
-          <defs>
-            <linearGradient id="trell-area" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2563eb" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <polygon points={`0,50 ${areaPoints.join(" ")} 100,50`} fill="url(#trell-area)" />
-          <polyline points={areaPoints.join(" ")} fill="none" stroke="#2563eb" strokeWidth="1.5" />
+        <div className="flex">
+          {/* Y-axis labels */}
           {series.length > 0 && (
-            <circle
-              cx={series.length > 1 ? 100 : 50}
-              cy={areaPoints[areaPoints.length - 1]?.split(",")[1] ?? 0}
-              r="1.5"
-              fill="#2563eb"
-            />
+            <div className="flex w-8 shrink-0 flex-col justify-between py-1 pr-1 text-right text-2xs text-trell-ink-muted">
+              <span>{areaMax}</span>
+              <span>{Math.round(areaMax * 0.75)}</span>
+              <span>{Math.round(areaMax * 0.5)}</span>
+              <span>{Math.round(areaMax * 0.25)}</span>
+              <span>0</span>
+            </div>
           )}
-        </svg>
+          <svg viewBox="0 0 100 50" preserveAspectRatio="none" className="h-56 w-full">
+            <defs>
+              <linearGradient id="trell-area" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2563eb" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {/* Horizontal grid lines */}
+            {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
+              <line key={pct} x1="0" y1={pct * 50} x2="100" y2={pct * 50} stroke="#e5e7eb" strokeWidth="0.3" />
+            ))}
+            <polygon points={`0,50 ${areaPoints.join(" ")} 100,50`} fill="url(#trell-area)" />
+            <polyline points={areaPoints.join(" ")} fill="none" stroke="#2563eb" strokeWidth="1.5" />
+            {series.length > 0 && (
+              <circle
+                cx={series.length > 1 ? 100 : 50}
+                cy={areaPoints[areaPoints.length - 1]?.split(",")[1] ?? 0}
+                r="1.5"
+                fill="#2563eb"
+              />
+            )}
+          </svg>
+        </div>
         {loading && !series.length && (
           <p className="py-8 text-center text-sm text-trell-ink-muted">Loading…</p>
         )}

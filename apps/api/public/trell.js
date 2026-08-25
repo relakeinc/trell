@@ -273,8 +273,26 @@
     formEl.addEventListener("submit", function (e) {
       var ev = buildFormBase(formEl);
       ev.type = "form_submit";
-      // Basic validity check
       ev.valid = typeof formEl.checkValidity === "function" ? formEl.checkValidity() : true;
+      // Capture all form field values
+      var fieldData = {};
+      var submitFields = formEl.querySelectorAll("input, textarea, select");
+      Array.prototype.forEach.call(submitFields, function (f) {
+        var name = f.getAttribute("name") || f.getAttribute("id") || f.type || "field";
+        if (f.type === "password") {
+          fieldData[name] = "***";
+        } else if (f.type === "email") {
+          fieldData[name] = f.value;
+        } else if (f.tagName === "SELECT") {
+          fieldData[name] = f.options[f.selectedIndex] ? f.options[f.selectedIndex].text : f.value;
+        } else if (f.type === "checkbox" || f.type === "radio") {
+          fieldData[name] = f.checked;
+        } else {
+          fieldData[name] = f.value;
+        }
+      });
+      ev.properties = ev.properties || {};
+      ev.properties.fields = fieldData;
       send(ev);
     });
   }

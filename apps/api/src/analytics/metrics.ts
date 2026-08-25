@@ -188,14 +188,17 @@ const accessors: Record<Dimension, (e: StoredEvent) => string | null> = {
 export function computeBreakdown(events: StoredEvent[], dimension: Dimension, topN = 25): BreakdownRow[] {
   const counts = new Map<string, number>();
   const accessor = accessors[dimension];
+  const isUtm = dimension.startsWith("utm_");
 
   for (const e of events) {
     const raw = accessor(e);
-    const key = raw && raw.length > 0 ? raw : "unknown";
+    // For UTM dimensions, skip events that don't have that UTM set
+    if (isUtm && (!raw || raw.length === 0)) continue;
+    const key = raw && raw.length > 0 ? raw : "(none)";
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
 
-  const total = events.length || 1;
+  const total = Array.from(counts.values()).reduce((a, b) => a + b, 0) || 1;
   return Array.from(counts.entries())
     .map(([key, count]) => ({ key, count, percentage: count / total }))
     .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key))
