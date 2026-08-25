@@ -21,7 +21,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "echo \"no linter yet\" && exit 0",
@@ -40,6 +40,7 @@
   "devDependencies": {
     "@types/node": "^22.10.0",
     "prisma": "^6.1.0",
+    "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

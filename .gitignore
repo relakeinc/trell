@@ -1,7 +1,9 @@
 node_modules/
 dist/
+.next/
 coverage/
 .turbo/
+*.tsbuildinfo
 *.log
 .env
 .env.*
