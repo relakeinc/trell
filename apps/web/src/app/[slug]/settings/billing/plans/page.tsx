@@ -26,7 +26,7 @@ const PLANS: Plan[] = [
     priceYearly: "US$ 278",
     recommended: true,
     features: [
-      { label: "Trell Analytics", icon: "chart-2" },
+      { label: "Trell Analytics", icon: "analytics" },
       { label: "Trell Webhooks", icon: "webhooks" },
     ],
   },
@@ -36,14 +36,15 @@ const PLANS: Plan[] = [
     priceMonthly: "US$ 0",
     priceYearly: "US$ 0",
     features: [
-      { label: "Trell Analytics", icon: "chart-2" },
+      { label: "Trell Analytics", icon: "analytics" },
     ],
   },
 ];
 
-const FEATURE_ROWS: { section: string; rows: { name: string; free: string; pro: string }[] }[] = [
+const FEATURE_ROWS: { section: string; icon: string; rows: { name: string; free: string; pro: string; proHigh?: boolean }[] }[] = [
   {
     section: "Analytics",
+    icon: "analytics",
     rows: [
       { name: "Events / month", free: "5,000", pro: "50,000" },
       { name: "Projects", free: "Unlimited", pro: "Unlimited" },
@@ -55,8 +56,9 @@ const FEATURE_ROWS: { section: string; rows: { name: string; free: string; pro: 
   },
   {
     section: "Developer",
+    icon: "layers",
     rows: [
-      { name: "Webhooks", free: "—", pro: "✓" },
+      { name: "Webhooks", free: "—", pro: "✓", proHigh: true },
       { name: "UTM templates", free: "✓", pro: "✓" },
       { name: "API access", free: "✓", pro: "✓" },
       { name: "Priority support", free: "—", pro: "✓" },
@@ -100,11 +102,11 @@ export default function BillingPlansPage() {
       {/* Breadcrumb + cycle toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm">
-          <Link href={`/${project.slug}/settings/billing`} className="text-neutral-600 hover:text-neutral-900 transition-colors">
+          <Link href={`/${project.slug}/settings/billing`} className="text-lg font-semibold text-trell-ink">
             Billing
           </Link>
           <Icon name="arrow-right-01" size={12} className="text-neutral-400" />
-          <span className="font-medium text-neutral-900">Plans</span>
+          <span className="text-lg font-semibold text-trell-ink">Plans</span>
         </div>
         <div className="flex items-center gap-3">
           <div className="inline-flex items-center rounded-lg border border-neutral-200 bg-white p-0.5">
@@ -121,9 +123,6 @@ export default function BillingPlansPage() {
               Yearly
             </button>
           </div>
-          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
-            12% off + 12x usage upfront
-          </span>
         </div>
       </div>
 
@@ -176,7 +175,7 @@ export default function BillingPlansPage() {
           <div key={group.section} className="border-b border-neutral-200 last:border-b-0">
             <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-5 py-3">
               <div className="flex items-center gap-2 text-sm font-medium text-neutral-900">
-                <Icon name="grid-2" size={16} className="text-neutral-500" />
+                <Icon name={group.icon} size={16} className="text-neutral-500" />
                 {group.section}
               </div>
               <Link href={`/${project.slug}/settings/general`} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors">
@@ -185,14 +184,10 @@ export default function BillingPlansPage() {
             </div>
             <div className="divide-y divide-neutral-100">
               {group.rows.map((row) => (
-                <div key={row.name} className="grid grid-cols-[1fr_90px_90px] items-center px-5 py-3 sm:grid-cols-2">
+                <div key={row.name} className="grid grid-cols-[1fr_1fr_1fr] items-center px-5 py-3">
                   <div className="text-sm text-neutral-700">{row.name}</div>
-                  <div className="hidden text-sm text-neutral-600 sm:block">{row.free}</div>
-                  <div className="hidden text-sm text-neutral-600 sm:block">{row.pro}</div>
-                  <div className="col-span-2 flex gap-0 text-sm sm:hidden">
-                    <div className="flex-1 text-neutral-600">{row.free}</div>
-                    <div className="flex-1 text-neutral-600">{row.pro}</div>
-                  </div>
+                  <div className="text-sm text-neutral-600 max-w-[110px]">{row.free}</div>
+                  <div className={`rounded-md px-3 py-1 text-sm ${row.proHigh ? "text-blue-600" : "text-neutral-600"}`}>{row.pro}</div>
                 </div>
               ))}
             </div>
