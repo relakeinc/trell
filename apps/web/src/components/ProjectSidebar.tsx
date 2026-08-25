@@ -86,12 +86,13 @@ export function ProjectSidebar({
           <div className="relative mb-5 px-1" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex w-full items-center rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-neutral-100"
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-neutral-100"
             >
+              <WorkspaceIcon name={projectName} variant={logoVariant} size={28} className="shrink-0 rounded-lg" />
               <span className="text-[17px] font-semibold tracking-tight text-neutral-900 truncate">
                 {projectName}
               </span>
-              <span className={`ml-auto flex size-6 shrink-0 items-center justify-center rounded-full bg-neutral-200 transition-all duration-200 ${dropdownOpen ? "rotate-180" : ""}`}>
+              <span className={`ml-auto flex size-6 shrink-0 items-center justify-center rounded bg-neutral-200 transition-all duration-200 ${dropdownOpen ? "rotate-180" : ""}`}>
                 <Icon
                   name="arrow-down-01"
                   size={14}
