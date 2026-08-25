@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useProject } from "../_components/ProjectContext";
 
@@ -12,32 +11,12 @@ function resetDate(): string {
 
 export default function BillingSettingsPage() {
   const { project, usage, loading } = useProject();
-  const [upgrading, setUpgrading] = useState(false);
 
   if (loading || !usage || !project) return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
 
   const eventPct = Math.min((usage.events / (usage.limit || 1)) * 100, 100);
   const domainPct = Math.min((usage.domains / (usage.domainLimit || 1)) * 100, 100);
   const isFree = project.plan === "free";
-
-  async function handleUpgrade() {
-    const productId = process.env.NEXT_PUBLIC_POLAR_PRO_MONTHLY_ID;
-    if (!productId) return;
-    setUpgrading(true);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId }),
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      alert("Failed to start checkout");
-    } finally {
-      setUpgrading(false);
-    }
-  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -59,9 +38,9 @@ export default function BillingSettingsPage() {
             <span className="text-xs text-trell-ink-muted">{usage.events.toLocaleString()} of {usage.limit.toLocaleString()} events used</span>
           </div>
           {isFree ? (
-            <button onClick={handleUpgrade} disabled={upgrading} className="trell-btn-primary h-8 cursor-pointer px-3 text-xs disabled:opacity-50">
-              {upgrading ? "Loading..." : "Upgrade to Pro"}
-            </button>
+            <Link href={`/${project.slug}/settings/billing/plans`} className="trell-btn-primary h-8 cursor-pointer px-3 text-xs">
+              Upgrade to Pro
+            </Link>
           ) : (
             <Link href="/api/portal" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
               Manage subscription
