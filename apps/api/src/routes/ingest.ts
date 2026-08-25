@@ -4,6 +4,7 @@ import type { Repo } from "../repositories/types";
 import { RateLimiter } from "../middleware/ratelimit";
 import { payloadTooLarge, sendError, sendOk, tooMany } from "../lib/errors";
 import { parseAndValidate, toStoredEvent, BatchTooLargeError, InvalidEventError } from "../validation";
+import { deliverWebhooks } from "../lib/webhook-delivery";
 
 const PLAN_LIMITS = {
   free: { events: 5000 },
@@ -61,6 +62,28 @@ export function makeIngest(deps: IngestDeps): { handler: (c: Context) => Promise
 
         const stored = events.map(toStoredEvent);
         const result = await deps.repo.insertEvents({ projectId, events: stored });
+
+        // Deliver webhooks async (don't block response)
+        const webhookEvents = events.filter((e) =>
+          ["form_submit", "cta_click", "form_abandon"].includes(e.type),
+        );
+        if (webhookEvents.length > 0) {
+          Promise.allSettled(
+            webhookEvents.map((e) =>
+              deliverWebhooks(projectId, e.type, {
+                event_id: e.id,
+                type: e.type,
+                page: e.page,
+                form_id: e.form_id,
+                properties: e.properties,
+                visitor_id: e.visitor_id,
+                session_id: e.session_id,
+                timestamp: e.ts,
+              }),
+            ),
+          ).catch(() => {});
+        }
+
         return sendOk(c, 202, { inserted: result.inserted, duplicates: result.duplicates });
       } catch (e) {
         if (e instanceof BatchTooLargeError) return sendError(c, 413, "batch_too_large", e.message);

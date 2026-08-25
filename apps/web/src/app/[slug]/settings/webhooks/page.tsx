@@ -34,6 +34,9 @@ export default function WebhooksSettingsPage() {
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [showSecret, setShowSecret] = useState<string | null>(null);
+  const [deliveryLog, setDeliveryLog] = useState<string | null>(null);
+  const [deliveries, setDeliveries] = useState<{ id: string; event: string; status: string; statusCode: number | null; response: string | null; attempts: number; createdAt: string }[]>([]);
+  const [loadingDeliveries, setLoadingDeliveries] = useState(false);
 
   useEffect(() => {
     if (!project) return;
@@ -89,6 +92,22 @@ export default function WebhooksSettingsPage() {
       toast.error("Failed to delete webhook");
     } finally {
       setDeleting(null);
+    }
+  }
+
+  async function loadDeliveries(webhookId: string) {
+    if (!project) return;
+    if (deliveryLog === webhookId) { setDeliveryLog(null); return; }
+    setDeliveryLog(webhookId);
+    setLoadingDeliveries(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/webhooks/${webhookId}/deliveries`);
+      if (res.ok) {
+        const data = await res.json();
+        setDeliveries(data.deliveries ?? []);
+      }
+    } catch {} finally {
+      setLoadingDeliveries(false);
     }
   }
 
@@ -175,6 +194,12 @@ export default function WebhooksSettingsPage() {
                     {showSecret === w.id && (
                       <code className="rounded bg-neutral-100 px-2 py-1 text-xs font-mono text-trell-ink-muted">{w.secret}</code>
                     )}
+                    <button
+                      onClick={() => loadDeliveries(w.id)}
+                      className={`text-xs transition-colors ${deliveryLog === w.id ? "text-blue-600 font-medium" : "text-trell-ink-muted hover:text-trell-ink"}`}
+                    >
+                      Logs
+                    </button>
                     <button disabled={deleting === w.id} onClick={() => deleteWebhook(w.id)} className="flex items-center gap-1 text-xs text-trell-ink-muted transition-colors hover:text-red-600 disabled:opacity-40">
                       <Icon name="close" size={12} className={deleting === w.id ? "animate-spin" : ""} />
                       Delete
@@ -186,6 +211,41 @@ export default function WebhooksSettingsPage() {
           )}
         </div>
       </div>
+
+      {/* Delivery Log */}
+      {deliveryLog && (
+        <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
+          <div className="border-b border-trell-line px-4 py-3">
+            <span className="text-sm font-medium text-trell-ink">Delivery Log</span>
+          </div>
+          <div className="p-4">
+            {loadingDeliveries ? (
+              <p className="text-sm text-trell-ink-muted">Loading deliveries…</p>
+            ) : deliveries.length === 0 ? (
+              <p className="text-sm text-trell-ink-muted">No deliveries yet. Webhooks will appear here after events fire.</p>
+            ) : (
+              <div className="flex flex-col gap-1">
+                {deliveries.map((d) => (
+                  <div key={d.id} className="flex items-center justify-between rounded-md border border-trell-line px-3 py-2">
+                    <div className="flex items-center gap-3">
+                      <span className={`inline-block size-2 rounded-full ${d.status === "success" ? "bg-green-500" : d.status === "failed" ? "bg-red-500" : "bg-yellow-400"}`} />
+                      <div>
+                        <div className="text-sm font-medium text-trell-ink">{d.event}</div>
+                        <div className="text-xs text-trell-ink-muted">
+                          {d.statusCode ? `HTTP ${d.statusCode}` : d.status} · {d.attempts} attempt{d.attempts !== 1 ? "s" : ""} · {new Date(d.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                    {d.response && (
+                      <code className="max-w-xs truncate text-xs text-trell-ink-muted" title={d.response}>{d.response.slice(0, 80)}</code>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
