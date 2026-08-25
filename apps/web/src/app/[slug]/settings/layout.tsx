@@ -6,7 +6,7 @@ import { Toaster } from "react-hot-toast";
 import { Icon } from "@/components/Icon";
 import { ProjectProvider } from "./_components/ProjectContext";
 
-type SettingsSection = "general" | "billing" | "domains" | "api" | "tracking" | "webhooks";
+type SettingsSection = "general" | "billing" | "domains" | "api" | "tracking" | "webhooks" | "utm-templates";
 
 interface Group {
   label: string;
@@ -27,6 +27,7 @@ const GROUPS: Group[] = [
     items: [
       { id: "api", label: "API Keys", icon: "api" },
       { id: "tracking", label: "Tracking", icon: "tracking" },
+      { id: "utm-templates", label: "UTM Templates", icon: "links" },
       { id: "webhooks", label: "Webhooks", icon: "webhooks" },
     ],
   },
