@@ -324,11 +324,10 @@ function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="flex size-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+      className={`trell-theme-switch ${isDark ? "active" : ""}`}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-    >
-      <Icon name="moon" size={13} className={`transition-transform duration-200 ${isDark ? "rotate-0" : "rotate-180"}`} />
-    </button>
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    />
   );
 }
 

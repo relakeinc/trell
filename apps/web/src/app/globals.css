@@ -36,6 +36,15 @@
   background-color: var(--trell-dark-bg);
 }
 
+.dark .trell-main {
+  background-color: var(--trell-dark-bg) !important;
+}
+
+.dark .trell-header {
+  background-color: rgba(26, 28, 32, 0.9) !important;
+  border-color: var(--trell-dark-border) !important;
+}
+
 /* Sidebar */
 .dark aside {
   background-color: var(--trell-dark-surface) !important;
@@ -46,6 +55,186 @@
 .dark [class*="bg-white"] {
   background-color: var(--trell-dark-surface-2) !important;
   border-color: var(--trell-dark-border) !important;
+}
+
+/* Sidebar nav items */
+.dark .trell-nav-item {
+  color: var(--trell-dark-text-muted) !important;
+}
+
+.dark .trell-nav-item:hover {
+  background-color: var(--trell-dark-surface-2) !important;
+  color: var(--trell-dark-text) !important;
+}
+
+.dark .trell-nav-item.active,
+.dark .trell-nav-item[class*="bg-blue-50"] {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+}
+
+/* Sidebar project dropdown button */
+.dark [class*="hover:bg-neutral-100"] {
+  --tw-bg-opacity: 1;
+}
+
+.dark aside button[class*="hover:bg-neutral-100"]:hover {
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
+/* Sidebar project dropdown menu */
+.dark .absolute[class*="bg-white"][class*="shadow-lg"],
+.dark [class*="absolute"][class*="bg-white"][class*="shadow-lg"] {
+  background-color: var(--trell-dark-surface-2) !important;
+  border-color: var(--trell-dark-border) !important;
+}
+
+.dark [class*="absolute"][class*="bg-white"] {
+  background-color: var(--trell-dark-surface-2) !important;
+  border-color: var(--trell-dark-border) !important;
+}
+
+/* Dropdown items */
+.dark [class*="absolute"] a[class*="rounded-lg"] {
+  color: var(--trell-dark-text-muted) !important;
+}
+
+.dark [class*="absolute"] a[class*="rounded-lg"]:hover {
+  background-color: var(--trell-dark-surface) !important;
+  color: var(--trell-dark-text) !important;
+}
+
+.dark [class*="absolute"] a[class*="bg-blue-50"] {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+}
+
+/* Dropdown "Create new project" button */
+.dark [class*="absolute"] button[class*="hover:bg-neutral-50"]:hover {
+  background-color: var(--trell-dark-surface) !important;
+  color: var(--trell-dark-text) !important;
+}
+
+.dark [class*="absolute"] button[class*="text-neutral-500"] {
+  color: var(--trell-dark-text-muted) !important;
+}
+
+/* Sidebar bottom section */
+.dark aside > div:last-child {
+  border-color: var(--trell-dark-border) !important;
+}
+
+/* Sidebar bottom text */
+.dark aside [class*="text-neutral-500"],
+.dark aside [class*="text-neutral-400"] {
+  color: var(--trell-dark-text-muted) !important;
+}
+
+.dark aside [class*="text-neutral-600"] {
+  color: var(--trell-dark-text) !important;
+}
+
+/* Sidebar bottom "Upgrade plan" button */
+.dark aside > div:last-child > a[class*="bg-neutral-900"] {
+  background-color: var(--trell-dark-accent) !important;
+  border-color: var(--trell-dark-accent) !important;
+}
+
+.dark aside > div:last-child > a[class*="bg-neutral-900"]:hover {
+  background-color: var(--trell-dark-accent-dark) !important;
+}
+
+/* Sidebar user avatar */
+.dark aside [class*="bg-neutral-200"] {
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
+/* Sidebar sign-out button */
+.dark aside button[class*="hover:bg-neutral-100"]:hover {
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
+/* Settings sidebar */
+.dark [class*="bg-neutral-100"][class*="w-[220px]"] {
+  background-color: var(--trell-dark-surface) !important;
+}
+
+.dark [class*="w-[220px]"] [class*="text-neutral-900"] {
+  color: var(--trell-dark-text) !important;
+}
+
+.dark [class*="w-[220px]"] [class*="text-neutral-600"] {
+  color: var(--trell-dark-text-muted) !important;
+}
+
+.dark [class*="w-[220px]"] [class*="text-neutral-400"] {
+  color: var(--trell-dark-text-muted) !important;
+}
+
+.dark [class*="w-[220px]"] a[class*="hover:bg-neutral-200/70"]:hover {
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
+.dark [class*="w-[220px]"] [class*="bg-neutral-200"] {
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
+.dark [class*="w-[220px]"] a[class*="bg-blue-50"] {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+}
+
+/* Settings main content */
+.dark .trell-main {
+  background-color: var(--trell-dark-bg) !important;
+}
+
+/* Empty state in dark mode */
+.dark .trell-empty-state-icon {
+  border-color: var(--trell-dark-border) !important;
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
+/* Card hover in dark mode */
+.dark .trell-card-hover:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Create project modal */
+.dark [class*="fixed"][class*="bg-white"] {
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
+.dark [class*="fixed"][class*="border-neutral-200"] {
+  border-color: var(--trell-dark-border) !important;
+}
+
+/* Modal overlay */
+.dark [class*="bg-black/50"],
+.dark [class*="bg-neutral-900/50"] {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Select elements */
+.dark select {
+  background-color: var(--trell-dark-surface) !important;
+  border-color: var(--trell-dark-border) !important;
+  color: var(--trell-dark-text) !important;
+}
+
+/* Code blocks */
+.dark code {
+  background-color: var(--trell-dark-surface) !important;
+}
+
+/* Badge colors in dark mode */
+.dark .trell-badge {
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
+/* Skeleton in dark mode */
+.dark .trell-skeleton {
+  background-color: var(--trell-dark-surface-2) !important;
 }
 
 /* Dividers */
@@ -470,9 +659,68 @@ body {
   background: white;
 }
 
+.dark .trell-table thead {
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
 .trell-table {
   border-collapse: separate;
   border-spacing: 0;
+}
+
+/* ── Nav tabs ──────────────────────────────────────────── */
+.dark .trell-nav-tabs {
+  background-color: var(--trell-dark-bg) !important;
+  border-color: var(--trell-dark-border) !important;
+}
+
+.dark .trell-nav-tabs-btn {
+  color: var(--trell-dark-text-muted) !important;
+}
+
+.dark .trell-nav-tabs-btn:hover {
+  background-color: var(--trell-dark-surface-2) !important;
+  color: var(--trell-dark-text) !important;
+}
+
+/* ── Theme toggle switch (Material Design 3 style) ─────── */
+.trell-theme-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background-color: #d1d5db;
+  cursor: pointer;
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.trell-theme-switch.active {
+  background-color: #595d66;
+}
+
+.trell-theme-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.trell-theme-switch.active::after {
+  transform: translateX(16px);
+}
+
+.trell-theme-switch:hover {
+  box-shadow: 0 0 0 4px rgba(89, 93, 102, 0.12);
+}
+
+.trell-theme-switch.active:hover {
+  box-shadow: 0 0 0 4px rgba(89, 93, 102, 0.2);
 }
 
 /* ── Empty state illustration ─────────────────────────────── */

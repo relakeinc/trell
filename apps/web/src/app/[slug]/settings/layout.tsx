@@ -6,7 +6,7 @@ import { Toaster } from "react-hot-toast";
 import { Icon } from "@/components/Icon";
 import { ProjectProvider } from "./_components/ProjectContext";
 
-type SettingsSection = "general" | "billing" | "domains" | "api" | "tracking" | "webhooks" | "utm-templates";
+type SettingsSection = "general" | "appearance" | "billing" | "domains" | "api" | "tracking" | "webhooks" | "utm-templates";
 
 interface Group {
   label: string;
@@ -18,6 +18,7 @@ const GROUPS: Group[] = [
     label: "Workspace",
     items: [
       { id: "general", label: "General", icon: "general" },
+      { id: "appearance", label: "Appearance", icon: "moon" },
       { id: "billing", label: "Billing", icon: "billing" },
       { id: "domains", label: "Domains", icon: "domains" },
     ],
