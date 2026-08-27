@@ -47,6 +47,30 @@
     });
   }
 
+  // Derive a stable, deterministic form id from the form's DOM structure so the
+  // same form always maps to the same id (even without name/id/data attributes).
+  function hashCode(str) {
+    var hash = 5381;
+    for (var i = 0; i < str.length; i++) {
+      hash = ((hash << 5) + hash) + str.charCodeAt(i);
+      hash = hash & 0x7fffffff;
+    }
+    return hash.toString(36);
+  }
+
+  function stableFormId(formEl) {
+    // Prefer explicit identifiers — these are the most reliable.
+    var explicit = formEl.getAttribute("data-trell-form-id") || formEl.id;
+    if (explicit) return explicit;
+    // Otherwise build a fingerprint from the form's signature attrs + field names.
+    var sig = formEl.getAttribute("action") || formEl.getAttribute("name") || "";
+    Array.prototype.forEach.call(formEl.querySelectorAll("input, textarea, select"), function (f) {
+      sig += "|" + (f.getAttribute("name") || f.getAttribute("id") || f.type);
+    });
+    if (!sig) sig = formEl.outerHTML.slice(0, 200);
+    return "form-" + hashCode(sig);
+  }
+
   function getVisitorId() {
     var key = "_trell_vid";
     var id = LS && LS.getItem(key);
@@ -126,7 +150,7 @@
   function buildFormBase(formEl) {
     var b = buildBase();
     b.form = {
-      id: formEl.getAttribute("data-trell-form-id") || formEl.id || ("form-" + Math.random().toString(36).slice(2, 8)),
+      id: stableFormId(formEl),
       name: formEl.getAttribute("data-trell-form-name") || formEl.getAttribute("name") || undefined,
     };
     return b;

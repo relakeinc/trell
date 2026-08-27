@@ -57,10 +57,35 @@ export default function TrackingSettingsPage() {
         <div className="flex items-center justify-between px-4 py-3">
           <div>
             <span className="text-sm font-medium text-trell-ink">Auto-Track</span>
-            <p className="mt-0.5 text-sm text-trell-ink-muted">Automatically track form submissions, button clicks, and page views.</p>
+            <p className="mt-0.5 text-sm text-trell-ink-muted">Automatically track form views, submissions, and page views.</p>
           </div>
           <div className="flex h-5 w-9 shrink-0 cursor-not-allowed items-center rounded-full bg-blue-600">
             <span className="inline-block h-4 w-4 translate-x-4 rounded-full bg-white shadow" />
+          </div>
+        </div>
+      </div>
+
+      {/* Form naming & field capture */}
+      <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
+        <div className="border-b border-trell-line px-4 py-3">
+          <span className="text-sm font-medium text-trell-ink">Naming forms & capturing fields</span>
+        </div>
+        <div className="flex flex-col gap-4 p-4">
+          <p className="text-sm text-trell-ink-muted">
+            Every <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs">&lt;form&gt;</code> is tracked automatically and its values are captured on submit.
+          </p>
+          <div>
+            <div className="mb-1.5 text-xs font-medium text-trell-ink">Give your form a stable name (recommended)</div>
+            <pre className="overflow-x-auto rounded-lg border border-trell-line bg-neutral-950 p-3 font-mono text-xs leading-relaxed text-neutral-300"><code>{`<form data-trell-form-id="contact-form" data-trell-form-name="Contact">`}</code></pre>
+            <p className="mt-1.5 text-xs text-trell-ink-muted">
+              Without an id, Trell derives a stable id from the form&apos;s structure, but naming it makes your analytics readable.
+            </p>
+          </div>
+          <div>
+            <div className="mb-1.5 text-xs font-medium text-trell-ink">Field values are captured automatically</div>
+            <p className="text-xs text-trell-ink-muted">
+              On submit, all <code className="rounded bg-neutral-100 px-1 py-0.5">input</code>, <code className="rounded bg-neutral-100 px-1 py-0.5">textarea</code>, and <code className="rounded bg-neutral-100 px-1 py-0.5">select</code> values are sent in <code className="rounded bg-neutral-100 px-1 py-0.5">properties.fields</code> and shown on the Submissions page. Password fields are masked as <code className="rounded bg-neutral-100 px-1 py-0.5">***</code>.
+            </p>
           </div>
         </div>
       </div>

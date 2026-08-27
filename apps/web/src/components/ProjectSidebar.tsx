@@ -53,7 +53,7 @@ export function ProjectSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const initial = userEmail.charAt(0).toUpperCase() || "U";
-  const [usage, setUsage] = useState<{ events: number; limit: number; domains: number; domainLimit: number } | null>(null);
+  const [usage, setUsage] = useState<{ events: number; limit: number; domains: number; domainLimit: number; billingPeriodStart?: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -80,7 +80,7 @@ export function ProjectSidebar({
 
   const usagePct = usage ? Math.min((usage.events / (usage.limit || 1)) * 100, 100) : 0;
   const domainPct = usage ? Math.min((usage.domains / (usage.domainLimit || 1)) * 100, 100) : 0;
-  const resetDate = nextBillingReset();
+  const resetDate = nextBillingReset(usage?.billingPeriodStart);
 
   return (
     <>
@@ -289,8 +289,9 @@ export function ProjectSidebar({
   );
 }
 
-function nextBillingReset(): string {
-  const now = new Date();
-  const d = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+function nextBillingReset(start?: string): string {
+  const base = start ? new Date(start) : new Date();
+  const d = new Date(base);
+  d.setMonth(d.getMonth() + 1);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }

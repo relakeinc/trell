@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PrismaMembershipRepo, ProjectAccessService } from "@/lib/authz";
 import { parseDomains, sanitizeDomains, normalizeDomain } from "@/lib/domains";
-import { getPlanLimits } from "@/lib/plans";
+import { getProjectOwnerPlan } from "@/lib/usage";
 
 async function authorize(projectId: string, userId: string): Promise<boolean> {
   const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
@@ -20,20 +20,20 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
 
   const project = await prisma.project.findUnique({
     where: { id },
-    select: { id: true, name: true, slug: true, plan: true, publishableKey: true, domains: true, logoVariant: true, createdAt: true },
+    select: { id: true, name: true, slug: true, publishableKey: true, domains: true, logoVariant: true, createdAt: true },
   });
   if (!project) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
+  const { plan, limits, billingPeriodStart } = await getProjectOwnerPlan(id);
   const lastEvent = await prisma.event.aggregate({ where: { projectId: id }, _max: { ts: true } });
   const totalEvents = await prisma.event.count({ where: { projectId: id } });
-  const limits = getPlanLimits(project.plan);
 
   return NextResponse.json({
     project: {
       id: project.id,
       name: project.name,
       slug: project.slug,
-      plan: project.plan,
+      plan,
       pk: project.publishableKey,
       domains: parseDomains(project.domains),
       logoVariant: project.logoVariant,
@@ -48,6 +48,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
       limit: limits.events,
       domains: parseDomains(project.domains).length,
       domainLimit: limits.domains,
+      billingPeriodStart: billingPeriodStart.toISOString(),
     },
   });
 }
@@ -61,10 +62,10 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   if (!(await authorize(id, session.user.id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   const body = (await req.json()) as { name?: string; slug?: string; addDomain?: string; removeDomain?: string; logoVariant?: number };
-  const project = await prisma.project.findUnique({ where: { id }, select: { domains: true, slug: true, plan: true } });
+  const project = await prisma.project.findUnique({ where: { id }, select: { domains: true, slug: true } });
   if (!project) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
-  const limits = getPlanLimits(project.plan);
+  const { limits } = await getProjectOwnerPlan(id);
   const updateData: Record<string, unknown> = {};
 
   // Update name

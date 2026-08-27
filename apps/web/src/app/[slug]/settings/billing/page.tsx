@@ -3,10 +3,16 @@
 import Link from "next/link";
 import { useProject } from "../_components/ProjectContext";
 
-function resetDate(): string {
-  const now = new Date();
-  const d = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+function addMonths(date: Date, months: number): Date {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+function resetDateFrom(start?: string): string {
+  const base = start ? new Date(start) : new Date();
+  const reset = addMonths(base, 1);
+  return reset.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
 export default function BillingSettingsPage() {
@@ -14,6 +20,7 @@ export default function BillingSettingsPage() {
 
   if (loading || !usage || !project) return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
 
+  const resetDate = resetDateFrom(usage.billingPeriodStart);
   const eventPct = Math.min((usage.events / (usage.limit || 1)) * 100, 100);
   const domainPct = Math.min((usage.domains / (usage.domainLimit || 1)) * 100, 100);
   const isFree = project.plan === "free";
@@ -75,7 +82,7 @@ export default function BillingSettingsPage() {
           </div>
         </div>
         <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
-          <span className="text-xs text-trell-ink-muted">Resets {resetDate()}</span>
+          <span className="text-xs text-trell-ink-muted">Resets {resetDate}</span>
           {isFree && <span className="text-xs text-trell-ink-muted">Upgrade to Pro for 50K events/mo</span>}
         </div>
       </div>

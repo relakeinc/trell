@@ -26,6 +26,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   onboardingStep Int      @default(0) // 0=not started, 1=project created, 2=keys seen, 3=done
+  // Account-level billing (applies to all projects of this user)
+  plan            String?
+  polarCustomerId String?
+  subscriptionId  String?
+  planExpiresAt   DateTime?
+  billingPeriodStart DateTime @default(now()) // when the current usage period began
   accounts      Account[]
   sessions      Session[]
   memberships   ProjectUser[]

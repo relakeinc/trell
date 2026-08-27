@@ -19,6 +19,7 @@ export interface UsageData {
   limit: number;
   domains: number;
   domainLimit: number;
+  billingPeriodStart?: string;
 }
 
 interface ProjectContextValue {

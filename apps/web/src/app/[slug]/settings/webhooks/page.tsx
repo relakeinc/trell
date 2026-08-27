@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import { Icon } from "@/components/Icon";
 import { useProject } from "../_components/ProjectContext";
@@ -113,13 +114,34 @@ export default function WebhooksSettingsPage() {
 
   if (projectLoading || loading) return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
 
+  const isFree = project?.plan === "free";
+
   return (
     <div className="flex flex-col gap-6">
       <div className="px-1 pt-2">
         <h1 className="text-lg font-semibold text-trell-ink">Webhooks</h1>
       </div>
 
+      {/* Free plan gating */}
+      {isFree && (
+        <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-trell-line bg-white px-6 py-12 text-center">
+          <div className="flex size-12 items-center justify-center rounded-xl bg-neutral-100">
+            <Icon name="webhooks" size={24} className="text-neutral-500" />
+          </div>
+          <div>
+            <div className="text-base font-medium text-trell-ink">Webhooks</div>
+            <p className="mx-auto mt-1 max-w-md text-sm text-trell-ink-muted">
+              Receive real-time event notifications on your own infrastructure. Webhooks are available on the Pro plan.
+            </p>
+          </div>
+          <Link href={`/${project?.slug}/settings/billing/plans`} className="trell-btn-primary h-9 gap-1.5 px-4 text-xs">
+            Upgrade to Pro
+          </Link>
+        </div>
+      )}
+
       {/* Create Webhook */}
+      {!isFree && (
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
         <div className="border-b border-trell-line px-4 py-3">
           <span className="text-sm font-medium text-trell-ink">Create Webhook</span>
@@ -164,8 +186,10 @@ export default function WebhooksSettingsPage() {
           <button disabled={creating || !url.trim() || selectedEvents.length === 0} onClick={createWebhook} className="trell-btn-outline h-8 gap-1.5 text-xs disabled:opacity-40">{creating ? "Creating…" : "Save Changes"}</button>
         </div>
       </div>
+      )}
 
       {/* Existing Webhooks */}
+      {!isFree && (
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
         <div className="border-b border-trell-line px-4 py-3">
           <span className="text-sm font-medium text-trell-ink">Existing Webhooks</span>
@@ -211,9 +235,10 @@ export default function WebhooksSettingsPage() {
           )}
         </div>
       </div>
+      )}
 
       {/* Delivery Log */}
-      {deliveryLog && (
+      {!isFree && deliveryLog && (
         <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
           <div className="border-b border-trell-line px-4 py-3">
             <span className="text-sm font-medium text-trell-ink">Delivery Log</span>
