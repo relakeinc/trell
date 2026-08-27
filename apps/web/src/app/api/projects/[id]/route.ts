@@ -26,7 +26,25 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
 
   const { plan, limits, billingPeriodStart } = await getProjectOwnerPlan(id);
   const lastEvent = await prisma.event.aggregate({ where: { projectId: id }, _max: { ts: true } });
-  const totalEvents = await prisma.event.count({ where: { projectId: id } });
+
+  // Account-level usage: count across ALL projects owned by this user
+  const ownerMemberships = await prisma.projectUser.findMany({
+    where: { userId: session.user.id, role: "owner" },
+    select: { projectId: true },
+  });
+  const allProjectIds = ownerMemberships.map((m) => m.projectId);
+
+  const totalEvents = await prisma.event.count({ where: { projectId: { in: allProjectIds } } });
+
+  // Count unique domains across all owned projects
+  const allProjects = await prisma.project.findMany({
+    where: { id: { in: allProjectIds } },
+    select: { domains: true },
+  });
+  const allDomains = new Set<string>();
+  for (const p of allProjects) {
+    for (const d of parseDomains(p.domains)) allDomains.add(d);
+  }
 
   return NextResponse.json({
     project: {
@@ -46,7 +64,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
     usage: {
       events: totalEvents,
       limit: limits.events,
-      domains: parseDomains(project.domains).length,
+      domains: allDomains.size,
       domainLimit: limits.domains,
       billingPeriodStart: billingPeriodStart.toISOString(),
     },
