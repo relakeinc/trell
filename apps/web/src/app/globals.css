@@ -16,86 +16,132 @@
 
 .dark {
   color-scheme: dark;
+
+  /* Core palette */
+  --trell-dark-bg: #1a1c20;
+  --trell-dark-surface: #22252a;
+  --trell-dark-surface-2: #2a2d33;
+  --trell-dark-border: #363940;
+  --trell-dark-text: #e4e4e7;
+  --trell-dark-text-muted: #a0a4ad;
+  --trell-dark-accent: #595d66;
 }
 
 .dark body {
-  background-color: rgb(23 23 23);
-  color: rgb(245 245 245);
+  background-color: var(--trell-dark-bg);
+  color: var(--trell-dark-text);
 }
 
 .dark .trell-page {
-  background-color: rgb(23 23 23);
+  background-color: var(--trell-dark-bg);
 }
 
+/* Sidebar */
+.dark aside {
+  background-color: var(--trell-dark-surface) !important;
+}
+
+/* Cards and panels */
 .dark .trell-card,
 .dark [class*="bg-white"] {
-  background-color: rgb(38 38 38) !important;
+  background-color: var(--trell-dark-surface-2) !important;
+  border-color: var(--trell-dark-border) !important;
 }
 
+/* Dividers */
 .dark [class*="border-trell-line"],
 .dark [class*="border-neutral-200"] {
-  border-color: rgb(64 64 64) !important;
+  border-color: var(--trell-dark-border) !important;
 }
 
+/* Inputs */
 .dark .trell-input {
-  border-color: rgb(82 82 82);
-  background-color: rgb(38 38 38);
-  color: rgb(245 245 245);
+  border-color: var(--trell-dark-border);
+  background-color: var(--trell-dark-surface);
+  color: var(--trell-dark-text);
 }
 
 .dark .trell-input::placeholder {
-  color: rgb(163 163 163);
+  color: var(--trell-dark-text-muted);
 }
 
 .dark .trell-input:focus {
-  border-color: rgb(96 165 250);
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+  border-color: #6b7280;
+  box-shadow: 0 0 0 3px rgba(89, 93, 102, 0.25);
 }
 
+/* Buttons */
 .dark .trell-btn-primary {
-  border-color: rgb(64 64 64);
-  background-color: rgb(245 245 245);
-  color: rgb(23 23 23);
+  border-color: var(--trell-dark-accent);
+  background-color: var(--trell-dark-accent);
+  color: white;
 }
 
 .dark .trell-btn-primary:hover {
-  background-color: rgb(229 229 229);
+  background-color: #6b7080;
 }
 
 .dark .trell-btn-outline {
-  border-color: rgb(82 82 82);
-  color: rgb(212 212 212);
+  border-color: var(--trell-dark-border);
+  color: var(--trell-dark-text);
 }
 
 .dark .trell-btn-outline:hover {
-  background-color: rgb(38 38 38);
+  background-color: var(--trell-dark-surface-2);
 }
 
+/* Text colors */
 .dark [class*="text-trell-ink"],
+.dark [class*="text-trell-ink-default"],
 .dark [class*="text-neutral-900"],
 .dark [class*="text-neutral-800"],
 .dark [class*="text-neutral-700"] {
-  color: rgb(245 245 245) !important;
+  color: var(--trell-dark-text) !important;
 }
 
 .dark [class*="text-trell-ink-muted"],
 .dark [class*="text-neutral-500"],
 .dark [class*="text-neutral-400"] {
-  color: rgb(163 163 163) !important;
+  color: var(--trell-dark-text-muted) !important;
 }
 
-.dark [class*="bg-neutral-50"],
+/* Subtle backgrounds */
+.dark [class*="bg-neutral-50"] {
+  background-color: var(--trell-dark-surface) !important;
+}
+
 .dark [class*="bg-neutral-100"] {
-  background-color: rgb(38 38 38) !important;
+  background-color: var(--trell-dark-surface) !important;
 }
 
+/* Dividers between rows */
 .dark [class*="divide-trell-line"] > * + * {
-  border-color: rgb(64 64 64) !important;
+  border-color: var(--trell-dark-border) !important;
 }
 
-.dark .sidebar,
-.dark [class*="bg-neutral-100"][class*="rounded-xl"] {
-  background-color: rgb(28 28 28) !important;
+/* Table rows */
+.dark .trell-table tbody tr:hover {
+  background-color: var(--trell-dark-surface) !important;
+}
+
+/* Dropdowns / overlays */
+.dark [class*="bg-white"][class*="shadow"] {
+  background-color: var(--trell-dark-surface-2) !important;
+  border-color: var(--trell-dark-border) !important;
+}
+
+/* KPI metric colored dots — keep vibrant */
+.dark [class*="bg-blue-500"],
+.dark [class*="bg-green-600"],
+.dark [class*="bg-emerald-400"],
+.dark [class*="bg-amber-400"],
+.dark [class*="bg-red-400"],
+.dark [class*="bg-violet-400"],
+.dark [class*="bg-cyan-400"],
+.dark [class*="bg-purple-500"],
+.dark [class*="bg-orange-500"],
+.dark [class*="bg-teal-600"] {
+  opacity: 1;
 }
 
 body {
