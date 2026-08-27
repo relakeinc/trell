@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { EventBadge } from "@/components/EventBadge";
+import { AreaChart } from "@/components/AreaChart";
 import { useProjectId, useProjectStats, useProjectSeries, useProjectBreakdown, useProjectForms, useProjectEvents } from "@/lib/hooks";
-import { localInput, pct, humanMs, fmtTime, fmtShortDate, rangeQs } from "@/lib/format";
+import { localInput, pct, humanMs, fmtTime, rangeQs } from "@/lib/format";
 
 const DIMS = ["page", "utm_source", "utm_medium", "device", "browser", "os"] as const;
 const DIM_LABEL: Record<string, string> = {
@@ -40,38 +41,6 @@ export default function AnalyticsPage() {
 
   const loading = projectLoading || statsLoading;
   const error = statsError ? "Failed to load analytics" : statsData?.error?.message ?? null;
-
-  const areaMax = useMemo(() => Math.max(1, ...series.map((p) => p.views)), [series]);
-  const chartPath = useMemo(() => {
-    const n = series.length;
-    if (n === 0) return { line: "", area: "" };
-    const pts = series.map((p, i) => ({
-      x: (i / (n - 1)) * 90 + 5,
-      y: 100 - (p.views / areaMax) * 100,
-    }));
-    if (n === 1) {
-      const y = pts[0]!.y;
-      return { line: `M5,${y} L95,${y}`, area: `M5,${y} L95,${y} L95,100 L5,100 Z` };
-    }
-    const catmull = pts.map((p, i) => {
-      const prev = pts[i - 1] ?? p;
-      const next = pts[i + 1] ?? p;
-      const tension = 0.3;
-      const cp1x = p.x - (next.x - prev.x) * tension;
-      const cp1y = p.y - (next.y - prev.y) * tension;
-      const cp2x = p.x + (next.x - prev.x) * tension;
-      const cp2y = p.y + (next.y - prev.y) * tension;
-      return { p, cp1x, cp1y, cp2x, cp2y };
-    });
-    let line = `M${catmull[0]!.p.x},${catmull[0]!.p.y}`;
-    for (let i = 1; i < catmull.length; i++) {
-      const c = catmull[i]!;
-      const prev = catmull[i - 1]!;
-      line += ` C${prev.cp2x},${prev.cp2y} ${c.cp1x},${c.cp1y} ${c.p.x},${c.p.y}`;
-    }
-    const area = `${line} L${catmull[catmull.length - 1]!.p.x},100 L${catmull[0]!.p.x},100 Z`;
-    return { line, area };
-  }, [series, areaMax]);
 
   const totalBreakdown = breakdown.reduce((a, r) => a + r.count, 0);
 
@@ -114,48 +83,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Area chart */}
-      <div className="mb-6 rounded-xl border border-trell-line bg-white p-4">
-        <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="font-medium text-trell-ink">Form views over time</span>
-          <span className="text-xs text-trell-ink-muted">{series.length} buckets</span>
-        </div>
-        <div className="flex">
-          {series.length > 0 && (
-            <div className="flex w-8 shrink-0 flex-col justify-between py-1 pr-1 text-right text-2xs text-trell-ink-muted">
-              <span>{areaMax}</span>
-              <span>{Math.round(areaMax * 0.75)}</span>
-              <span>{Math.round(areaMax * 0.5)}</span>
-              <span>{Math.round(areaMax * 0.25)}</span>
-              <span>0</span>
-            </div>
-          )}
-          <svg viewBox="0 0 100 50" preserveAspectRatio="none" className="h-56 w-full">
-            <defs>
-              <linearGradient id="trell-area" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2563eb" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="#2563eb" stopOpacity="0.01" />
-              </linearGradient>
-            </defs>
-            {[0, 0.25, 0.5, 0.75, 1].map((pctVal) => (
-              <line key={pctVal} x1="0" y1={pctVal * 50} x2="100" y2={pctVal * 50} stroke="#e5e7eb" strokeWidth="0.3" strokeDasharray={pctVal === 0 ? "0" : "0.8 0.8"} />
-            ))}
-            {chartPath.area && <path d={chartPath.area} fill="url(#trell-area)" />}
-            {chartPath.line && <path d={chartPath.line} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
-          </svg>
-        </div>
-        {seriesLoading && !series.length && (
-          <p className="py-8 text-center text-sm text-trell-ink-muted">Loading…</p>
-        )}
-        {!seriesLoading && series.length === 0 && (
-          <p className="py-8 text-center text-sm text-trell-ink-muted">No data available</p>
-        )}
-        {series.length > 0 && (
-          <div className="flex justify-between border-t border-trell-line px-1 pt-2 text-2xs text-trell-ink-muted">
-            <span>{fmtShortDate(series[0]!.date)}</span>
-            <span>{fmtShortDate(series[series.length - 1]!.date)}</span>
-          </div>
-        )}
-      </div>
+      <AreaChart series={series} loading={seriesLoading} />
 
       {/* 2x2 panels */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
