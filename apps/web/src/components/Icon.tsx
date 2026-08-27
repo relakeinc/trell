@@ -27,6 +27,9 @@ import {
   Send,
   Check,
   Layers,
+  Moon,
+  Search,
+  Info,
   type LucideIcon,
 } from "lucide-react";
 import type { JSX } from "react";
@@ -208,6 +211,9 @@ const ICON_MAP: Record<string, LucideIcon | ((props: { size?: number | string; c
   "monitor-mobile": MonitorSmartphone,
   "export-arrow-01": Upload,
   "close-circle": XCircle,
+  moon: Moon,
+  search: Search,
+  info: Info,
   // Settings icons
   general: GeneralIcon,
   billing: BillingIcon,

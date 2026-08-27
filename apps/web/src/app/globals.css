@@ -14,6 +14,90 @@
   --border-card: rgb(0 0 0 / 0.08);
 }
 
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: rgb(23 23 23);
+  color: rgb(245 245 245);
+}
+
+.dark .trell-page {
+  background-color: rgb(23 23 23);
+}
+
+.dark .trell-card,
+.dark [class*="bg-white"] {
+  background-color: rgb(38 38 38) !important;
+}
+
+.dark [class*="border-trell-line"],
+.dark [class*="border-neutral-200"] {
+  border-color: rgb(64 64 64) !important;
+}
+
+.dark .trell-input {
+  border-color: rgb(82 82 82);
+  background-color: rgb(38 38 38);
+  color: rgb(245 245 245);
+}
+
+.dark .trell-input::placeholder {
+  color: rgb(163 163 163);
+}
+
+.dark .trell-input:focus {
+  border-color: rgb(96 165 250);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.dark .trell-btn-primary {
+  border-color: rgb(64 64 64);
+  background-color: rgb(245 245 245);
+  color: rgb(23 23 23);
+}
+
+.dark .trell-btn-primary:hover {
+  background-color: rgb(229 229 229);
+}
+
+.dark .trell-btn-outline {
+  border-color: rgb(82 82 82);
+  color: rgb(212 212 212);
+}
+
+.dark .trell-btn-outline:hover {
+  background-color: rgb(38 38 38);
+}
+
+.dark [class*="text-trell-ink"],
+.dark [class*="text-neutral-900"],
+.dark [class*="text-neutral-800"],
+.dark [class*="text-neutral-700"] {
+  color: rgb(245 245 245) !important;
+}
+
+.dark [class*="text-trell-ink-muted"],
+.dark [class*="text-neutral-500"],
+.dark [class*="text-neutral-400"] {
+  color: rgb(163 163 163) !important;
+}
+
+.dark [class*="bg-neutral-50"],
+.dark [class*="bg-neutral-100"] {
+  background-color: rgb(38 38 38) !important;
+}
+
+.dark [class*="divide-trell-line"] > * + * {
+  border-color: rgb(64 64 64) !important;
+}
+
+.dark .sidebar,
+.dark [class*="bg-neutral-100"][class*="rounded-xl"] {
+  background-color: rgb(28 28 28) !important;
+}
+
 body {
   @apply bg-neutral-200 text-trell-ink-default antialiased;
 }

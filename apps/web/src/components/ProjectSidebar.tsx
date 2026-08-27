@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOutAction } from "@/app/actions";
+import { useTheme } from "@/lib/useTheme";
 import { Icon } from "./Icon";
 import { TrellLogo } from "./TrellLogo";
 import { WorkspaceIcon } from "./WorkspaceIcon";
@@ -294,13 +295,16 @@ export function ProjectSidebar({
               {userEmail}
             </span>
           </div>
-          <button
-            onClick={() => void signOutAction()}
-            className="flex size-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
-            title="Sign out"
-          >
-            <Icon name="logout-01" size={13} />
-          </button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <button
+              onClick={() => void signOutAction()}
+              className="flex size-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+              title="Sign out"
+            >
+              <Icon name="logout-01" size={13} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -310,6 +314,21 @@ export function ProjectSidebar({
       onCreated={() => router.refresh()}
     />
     </>
+  );
+}
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  return (
+    <button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className="flex size-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      <Icon name="moon" size={13} className={`transition-transform duration-200 ${isDark ? "rotate-0" : "rotate-180"}`} />
+    </button>
   );
 }
 
