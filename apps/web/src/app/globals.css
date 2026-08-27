@@ -244,4 +244,91 @@ body {
   }
 }
 
+/* ── Page transition ─────────────────────────────────────── */
+@keyframes trell-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.trell-content {
+  animation: trell-page-in 0.25s ease-out;
+}
+
+/* ── Input focus glow ────────────────────────────────────── */
+.trell-input {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.trell-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ── Table row hover ─────────────────────────────────────── */
+.trell-table tbody tr {
+  transition: background-color 0.1s ease, transform 0.15s ease;
+}
+
+.trell-table tbody tr:hover {
+  background-color: rgb(249 250 251);
+  transform: translateX(2px);
+}
+
+/* ── Skeleton loading pulse ──────────────────────────────── */
+@keyframes trell-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.trell-skeleton {
+  animation: trell-skeleton-pulse 1.5s ease-in-out infinite;
+  border-radius: 0.375rem;
+  background-color: rgb(229 229 229);
+}
+
+/* ── Success check animation ─────────────────────────────── */
+@keyframes trell-check-pop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.trell-check-animate {
+  animation: trell-check-pop 0.3s ease-out;
+}
+
+/* ── Sidebar nav hover ───────────────────────────────────── */
+.trell-nav-item {
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.trell-nav-item:hover {
+  transform: translateX(2px);
+}
+
+/* ── Badge pulse for live indicator ──────────────────────── */
+@keyframes trell-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+
+.trell-dot-pulse {
+  animation: trell-dot-pulse 2s ease-in-out infinite;
+}
+
+/* ── Toast progress bar ──────────────────────────────────── */
+@keyframes trell-toast-progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.trell-toast-progress {
+  animation: trell-toast-progress 3s linear forwards;
+}
 

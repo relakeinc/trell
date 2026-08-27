@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { AnimatedNumber } from "@/components/AnimatedNumber";
+import { EventBadge } from "@/components/EventBadge";
 import { useProjectId, useProjectStats, useProjectSeries, useProjectBreakdown, useProjectForms, useProjectEvents } from "@/lib/hooks";
 import { localInput, pct, humanMs, fmtTime, fmtShortDate, rangeQs } from "@/lib/format";
-import { eventLabel } from "@/lib/labels";
 
 const DIMS = ["page", "utm_source", "utm_medium", "device", "browser", "os"] as const;
 const DIM_LABEL: Record<string, string> = {
@@ -172,7 +173,7 @@ export default function AnalyticsPage() {
         </PanelCard>
 
         <PanelCard title="Forms">
-          <table className="w-full text-sm">
+          <table className="trell-table w-full text-sm">
             <tbody>
               {forms.slice(0, 10).map((f) => (
                 <tr key={f.id} className="border-b border-trell-line last:border-0">
@@ -189,11 +190,11 @@ export default function AnalyticsPage() {
         </PanelCard>
 
         <PanelCard title="Recent events">
-          <table className="w-full text-sm">
+          <table className="trell-table w-full text-sm">
             <tbody>
               {events.slice(0, 8).map((e, i) => (
                 <tr key={i} className="border-b border-trell-line last:border-0">
-                  <td className="py-2 text-trell-ink-default">{eventLabel(e.type)}</td>
+                  <td className="py-2"><EventBadge type={e.type} /></td>
                   <td className="py-2 text-trell-ink-muted">{e.formId ?? "\u2013"}</td>
                   <td className="py-2 text-right text-trell-ink-muted">{fmtTime(e.ts)}</td>
                 </tr>
@@ -221,6 +222,7 @@ export default function AnalyticsPage() {
 // ── Shared sub-components ──────────────────────────────────
 
 function MetricCell({ label, value, loading, color }: { label: string; value: string | number; loading: boolean; color: string }) {
+  const isNumeric = typeof value === "number";
   return (
     <div className="relative flex h-full min-w-0 flex-col px-4 py-3 sm:px-8 sm:py-6">
       <div className="flex items-center gap-2.5 text-sm text-neutral-600">
@@ -229,7 +231,9 @@ function MetricCell({ label, value, loading, color }: { label: string; value: st
       </div>
       <div className="mt-1 flex h-12 items-center">
         {loading && (value === 0 || value === "0") ? (
-          <div className="h-9 w-16 animate-pulse rounded-md bg-neutral-200" />
+          <div className="trell-skeleton h-9 w-16" />
+        ) : isNumeric ? (
+          <AnimatedNumber value={value} className="text-xl font-medium tabular-nums text-trell-ink sm:text-3xl" />
         ) : (
           <span className="text-xl font-medium tabular-nums text-trell-ink sm:text-3xl">{value}</span>
         )}
@@ -290,10 +294,17 @@ function BarList({ rows, total, color }: { rows: { k: string; n: number }[]; tot
 }
 
 function MiniStat({ label, value, loading }: { label: string; value: string | number; loading?: boolean }) {
+  const isNumeric = typeof value === "number";
   return (
     <div className="rounded-lg border border-trell-line bg-white p-3">
       <div className="text-xl font-medium tabular-nums text-trell-ink">
-        {loading && value === 0 ? "\u2026" : value}
+        {loading && value === 0 ? (
+          <span className="trell-skeleton inline-block h-6 w-12" />
+        ) : isNumeric ? (
+          <AnimatedNumber value={value} />
+        ) : (
+          value
+        )}
       </div>
       <div className="mt-1 text-2xs text-neutral-500">{label}</div>
     </div>

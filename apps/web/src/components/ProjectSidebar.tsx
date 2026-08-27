@@ -184,7 +184,7 @@ export function ProjectSidebar({
                     key={item.href + item.label}
                     href={href}
                     onMouseEnter={() => prefetchPage(item.href)}
-                    className={`group flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[14px] leading-none transition-all duration-100 ${
+                    className={`trell-nav-item group flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[14px] leading-none ${
                       active
                         ? "bg-blue-50 font-medium text-blue-600"
                         : "text-neutral-600 hover:bg-neutral-200/70 hover:text-neutral-900"

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/Icon";
+import { EventBadge } from "@/components/EventBadge";
 import { useProjectId, useProjectEvents } from "@/lib/hooks";
 import { localInput, fmtTime } from "@/lib/format";
 import { eventLabel } from "@/lib/labels";
@@ -54,7 +55,7 @@ export default function EventsPage() {
       </header>
 
       <div className="trell-card p-4">
-        <table className="w-full text-sm">
+        <table className="trell-table w-full text-sm">
           <thead>
             <tr className="border-b border-trell-line text-left text-xs text-trell-ink-muted">
               <th className="pb-2 font-medium">Type</th>
@@ -66,7 +67,7 @@ export default function EventsPage() {
           <tbody>
             {events.map((e, i) => (
               <tr key={i} className="border-b border-trell-line last:border-0">
-                <td className="py-2 text-trell-ink-default">{eventLabel(e.type)}</td>
+                <td className="py-2"><EventBadge type={e.type} /></td>
                 <td className="py-2 text-trell-ink-muted">{e.formId ?? "\u2013"}</td>
                 <td className="py-2 text-trell-ink-muted">{e.pagePath}</td>
                 <td className="py-2 text-right text-trell-ink-muted">{fmtTime(e.ts)}</td>
