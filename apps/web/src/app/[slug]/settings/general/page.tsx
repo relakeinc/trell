@@ -42,68 +42,68 @@ export default function GeneralSettingsPage() {
 
       {/* Workspace Name */}
       <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
-        <div className="p-5 pb-0">
-          <div className="text-sm font-semibold text-trell-ink">Workspace Name</div>
-          <div className="mt-1 text-sm text-trell-ink-muted">This is the name of your workspace on Trell.</div>
-          <div className="mt-4">
-            <input
-              value={nameValue}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={32}
-              className="trell-input h-10 max-w-md"
-            />
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          const ok = await toast.promise(
+            saveProject({ name: nameValue }),
+            { loading: "Saving…", success: "Name updated", error: "Failed to save" }
+          );
+          if (ok) setName("");
+        }}>
+          <div className="p-5 pb-0">
+            <div className="text-sm font-semibold text-trell-ink">Workspace Name</div>
+            <div className="mt-1 text-sm text-trell-ink-muted">This is the name of your workspace on Trell.</div>
+            <div className="mt-4">
+              <input
+                value={nameValue}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={32}
+                className="trell-input h-10 max-w-md"
+              />
+            </div>
           </div>
-        </div>
-        <div className="mt-4 flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
-          <span className="text-xs text-trell-ink-muted">Max 32 characters.</span>
-          <button
-            onClick={async () => {
-              const ok = await toast.promise(
-                saveProject({ name: nameValue }),
-                { loading: "Saving…", success: "Name updated", error: "Failed to save" }
-              );
-              if (ok) setName("");
-            }}
-            className="trell-btn-outline h-8 cursor-pointer px-3 text-xs"
-          >
-            Save Changes
-          </button>
-        </div>
+          <div className="mt-4 flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
+            <span className="text-xs text-trell-ink-muted">Max 32 characters.</span>
+            <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
+              Save Changes
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* Workspace Slug */}
       <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
-        <div className="p-5 pb-0">
-          <div className="text-sm font-semibold text-trell-ink">Workspace Slug</div>
-          <div className="mt-1 text-sm text-trell-ink-muted">This is your workspace&apos;s unique slug on Trell.</div>
-          <div className="mt-4">
-            <input
-              value={slugValue}
-              onChange={(e) => setSlug(e.target.value)}
-              maxLength={48}
-              className="trell-input h-10 max-w-md"
-            />
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          const ok = await toast.promise(
+            saveProject({ slug: slugValue }),
+            { loading: "Saving…", success: "Slug updated", error: "Failed to save" }
+          );
+          if (ok) setSlug("");
+        }}>
+          <div className="p-5 pb-0">
+            <div className="text-sm font-semibold text-trell-ink">Workspace Slug</div>
+            <div className="mt-1 text-sm text-trell-ink-muted">This is your workspace&apos;s unique slug on Trell.</div>
+            <div className="mt-4">
+              <input
+                value={slugValue}
+                onChange={(e) => setSlug(e.target.value)}
+                maxLength={48}
+                className="trell-input h-10 max-w-md"
+              />
+            </div>
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-trell-ink-muted">
+              <Icon name="globe" size={14} />
+              <span>{getBaseDomain()}/<span className="font-medium text-trell-ink">{slugValue}</span></span>
+            </div>
           </div>
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-trell-ink-muted">
-            <Icon name="globe" size={14} />
-            <span>{getBaseDomain()}/<span className="font-medium text-trell-ink">{slugValue}</span></span>
+          <div className="mt-4 flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
+            <span className="text-xs text-trell-ink-muted">Only lowercase letters, numbers, and dashes. Max 48 characters.</span>
+            <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
+              Save Changes
+            </button>
           </div>
-        </div>
-        <div className="mt-4 flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
-          <span className="text-xs text-trell-ink-muted">Only lowercase letters, numbers, and dashes. Max 48 characters.</span>
-          <button
-            onClick={async () => {
-              const ok = await toast.promise(
-                saveProject({ slug: slugValue }),
-                { loading: "Saving…", success: "Slug updated", error: "Failed to save" }
-              );
-              if (ok) setSlug("");
-            }}
-            className="trell-btn-outline h-8 cursor-pointer px-3 text-xs"
-          >
-            Save Changes
-          </button>
-        </div>
+        </form>
       </div>
 
       {/* Workspace Logo */}
@@ -133,19 +133,17 @@ export default function GeneralSettingsPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-end border-t border-trell-line bg-neutral-50/80 px-5 py-3">
-          <button
-            onClick={async () => {
-              const ok = await toast.promise(
-                saveProject({ logoVariant }),
-                { loading: "Saving…", success: "Logo saved", error: "Failed to save" }
-              );
-            }}
-            className="trell-btn-outline h-8 cursor-pointer px-3 text-xs"
-          >
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          await toast.promise(
+            saveProject({ logoVariant }),
+            { loading: "Saving…", success: "Logo saved", error: "Failed to save" }
+          );
+        }} className="flex items-center justify-end border-t border-trell-line bg-neutral-50/80 px-5 py-3">
+          <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
             Save changes
           </button>
-        </div>
+        </form>
       </div>
 
       {/* Default View */}

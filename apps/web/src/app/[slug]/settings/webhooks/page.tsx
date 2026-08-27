@@ -143,30 +143,31 @@ export default function WebhooksSettingsPage() {
       {/* Create Webhook */}
       {!isFree && (
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
-        <div className="border-b border-trell-line px-4 py-3">
-          <span className="text-sm font-medium text-trell-ink">Create Webhook</span>
-        </div>
-        <div className="p-4">
-          <p className="mb-4 text-sm text-trell-ink-muted">Receive HTTP POST requests when events occur.</p>
-          <div className="flex flex-col gap-4">
-            <div>
-              <label className="mb-1 block text-xs text-trell-ink-muted">Endpoint URL</label>
-              <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://your-server.com/webhook" className="trell-input w-full max-w-lg" />
-            </div>
-            <div>
-              <label className="mb-2 block text-xs text-trell-ink-muted">Events to subscribe</label>
-              <div className="flex flex-col gap-2">
-                {AVAILABLE_EVENTS.map((event) => (
-                  <label
-                    key={event.value}
-                    className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors cursor-pointer ${
-                      selectedEvents.includes(event.value)
-                        ? "border-blue-200 bg-blue-50"
-                        : "border-trell-line hover:bg-neutral-50"
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
+        <form onSubmit={(e) => { e.preventDefault(); void createWebhook(); }}>
+          <div className="border-b border-trell-line px-4 py-3">
+            <span className="text-sm font-medium text-trell-ink">Create Webhook</span>
+          </div>
+          <div className="p-4">
+            <p className="mb-4 text-sm text-trell-ink-muted">Receive HTTP POST requests when events occur.</p>
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="mb-1 block text-xs text-trell-ink-muted">Endpoint URL</label>
+                <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://your-server.com/webhook" className="trell-input w-full max-w-lg" />
+              </div>
+              <div>
+                <label className="mb-2 block text-xs text-trell-ink-muted">Events to subscribe</label>
+                <div className="flex flex-col gap-2">
+                  {AVAILABLE_EVENTS.map((event) => (
+                    <label
+                      key={event.value}
+                      className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors cursor-pointer ${
+                        selectedEvents.includes(event.value)
+                          ? "border-blue-200 bg-blue-50"
+                          : "border-trell-line hover:bg-neutral-50"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
                       checked={selectedEvents.includes(event.value)}
                       onChange={() => toggleEvent(event.value)}
                       className="h-4 w-4 rounded border-trell-line text-blue-600 focus:ring-blue-500"
@@ -181,10 +182,11 @@ export default function WebhooksSettingsPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50 px-4 py-2.5">
-          <span className="text-xs text-trell-ink-muted">You&apos;ll receive a POST request for each matching event.</span>
-          <button disabled={creating || !url.trim() || selectedEvents.length === 0} onClick={createWebhook} className="trell-btn-outline h-8 gap-1.5 text-xs disabled:opacity-40">{creating ? "Creating…" : "Save Changes"}</button>
-        </div>
+          <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50 px-4 py-2.5">
+            <span className="text-xs text-trell-ink-muted">You&apos;ll receive a POST request for each matching event.</span>
+            <button type="submit" disabled={creating || !url.trim() || selectedEvents.length === 0} className="trell-btn-outline h-8 gap-1.5 text-xs disabled:opacity-40">{creating ? "Creating…" : "Save Changes"}</button>
+          </div>
+        </form>
       </div>
       )}
 

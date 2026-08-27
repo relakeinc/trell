@@ -1,34 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useState } from "react";
 import { Icon } from "@/components/Icon";
-
-interface Submission {
-  id: string;
-  type: string;
-  ts: string;
-  formId: string;
-  formName: string | null;
-  page: string;
-  visitorId: string;
-  fields: Record<string, unknown> | null;
-  device: string;
-  browser: string | null;
-  os: string | null;
-}
+import { useProjectId, useProjectSubmissions } from "@/lib/hooks";
 
 function fieldEntries(fields: unknown): [string, string][] {
   if (!fields || typeof fields !== "object") return [];
   const obj = fields as Record<string, unknown>;
 
-  // New format: properties.fields = {name: "John", email: "..."}
   if (obj.fields && typeof obj.fields === "object") {
     return Object.entries(obj.fields as Record<string, unknown>).map(([k, v]) => [k, String(v ?? "")]);
   }
 
-  // Old format: properties = {form: {id: "..."}, ...other keys}
-  // Extract everything except metadata keys
   const skip = new Set(["form"]);
   return Object.entries(obj)
     .filter(([k]) => !skip.has(k))
@@ -39,47 +22,20 @@ function fieldEntries(fields: unknown): [string, string][] {
 }
 
 export default function SubmissionsPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { projectId } = useProjectId();
+  const { data, isLoading } = useProjectSubmissions(projectId);
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Get project ID from slug
-      const listRes = await fetch("/api/projects");
-      const listData = await listRes.json();
-      const match = (listData.projects ?? []).find((p: { slug: string }) => p.slug === slug);
-      if (!match) { setLoading(false); return; }
-
-      const res = await fetch(`/api/projects/${match.id}/submissions`);
-      const data = await res.json();
-      setSubmissions(data.submissions ?? []);
-    } catch {
-      // silent
-    } finally {
-      setLoading(false);
-    }
-  }, [slug]);
-
-  useEffect(() => { void fetchData(); }, [fetchData]);
-
+  const submissions = data?.submissions ?? [];
   const formSubmissions = submissions.filter((s) => s.type === "form_submit" || s.type === "form_success");
 
   return (
     <div className="trell-content">
       <header className="trell-header -mx-6 -mt-3 mb-6 px-6 pt-6">
         <h1 className="text-base font-semibold text-trell-ink">Form Submissions</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={() => void fetchData()} className="trell-btn-outline h-9 gap-1.5">
-            <Icon name="refresh-right" size={16} className={loading ? "animate-spin" : ""} />
-            Refresh
-          </button>
-        </div>
       </header>
 
-      {loading ? (
+      {isLoading ? (
         <p className="py-8 text-center text-sm text-trell-ink-muted">Loading…</p>
       ) : formSubmissions.length === 0 ? (
         <div className="rounded-xl border border-trell-line bg-white p-8 text-center">

@@ -1,27 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useState } from "react";
 import { Icon } from "@/components/Icon";
+import { useProjectId, useProjectEvents } from "@/lib/hooks";
+import { localInput, fmtTime } from "@/lib/format";
 import { eventLabel } from "@/lib/labels";
 
-interface DrillEvent {
-  eventId: string;
-  type: string;
-  ts: string;
-  pagePath: string;
-  formId: string | null;
-  formName: string | null;
-  deviceType: string;
-  browser: string | null;
-  os: string | null;
-  sessionId: string;
-  visitorId: string;
-  utmSource: string | null;
-  utmMedium: string | null;
-}
-
-function exportEventsCSV(events: DrillEvent[]) {
+function exportEventsCSV(events: { type: string; formId: string | null; pagePath: string; deviceType: string; browser: string | null; os: string | null; ts: string; visitorId: string }[]) {
   const rows = [["Type", "Form", "Page", "Device", "Browser", "OS", "Time", "Visitor ID"]];
   for (const e of events) {
     rows.push([
@@ -45,54 +30,14 @@ function exportEventsCSV(events: DrillEvent[]) {
   URL.revokeObjectURL(url);
 }
 
-function fmtTime(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString(undefined, {
-      month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
-    });
-  } catch { return ""; }
-}
-
-function localInput(d: Date): string {
-  const p = (n: number) => (n < 10 ? "0" + n : "" + n);
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-
 export default function EventsPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const [projectId, setProjectId] = useState<string | null>(null);
-  const [events, setEvents] = useState<DrillEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { projectId } = useProjectId();
   const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
   const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000)));
 
-  useEffect(() => {
-    fetch("/api/projects")
-      .then((r) => r.json())
-      .then((d) => {
-        const p = (d.projects ?? []).find((x: { slug: string }) => x.slug === slug);
-        if (p) setProjectId(p.id);
-      })
-      .catch(() => {});
-  }, [slug]);
-
-  const fetchEvents = useCallback(async () => {
-    if (!projectId) return;
-    setLoading(true);
-    try {
-      const qs = new URLSearchParams();
-      if (from) qs.set("from", from);
-      if (to) qs.set("to", to);
-      const r = await fetch(`/api/projects/${projectId}/events?limit=50&${qs}`);
-      if (r.ok) {
-        const d = await r.json();
-        setEvents(d.events ?? []);
-      }
-    } catch { /* ignore */ }
-    setLoading(false);
-  }, [projectId, from, to]);
-
-  useEffect(() => { void fetchEvents(); }, [fetchEvents]);
+  const qs = `from=${from}&to=${to}`;
+  const { data, isLoading } = useProjectEvents(projectId, qs, 50);
+  const events = data?.events ?? [];
 
   return (
     <div className="trell-content">
@@ -122,17 +67,17 @@ export default function EventsPage() {
             {events.map((e, i) => (
               <tr key={i} className="border-b border-trell-line last:border-0">
                 <td className="py-2 text-trell-ink-default">{eventLabel(e.type)}</td>
-                <td className="py-2 text-trell-ink-muted">{e.formId ?? "–"}</td>
+                <td className="py-2 text-trell-ink-muted">{e.formId ?? "\u2013"}</td>
                 <td className="py-2 text-trell-ink-muted">{e.pagePath}</td>
                 <td className="py-2 text-right text-trell-ink-muted">{fmtTime(e.ts)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        {loading && events.length === 0 && (
+        {isLoading && events.length === 0 && (
           <p className="py-6 text-center text-sm text-trell-ink-muted">Loading…</p>
         )}
-        {!loading && events.length === 0 && (
+        {!isLoading && events.length === 0 && (
           <p className="py-6 text-center text-sm text-trell-ink-muted">No events yet</p>
         )}
       </div>

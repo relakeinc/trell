@@ -104,17 +104,19 @@ export default function ApiKeysSettingsPage() {
       )}
 
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
-        <div className="border-b border-trell-line px-4 py-3">
-          <span className="text-sm font-medium text-trell-ink">Create New Key</span>
-        </div>
-        <div className="p-4">
-          <p className="mb-3 text-sm text-trell-ink-muted">Create a new API key for server-side access.</p>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. production" className="trell-input max-w-sm" />
-        </div>
-        <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50 px-4 py-2.5">
-          <span className="text-xs text-trell-ink-muted">Give your key a descriptive name.</span>
-          <button disabled={creating || !name.trim()} onClick={createKey} className="trell-btn-outline h-8 gap-1.5 text-xs disabled:opacity-40">{creating ? "Creating…" : "Save Changes"}</button>
-        </div>
+        <form onSubmit={(e) => { e.preventDefault(); void createKey(); }}>
+          <div className="border-b border-trell-line px-4 py-3">
+            <span className="text-sm font-medium text-trell-ink">Create New Key</span>
+          </div>
+          <div className="p-4">
+            <p className="mb-3 text-sm text-trell-ink-muted">Create a new API key for server-side access.</p>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. production" className="trell-input max-w-sm" />
+          </div>
+          <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50 px-4 py-2.5">
+            <span className="text-xs text-trell-ink-muted">Give your key a descriptive name.</span>
+            <button type="submit" disabled={creating || !name.trim()} className="trell-btn-outline h-8 gap-1.5 text-xs disabled:opacity-40">{creating ? "Creating…" : "Save Changes"}</button>
+          </div>
+        </form>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">

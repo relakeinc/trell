@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOutAction } from "@/app/actions";
@@ -52,6 +53,7 @@ export function ProjectSidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const initial = userEmail.charAt(0).toUpperCase() || "U";
   const [usage, setUsage] = useState<{ events: number; limit: number; domains: number; domainLimit: number; billingPeriodStart?: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -66,6 +68,27 @@ export function ProjectSidebar({
       .then((d) => setUsage(d.usage))
       .catch(() => {});
   }, [projectSlug, projects]);
+
+  const project = projects.find((p) => p.slug === projectSlug);
+  const pid = project?.id;
+
+  function prefetchPage(href: string) {
+    if (!pid) return;
+    const qs = "from=" + new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10) + "&to=" + new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+    if (href === "analytics") {
+      queryClient.prefetchQuery({ queryKey: ["stats", pid, qs], queryFn: () => fetch(`/api/projects/${pid}/stats?${qs}`).then((r) => r.json()) });
+      queryClient.prefetchQuery({ queryKey: ["series", pid, "day", qs], queryFn: () => fetch(`/api/projects/${pid}/series?interval=day&${qs}`).then((r) => r.json()) });
+      queryClient.prefetchQuery({ queryKey: ["breakdown", pid, "page", qs], queryFn: () => fetch(`/api/projects/${pid}/breakdown?dimension=page&${qs}`).then((r) => r.json()) });
+      queryClient.prefetchQuery({ queryKey: ["forms", pid, qs], queryFn: () => fetch(`/api/projects/${pid}/forms?${qs}`).then((r) => r.json()) });
+      queryClient.prefetchQuery({ queryKey: ["events", pid, qs, 15], queryFn: () => fetch(`/api/projects/${pid}/events?limit=15&${qs}`).then((r) => r.json()) });
+    } else if (href === "events") {
+      queryClient.prefetchQuery({ queryKey: ["events", pid, qs, 50], queryFn: () => fetch(`/api/projects/${pid}/events?limit=50&${qs}`).then((r) => r.json()) });
+    } else if (href === "submissions") {
+      queryClient.prefetchQuery({ queryKey: ["submissions", pid], queryFn: () => fetch(`/api/projects/${pid}/submissions`).then((r) => r.json()) });
+    } else if (href === "funnels") {
+      queryClient.prefetchQuery({ queryKey: ["funnels", pid], queryFn: () => fetch(`/api/projects/${pid}/funnels`).then((r) => r.json()) });
+    }
+  }
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -160,6 +183,7 @@ export function ProjectSidebar({
                   <Link
                     key={item.href + item.label}
                     href={href}
+                    onMouseEnter={() => prefetchPage(item.href)}
                     className={`group flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[14px] leading-none transition-all duration-100 ${
                       active
                         ? "bg-blue-50 font-medium text-blue-600"

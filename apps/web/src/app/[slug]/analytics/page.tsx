@@ -1,66 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
+import { useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { useProjectId, useProjectStats, useProjectSeries, useProjectBreakdown, useProjectForms, useProjectEvents } from "@/lib/hooks";
+import { localInput, pct, humanMs, fmtTime, fmtShortDate, rangeQs } from "@/lib/format";
 import { eventLabel } from "@/lib/labels";
-
-interface Metrics {
-  events: number;
-  views: number;
-  starts: number;
-  submits: number;
-  successes: number;
-  abandons: number;
-  ctaClicks: number;
-  fieldInteractions: number;
-  sessions: number;
-  visitors: number;
-  conversionRate: number | null;
-  startConversionRate: number | null;
-  avgTimeToCompleteMs: number | null;
-  bounceRate: number | null;
-  pagesPerSession: number | null;
-  avgScrollDepth: number | null;
-  avgTimeOnPageMs: number | null;
-}
-
-interface TimelinePoint {
-  date: string;
-  views: number;
-  starts: number;
-  successes: number;
-}
-
-interface Row {
-  key: string;
-  count: number;
-}
-
-interface FormRow {
-  id: string;
-  name: string | null;
-  events: number;
-  successes: number;
-  conversionRate: number | null;
-}
-
-interface DrillEvent {
-  eventId: string;
-  type: string;
-  ts: string;
-  pagePath: string;
-  formId: string | null;
-  formName: string | null;
-  deviceType: string;
-  browser: string | null;
-  os: string | null;
-  sessionId: string;
-  visitorId: string;
-  utmSource: string | null;
-  utmMedium: string | null;
-}
 
 const DIMS = ["page", "utm_source", "utm_medium", "device", "browser", "os"] as const;
 const DIM_LABEL: Record<string, string> = {
@@ -72,120 +16,29 @@ const DIM_LABEL: Record<string, string> = {
   os: "OS",
 };
 
-function localInput(d: Date): string {
-  const p = (n: number) => (n < 10 ? "0" + n : "" + n);
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-
-function fmtTime(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  } catch {
-    return "";
-  }
-}
-
-function fmtShortDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return "";
-  }
-}
-
-function ago(iso: string | null): string {
-  if (!iso) return "";
-  const s = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
-  if (s < 60) return "just now";
-  const m = Math.floor(s / 60);
-  if (m < 60) return m + "m ago";
-  const h = Math.floor(m / 60);
-  if (h < 24) return h + "h ago";
-  return Math.floor(h / 24) + "d ago";
-}
-
 export default function AnalyticsPage() {
-  const { slug } = useParams<{ slug: string }>();
+  const { projectId, isLoading: projectLoading } = useProjectId();
   const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
-  const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000))); // tomorrow to cover all of today
+  const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000)));
   const [interval, setInterval] = useState("day");
   const [dim, setDim] = useState<(typeof DIMS)[number]>("page");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const [metrics, setMetrics] = useState<Metrics | null>(null);
-  const [series, setSeries] = useState<TimelinePoint[]>([]);
-  const [breakdown, setBreakdown] = useState<Row[]>([]);
-  const [forms, setForms] = useState<FormRow[]>([]);
-  const [events, setEvents] = useState<DrillEvent[]>([]);
+  const qs = useMemo(() => rangeQs(from, to), [from, to]);
 
-  const qs = useMemo(() => {
-    const p = new URLSearchParams();
-    if (from) p.set("from", from);
-    if (to) p.set("to", to);
-    return p.toString();
-  }, [from, to]);
+  const { data: statsData, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useProjectStats(projectId, qs);
+  const { data: seriesData, isLoading: seriesLoading } = useProjectSeries(projectId, interval, qs);
+  const { data: breakdownData } = useProjectBreakdown(projectId, dim, qs);
+  const { data: formsData } = useProjectForms(projectId, qs);
+  const { data: eventsData } = useProjectEvents(projectId, qs, 15);
 
-  const pct = (x: number | null) =>
-    x == null ? "–" : (x * 100).toFixed(x >= 0.1 ? 1 : 2) + "%";
-  const human = (ms: number | null) => {
-    if (ms == null) return "–";
-    const s = ms / 1000;
-    if (s < 60) return s.toFixed(1) + "s";
-    const m = s / 60;
-    return m < 60 ? m.toFixed(1) + "m" : (m / 60).toFixed(1) + "h";
-  };
+  const metrics = statsData?.metrics ?? null;
+  const series = seriesData?.series ?? [];
+  const breakdown = breakdownData?.rows ?? [];
+  const forms = formsData?.forms ?? [];
+  const events = eventsData?.events ?? [];
 
-  // We need the project ID — fetch from the API using slug
-  const [projectId, setProjectId] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/projects")
-      .then((r) => r.json())
-      .then((d) => {
-        const p = (d.projects ?? []).find((x: { slug: string }) => x.slug === slug);
-        if (p) setProjectId(p.id);
-      })
-      .catch(() => {});
-  }, [slug]);
-
-  const fetchAll = useCallback(async () => {
-    if (!projectId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const base = `/api/projects/${projectId}`;
-      const [s, se, b, f, e] = await Promise.all([
-        fetch(`${base}/stats?${qs}`).then((r) => r.json()),
-        fetch(`${base}/series?interval=${interval}&${qs}`).then((r) => r.json()),
-        fetch(`${base}/breakdown?dimension=${dim}&${qs}`).then((r) => r.json()),
-        fetch(`${base}/forms?${qs}`).then((r) => r.json()),
-        fetch(`${base}/events?limit=15&${qs}`).then((r) => r.json()),
-      ]);
-      if (s.error) throw new Error(s.error.message ?? s.error);
-      setMetrics(s.metrics);
-      setSeries(se.series ?? []);
-      setBreakdown(b.rows ?? []);
-      setForms(f.forms ?? []);
-      setEvents(e.events ?? []);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [projectId, qs, interval, dim]);
-
-  useEffect(() => {
-    void fetchAll();
-  }, [fetchAll]);
+  const loading = projectLoading || statsLoading;
+  const error = statsError ? "Failed to load analytics" : statsData?.error?.message ?? null;
 
   const areaMax = useMemo(() => Math.max(1, ...series.map((p) => p.views)), [series]);
   const chartPath = useMemo(() => {
@@ -228,10 +81,10 @@ export default function AnalyticsPage() {
         <h1 className="text-base font-semibold text-trell-ink">Analytics</h1>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => void fetchAll()}
+            onClick={() => void refetchStats()}
             className="trell-btn-outline h-9 gap-1.5"
           >
-            <Icon name="refresh-right" size={16} className={loading ? "animate-spin" : ""} />
+            <Icon name="refresh-right" size={16} className={statsLoading ? "animate-spin" : ""} />
             Refresh
           </button>
         </div>
@@ -248,15 +101,15 @@ export default function AnalyticsPage() {
         <MetricCell label="Form views" value={metrics?.views ?? 0} loading={loading} color="text-blue-500" />
         <MetricCell label="Conversions" value={metrics?.successes ?? 0} loading={loading} color="text-green-600" />
         <MetricCell label="Conversion rate" value={pct(metrics?.conversionRate ?? null)} loading={loading} color="text-blue-500" />
-        <MetricCell label="Avg time" value={human(metrics?.avgTimeToCompleteMs ?? null)} loading={loading} color="text-green-600" />
+        <MetricCell label="Avg time" value={humanMs(metrics?.avgTimeToCompleteMs ?? null)} loading={loading} color="text-green-600" />
       </div>
 
       {/* Secondary KPIs */}
       <div className="mb-6 grid grid-cols-2 divide-x divide-trell-line overflow-hidden rounded-xl border border-trell-line bg-white sm:grid-cols-4">
         <MetricCell label="Bounce rate" value={pct(metrics?.bounceRate ?? null)} loading={loading} color="text-orange-500" />
         <MetricCell label="Pages/session" value={(metrics?.pagesPerSession ?? 0).toFixed(1)} loading={loading} color="text-purple-500" />
-        <MetricCell label="Avg scroll" value={metrics?.avgScrollDepth != null ? Math.round(metrics.avgScrollDepth) + "%" : "—"} loading={loading} color="text-cyan-600" />
-        <MetricCell label="Avg time on page" value={human(metrics?.avgTimeOnPageMs ?? null)} loading={loading} color="text-teal-600" />
+        <MetricCell label="Avg scroll" value={metrics?.avgScrollDepth != null ? Math.round(metrics.avgScrollDepth) + "%" : "\u2014"} loading={loading} color="text-cyan-600" />
+        <MetricCell label="Avg time on page" value={humanMs(metrics?.avgTimeOnPageMs ?? null)} loading={loading} color="text-teal-600" />
       </div>
 
       {/* Area chart */}
@@ -266,7 +119,6 @@ export default function AnalyticsPage() {
           <span className="text-xs text-trell-ink-muted">{series.length} buckets</span>
         </div>
         <div className="flex">
-          {/* Y-axis labels */}
           {series.length > 0 && (
             <div className="flex w-8 shrink-0 flex-col justify-between py-1 pr-1 text-right text-2xs text-trell-ink-muted">
               <span>{areaMax}</span>
@@ -283,22 +135,17 @@ export default function AnalyticsPage() {
                 <stop offset="100%" stopColor="#2563eb" stopOpacity="0.01" />
               </linearGradient>
             </defs>
-            {/* Horizontal grid lines */}
-            {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
-              <line key={pct} x1="0" y1={pct * 50} x2="100" y2={pct * 50} stroke="#e5e7eb" strokeWidth="0.3" strokeDasharray={pct === 0 ? "0" : "0.8 0.8"} />
+            {[0, 0.25, 0.5, 0.75, 1].map((pctVal) => (
+              <line key={pctVal} x1="0" y1={pctVal * 50} x2="100" y2={pctVal * 50} stroke="#e5e7eb" strokeWidth="0.3" strokeDasharray={pctVal === 0 ? "0" : "0.8 0.8"} />
             ))}
-            {chartPath.area && (
-              <path d={chartPath.area} fill="url(#trell-area)" />
-            )}
-            {chartPath.line && (
-              <path d={chartPath.line} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-            )}
+            {chartPath.area && <path d={chartPath.area} fill="url(#trell-area)" />}
+            {chartPath.line && <path d={chartPath.line} fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />}
           </svg>
         </div>
-        {loading && !series.length && (
+        {seriesLoading && !series.length && (
           <p className="py-8 text-center text-sm text-trell-ink-muted">Loading…</p>
         )}
-        {!loading && series.length === 0 && (
+        {!seriesLoading && series.length === 0 && (
           <p className="py-8 text-center text-sm text-trell-ink-muted">No data available</p>
         )}
         {series.length > 0 && (
@@ -347,7 +194,7 @@ export default function AnalyticsPage() {
               {events.slice(0, 8).map((e, i) => (
                 <tr key={i} className="border-b border-trell-line last:border-0">
                   <td className="py-2 text-trell-ink-default">{eventLabel(e.type)}</td>
-                  <td className="py-2 text-trell-ink-muted">{e.formId ?? "–"}</td>
+                  <td className="py-2 text-trell-ink-muted">{e.formId ?? "\u2013"}</td>
                   <td className="py-2 text-right text-trell-ink-muted">{fmtTime(e.ts)}</td>
                 </tr>
               ))}
@@ -446,7 +293,7 @@ function MiniStat({ label, value, loading }: { label: string; value: string | nu
   return (
     <div className="rounded-lg border border-trell-line bg-white p-3">
       <div className="text-xl font-medium tabular-nums text-trell-ink">
-        {loading && value === 0 ? "…" : value}
+        {loading && value === 0 ? "\u2026" : value}
       </div>
       <div className="mt-1 text-2xs text-neutral-500">{label}</div>
     </div>

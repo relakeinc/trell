@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { FunnelBuilder } from "@/components/FunnelBuilder";
 import { FunnelView } from "@/components/FunnelView";
+import { useProjectId, useProjectFunnels, useFunnelLive, useFunnelMutations } from "@/lib/hooks";
+import { localInput } from "@/lib/format";
 
 interface SavedFunnel {
   id: string;
@@ -26,16 +27,9 @@ interface FunnelResult {
   steps: FunnelStep[];
 }
 
-function localInput(d: Date): string {
-  const p = (n: number) => (n < 10 ? "0" + n : "" + n);
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-
 export default function FunnelsPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const [projectId, setProjectId] = useState<string | null>(null);
-  const [savedFunnels, setSavedFunnels] = useState<SavedFunnel[]>([]);
-  const [activeFunnel, setActiveFunnel] = useState<(SavedFunnel & FunnelResult) | null>(null);
+  const { projectId } = useProjectId();
+  const [activeFunnelId, setActiveFunnelId] = useState<string | null>(null);
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editingFunnel, setEditingFunnel] = useState<SavedFunnel | null>(null);
   const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
@@ -43,64 +37,38 @@ export default function FunnelsPage() {
 
   const qs = `from=${from}&to=${to}`;
 
+  const { data: funnelsData } = useProjectFunnels(projectId);
+  const savedFunnels = funnelsData?.funnels ?? [];
+
+  const { data: liveData } = useFunnelLive(projectId, activeFunnelId, qs);
+
+  const { createFunnel, updateFunnel, deleteFunnel } = useFunnelMutations(projectId);
+
+  // Auto-select first funnel
   useEffect(() => {
-    fetch("/api/projects")
-      .then((r) => r.json())
-      .then((d) => {
-        const p = (d.projects ?? []).find((x: { slug: string }) => x.slug === slug);
-        if (p) setProjectId(p.id);
-      })
-      .catch(() => {});
-  }, [slug]);
-
-  const loadFunnels = useCallback(async () => {
-    if (!projectId) return;
-    try {
-      const r = await fetch(`/api/projects/${projectId}/funnels`);
-      if (r.ok) {
-        const d = await r.json();
-        setSavedFunnels(d.funnels ?? []);
-      }
-    } catch { /* ignore */ }
-  }, [projectId]);
-
-  useEffect(() => { void loadFunnels(); }, [loadFunnels]);
-
-  async function loadFunnelLive(f: SavedFunnel) {
-    if (!projectId) return;
-    try {
-      const r = await fetch(`/api/projects/${projectId}/funnel-live?funnelId=${f.id}&${qs}`);
-      if (r.ok) {
-        const d = await r.json();
-        setActiveFunnel({ ...f, totalSessions: d.totalSessions, steps: d.steps });
-      }
-    } catch { /* ignore */ }
-  }
-
-  async function saveFunnel(data: { name: string; steps: { eventType: string; formId?: string; label?: string; position: number }[] }) {
-    if (!projectId) return;
-    const method = editingFunnel ? "PATCH" : "POST";
-    const path = editingFunnel
-      ? `/api/projects/${projectId}/funnels/${editingFunnel.id}`
-      : `/api/projects/${projectId}/funnels`;
-    await fetch(path, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
-    setBuilderOpen(false);
-    setEditingFunnel(null);
-    await loadFunnels();
-  }
-
-  async function deleteFunnel(id: string) {
-    if (!projectId || !confirm("Delete this funnel?")) return;
-    await fetch(`/api/projects/${projectId}/funnels/${id}`, { method: "DELETE" });
-    if (activeFunnel?.id === id) setActiveFunnel(null);
-    await loadFunnels();
-  }
-
-  useEffect(() => {
-    if (savedFunnels.length > 0 && !activeFunnel) {
-      void loadFunnelLive(savedFunnels[0]!);
+    if (savedFunnels.length > 0 && !activeFunnelId) {
+      setActiveFunnelId(savedFunnels[0]!.id);
     }
-  }, [savedFunnels]);
+  }, [savedFunnels, activeFunnelId]);
+
+  const activeFunnel = activeFunnelId
+    ? savedFunnels.find((f) => f.id === activeFunnelId) && liveData
+      ? { ...savedFunnels.find((f) => f.id === activeFunnelId)!, totalSessions: liveData.totalSessions, steps: liveData.steps }
+      : null
+    : null;
+
+  function handleSave(data: { name: string; steps: { eventType: string; formId?: string; label?: string; position: number }[] }) {
+    if (editingFunnel) {
+      updateFunnel.mutate({ id: editingFunnel.id, ...data }, { onSuccess: () => { setBuilderOpen(false); setEditingFunnel(null); } });
+    } else {
+      createFunnel.mutate(data, { onSuccess: () => { setBuilderOpen(false); setEditingFunnel(null); } });
+    }
+  }
+
+  function handleDelete(id: string) {
+    if (!confirm("Delete this funnel?")) return;
+    deleteFunnel.mutate(id, { onSuccess: () => { if (activeFunnelId === id) setActiveFunnelId(null); } });
+  }
 
   return (
     <div className="trell-content">
@@ -121,7 +89,7 @@ export default function FunnelsPage() {
             name: editingFunnel.name,
             steps: editingFunnel.steps.map((s) => ({ eventType: s.eventType ?? "", formId: s.formId ?? undefined, label: s.label ?? undefined, position: s.position })),
           } : undefined}
-          onSave={(data) => void saveFunnel(data)}
+          onSave={(data) => void handleSave(data)}
           onCancel={() => { setBuilderOpen(false); setEditingFunnel(null); }}
         />
       )}
@@ -129,8 +97,8 @@ export default function FunnelsPage() {
       {activeFunnel && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <button onClick={() => { setEditingFunnel(activeFunnel); setBuilderOpen(true); }} className="trell-btn-secondary h-9">Edit</button>
-            <button onClick={() => void deleteFunnel(activeFunnel.id)} className="trell-btn-danger h-9">Delete</button>
+            <button onClick={() => { setEditingFunnel(activeFunnel as unknown as SavedFunnel); setBuilderOpen(true); }} className="trell-btn-secondary h-9">Edit</button>
+            <button onClick={() => handleDelete(activeFunnelId!)} className="trell-btn-danger h-9">Delete</button>
           </div>
           <FunnelView funnel={activeFunnel} onDrillDown={() => {}} />
         </div>

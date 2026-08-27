@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useState } from "react";
 import { Icon } from "@/components/Icon";
 import { ComparisonPanel } from "@/components/ComparisonPanel";
+import { useProjectId, useProjectStats } from "@/lib/hooks";
+import { localInput } from "@/lib/format";
 
 interface ComparisonResult {
   baseline: Record<string, number | null>;
@@ -18,7 +19,7 @@ function exportComparisonCSV(data: ComparisonResult) {
       key,
       String(data.baseline[key] ?? ""),
       String(data.compare[key] ?? ""),
-      delta.percentage != null ? delta.percentage.toFixed(1) + "%" : "–",
+      delta.percentage != null ? delta.percentage.toFixed(1) + "%" : "\u2013",
       delta.direction,
     ]);
   }
@@ -32,11 +33,6 @@ function exportComparisonCSV(data: ComparisonResult) {
   URL.revokeObjectURL(url);
 }
 
-function localInput(d: Date): string {
-  const p = (n: number) => (n < 10 ? "0" + n : "" + n);
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-
 function formatDate(iso: string): string {
   try {
     const d = new Date(iso);
@@ -48,28 +44,19 @@ function formatDate(iso: string): string {
 }
 
 export default function ComparisonPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const [projectId, setProjectId] = useState<string | null>(null);
+  const { projectId } = useProjectId();
   const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
   const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000)));
   const [compFrom, setCompFrom] = useState(localInput(new Date(Date.now() - 14 * 86400000)));
   const [compTo, setCompTo] = useState(localInput(new Date(Date.now() - 7 * 86400000)));
   const [comparison, setComparison] = useState<ComparisonResult | null>(null);
-
-  useEffect(() => {
-    fetch("/api/projects")
-      .then((r) => r.json())
-      .then((d) => {
-        const p = (d.projects ?? []).find((x: { slug: string }) => x.slug === slug);
-        if (p) setProjectId(p.id);
-      })
-      .catch(() => {});
-  }, [slug]);
+  const [comparing, setComparing] = useState(false);
 
   async function runComparison() {
     if (!projectId) return;
-    const base = `/api/projects/${projectId}`;
+    setComparing(true);
     try {
+      const base = `/api/projects/${projectId}`;
       const [b, c] = await Promise.all([
         fetch(`${base}/stats?from=${compFrom}&to=${compTo}`).then((r) => r.json()),
         fetch(`${base}/stats?from=${from}&to=${to}`).then((r) => r.json()),
@@ -85,6 +72,7 @@ export default function ComparisonPage() {
       }
       setComparison({ baseline: b.metrics, compare: c.metrics, deltas });
     } catch { /* ignore */ }
+    setComparing(false);
   }
 
   return (
@@ -101,7 +89,7 @@ export default function ComparisonPage() {
         </button>
       </header>
 
-      <div className="mb-4 flex flex-wrap items-end gap-3">
+      <form onSubmit={(e) => { e.preventDefault(); void runComparison(); }} className="mb-4 flex flex-wrap items-end gap-3">
         <div className="min-w-[200px] flex-1">
           <label className="mb-1 block text-xs text-trell-ink-muted">Previous period from</label>
           <input type="datetime-local" value={compFrom} onChange={(e) => setCompFrom(e.target.value)} className="trell-input h-9 w-full" />
@@ -114,8 +102,8 @@ export default function ComparisonPage() {
           <Icon name="calendar-2" size={15} />
           <span className="whitespace-nowrap">{formatDate(from)} → {formatDate(to)}</span>
         </div>
-        <button onClick={() => void runComparison()} className="trell-btn-primary h-9 px-6">Compare</button>
-      </div>
+        <button type="submit" disabled={comparing} className="trell-btn-primary h-9 px-6 disabled:opacity-50">{comparing ? "Comparing…" : "Compare"}</button>
+      </form>
 
       {comparison && <ComparisonPanel data={comparison} />}
 
