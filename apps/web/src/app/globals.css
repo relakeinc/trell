@@ -332,3 +332,49 @@ body {
   animation: trell-toast-progress 3s linear forwards;
 }
 
+/* ── Sticky table header ─────────────────────────────────── */
+.trell-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: white;
+}
+
+.trell-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* ── Empty state illustration ─────────────────────────────── */
+.trell-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.trell-empty-state-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(229 229 229);
+  background: white;
+  color: rgb(161 161 170);
+  margin-bottom: 1rem;
+}
+
+/* ── Card hover lift ─────────────────────────────────────── */
+.trell-card-hover {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.trell-card-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.05);
+}
+

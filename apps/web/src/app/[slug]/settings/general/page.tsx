@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Icon } from "@/components/Icon";
+import { SuccessCheck } from "@/components/SuccessCheck";
 import { WorkspaceIcon, WORKSPACE_ICON_COUNT } from "@/components/WorkspaceIcon";
 import { useProject } from "../_components/ProjectContext";
 
@@ -23,6 +24,11 @@ export default function GeneralSettingsPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [defaultView, setDefaultView] = useState("analytics");
+
+  // Success feedback
+  const [nameSaved, setNameSaved] = useState(false);
+  const [slugSaved, setSlugSaved] = useState(false);
+  const [logoSaved, setLogoSaved] = useState(false);
 
   const nameValue = project ? (name || project.name) : "";
   const slugValue = project ? (slug || project.slug) : "";
@@ -48,7 +54,7 @@ export default function GeneralSettingsPage() {
             saveProject({ name: nameValue }),
             { loading: "Saving…", success: "Name updated", error: "Failed to save" }
           );
-          if (ok) setName("");
+          if (ok) { setName(""); setNameSaved(true); }
         }}>
           <div className="p-5 pb-0">
             <div className="text-sm font-semibold text-trell-ink">Workspace Name</div>
@@ -64,9 +70,12 @@ export default function GeneralSettingsPage() {
           </div>
           <div className="mt-4 flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
             <span className="text-xs text-trell-ink-muted">Max 32 characters.</span>
-            <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
-              Save Changes
-            </button>
+            <div className="flex items-center gap-3">
+              <SuccessCheck show={nameSaved} onDone={() => setNameSaved(false)} />
+              <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
+                Save Changes
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -79,7 +88,7 @@ export default function GeneralSettingsPage() {
             saveProject({ slug: slugValue }),
             { loading: "Saving…", success: "Slug updated", error: "Failed to save" }
           );
-          if (ok) setSlug("");
+          if (ok) { setSlug(""); setSlugSaved(true); }
         }}>
           <div className="p-5 pb-0">
             <div className="text-sm font-semibold text-trell-ink">Workspace Slug</div>
@@ -99,9 +108,12 @@ export default function GeneralSettingsPage() {
           </div>
           <div className="mt-4 flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
             <span className="text-xs text-trell-ink-muted">Only lowercase letters, numbers, and dashes. Max 48 characters.</span>
-            <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
-              Save Changes
-            </button>
+            <div className="flex items-center gap-3">
+              <SuccessCheck show={slugSaved} onDone={() => setSlugSaved(false)} />
+              <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
+                Save Changes
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -135,14 +147,18 @@ export default function GeneralSettingsPage() {
         </div>
         <form onSubmit={async (e) => {
           e.preventDefault();
-          await toast.promise(
+          const ok = await toast.promise(
             saveProject({ logoVariant }),
             { loading: "Saving…", success: "Logo saved", error: "Failed to save" }
           );
+          if (ok) setLogoSaved(true);
         }} className="flex items-center justify-end border-t border-trell-line bg-neutral-50/80 px-5 py-3">
-          <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
-            Save changes
-          </button>
+          <div className="flex items-center gap-3">
+            <SuccessCheck show={logoSaved} onDone={() => setLogoSaved(false)} />
+            <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
+              Save changes
+            </button>
+          </div>
         </form>
       </div>
 
