@@ -358,6 +358,26 @@ body {
   @apply bg-neutral-200 text-trell-ink-default antialiased;
 }
 
+/* Force light mode on auth pages (signin, register) regardless of dark mode toggle */
+.force-light,
+.force-light * {
+  color-scheme: light !important;
+}
+.force-light .bg-white,
+.force-light [class*="bg-white"] {
+  background-color: white !important;
+}
+.force-light .text-zinc-900,
+.force-light [class*="text-zinc-900"] {
+  color: #18181b !important;
+}
+.force-light .bg-[#2563eb] {
+  background-color: #2563eb !important;
+}
+.force-light .bg-neutral-200 {
+  background-color: #e5e5e5 !important;
+}
+
 /* ── Buttons (Dub-style) ────────────────────────────────────── */
 
 .trell-btn {

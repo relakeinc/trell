@@ -23,7 +23,7 @@ export default async function SignInPage() {
   }
 
   return (
-    <main className="grid min-h-dvh lg:grid-cols-[60%_40%]">
+    <main className="force-light grid min-h-dvh lg:grid-cols-[60%_40%]">
       {/* Left — form panel */}
       <div className="relative flex flex-col bg-white">
         {/* Mobile header */}

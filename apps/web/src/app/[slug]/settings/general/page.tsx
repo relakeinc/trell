@@ -23,7 +23,6 @@ export default function GeneralSettingsPage() {
   // Field state — initialized from project, edited locally
   const [name, setName] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
-  const [defaultView, setDefaultView] = useState("analytics");
 
   // Success feedback
   const [nameSaved, setNameSaved] = useState(false);
@@ -36,7 +35,6 @@ export default function GeneralSettingsPage() {
   useEffect(() => {
     if (project) {
       setLogoVariantState(project.logoVariant);
-      // Sync local state when project changes from server
       setName((prev) => prev === null ? project.name : prev);
       setSlug((prev) => prev === null ? project.slug : prev);
     }
@@ -165,32 +163,6 @@ export default function GeneralSettingsPage() {
             </button>
           </div>
         </form>
-      </div>
-
-      {/* Default View */}
-      <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
-        <div className="p-5 pb-0">
-          <div className="text-sm font-semibold text-trell-ink">Default View</div>
-          <div className="mt-1 text-sm text-trell-ink-muted">Choose which tab to show by default when you open this workspace.</div>
-          <div className="mt-4">
-            <div className="relative max-w-md">
-              <select
-                value={defaultView}
-                onChange={(e) => setDefaultView(e.target.value)}
-                className="h-10 w-full appearance-none rounded-lg border border-trell-line bg-white px-3 pr-10 text-sm text-trell-ink focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              >
-                <option value="analytics">Analytics</option>
-                <option value="funnels">Funnels</option>
-                <option value="comparison">Comparison</option>
-                <option value="events">Events</option>
-              </select>
-              <Icon name="arrow-down-01" size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-trell-ink-muted" />
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center justify-end border-t border-trell-line bg-neutral-50/80 px-5 py-3">
-          <button className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">Save changes</button>
-        </div>
       </div>
 
       {/* Delete Workspace */}
