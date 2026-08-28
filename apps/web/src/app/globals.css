@@ -62,13 +62,18 @@
 }
 
 .dark .trell-nav-item:hover {
-  background-color: transparent !important;
+  background-color: var(--trell-dark-surface-2) !important;
   color: var(--trell-dark-text) !important;
 }
 
 .dark .trell-nav-item.active,
 .dark .trell-nav-item[class*="bg-blue-50"] {
-  background-color: transparent !important;
+  background-color: var(--trell-dark-surface-2) !important;
+  color: var(--trell-dark-text) !important;
+}
+
+.dark .trell-nav-item.active svg,
+.dark .trell-nav-item[class*="bg-blue-50"] svg {
   color: var(--trell-dark-text) !important;
 }
 
@@ -80,11 +85,16 @@
 
 .dark aside a[class*="text-neutral-600"]:hover {
   color: var(--trell-dark-text) !important;
-  background-color: transparent !important;
+  background-color: var(--trell-dark-surface-2) !important;
 }
 
 .dark aside a[class*="hover:bg-neutral-200/70"]:hover {
-  background-color: transparent !important;
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
+.dark aside a[class*="text-neutral-600"] svg,
+.dark aside a[class*="text-neutral-400"] svg {
+  color: var(--trell-dark-text-muted);
 }
 
 /* Sidebar project dropdown button */
@@ -358,45 +368,42 @@ body {
 
 /* Primary: dark bg, white text */
 .trell-btn-primary {
-  @apply trell-btn border-black bg-black text-white hover:bg-neutral-800 hover:ring-4 hover:ring-neutral-200;
-}
-
-.dark .trell-btn-primary {
-  @apply border-[#CDCCCC] bg-[#CDCCCC] text-[#111111] hover:bg-[#b8b8b7];
+  @apply trell-btn border-black bg-black text-white hover:bg-neutral-800 hover:ring-4 hover:ring-neutral-200 dark:border-[#CDCCCC] dark:bg-[#CDCCCC] dark:text-[#111111] dark:hover:bg-[#b8b8b7];
 }
 
 /* Secondary: bordered */
 .trell-btn-secondary {
-  @apply trell-btn border-trell-line-default bg-white text-trell-ink hover:bg-neutral-100;
+  @apply trell-btn border-trell-line-default bg-white text-trell-ink hover:bg-neutral-100 dark:border-[#2a2a29] dark:bg-[#191918] dark:text-[#CDCCCC] dark:hover:bg-[#1e1e1d];
 }
 
 /* Outline: transparent bg */
 .trell-btn-outline {
-  @apply trell-btn border-transparent text-trell-ink-default hover:bg-neutral-900/5;
+  @apply trell-btn border-transparent text-trell-ink-default hover:bg-neutral-900/5 dark:text-[#CDCCCC] dark:hover:bg-[#1e1e1d];
 }
 
 /* Danger */
 .trell-btn-danger {
-  @apply trell-btn border-red-500 bg-red-500 text-white hover:bg-red-600 hover:ring-4 hover:ring-red-100;
-}
-
-.dark .trell-btn-danger {
-  @apply border-red-600 bg-red-600 text-white hover:bg-red-500;
+  @apply trell-btn border-red-500 bg-red-500 text-white hover:bg-red-600 hover:ring-4 hover:ring-red-100 dark:border-red-600 dark:bg-red-600 dark:hover:bg-red-500;
 }
 
 /* ── Inputs (Dub-style) ─────────────────────────────────────── */
 
 .trell-input {
-  @apply w-full rounded-lg border border-trell-line-default bg-white px-3 py-2 text-sm outline-none transition-all placeholder:text-trell-ink-muted focus:border-trell-ink focus:ring-4 focus:ring-neutral-100;
+  @apply w-full rounded-lg border border-trell-line-default bg-white px-3 py-2 text-sm outline-none transition-all placeholder:text-trell-ink-muted focus:border-trell-ink focus:ring-4 focus:ring-neutral-100 dark:border-[#2a2a29] dark:bg-[#191918] dark:text-[#CDCCCC] dark:placeholder:text-[#656565] dark:focus:border-[#656565] dark:focus:ring-[#CDCCCC]/10;
 }
 
 /* ── Cards ──────────────────────────────────────────────────── */
 
 .trell-card {
-  @apply rounded-xl border border-trell-line bg-white;
+  @apply rounded-xl border border-trell-line bg-white dark:border-[#2a2a29] dark:bg-[#191918];
 }
 
 .dark .trell-card {
+  background-color: var(--trell-dark-surface) !important;
+  border-color: var(--trell-dark-border) !important;
+}
+
+.dark .trell-card-sm {
   background-color: var(--trell-dark-surface) !important;
   border-color: var(--trell-dark-border) !important;
 }
@@ -832,6 +839,27 @@ body {
 .dark .trell-card-hover:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
+
+/* ── Accent theming (data-accent) ───────────────────────── */
+[data-accent="blue"] { --accent: #2563eb; --accent-soft: rgba(37, 99, 235, 0.12); --accent-text: #2563eb; }
+[data-accent="sky"] { --accent: #06b6d4; --accent-soft: rgba(6, 182, 212, 0.12); --accent-text: #0891b2; }
+[data-accent="lavender"] { --accent: #a855f7; --accent-soft: rgba(168, 85, 247, 0.12); --accent-text: #9333ea; }
+[data-accent="mint"] { --accent: #10b981; --accent-soft: rgba(16, 185, 129, 0.12); --accent-text: #059669; }
+[data-accent="netflix"] { --accent: #dc2626; --accent-soft: rgba(220, 38, 38, 0.12); --accent-text: #dc2626; }
+[data-accent="spotify"] { --accent: #22c55e; --accent-soft: rgba(34, 197, 94, 0.12); --accent-text: #16a34a; }
+[data-accent="coinbase"] { --accent: #3b82f6; --accent-soft: rgba(59, 130, 246, 0.12); --accent-text: #2563eb; }
+[data-accent="airbnb"] { --accent: #ec4899; --accent-soft: rgba(236, 72, 153, 0.12); --accent-text: #db2777; }
+[data-accent="discord"] { --accent: #6366f1; --accent-soft: rgba(99, 102, 241, 0.12); --accent-text: #4f46e5; }
+[data-accent="rabbit"] { --accent: #f97316; --accent-soft: rgba(249, 115, 22, 0.12); --accent-text: #ea580c; }
+[data-accent="default"] { --accent: #2563eb; --accent-soft: rgba(37, 99, 235, 0.12); --accent-text: #2563eb; }
+
+/* Apply accent to blue-accented elements */
+[data-accent] a[class*="text-blue-600"] { color: var(--accent-text) !important; }
+[data-accent] a[class*="bg-blue-50"][class*="text-blue-600"] { color: var(--accent-text) !important; background-color: var(--accent-soft) !important; }
+[data-accent] [class*="bg-blue-50"] { background-color: var(--accent-soft) !important; }
+[data-accent] [class*="bg-blue-500"] { background-color: var(--accent) !important; }
+[data-accent] [class*="text-blue-500"] { color: var(--accent-text) !important; }
+[data-accent] .trell-btn-primary { background-color: var(--accent) !important; border-color: var(--accent) !important; }
 
 /* ── Theme transition (circle-with-blur) ─────────────────── */
 :root {

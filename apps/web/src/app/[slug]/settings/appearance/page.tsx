@@ -1,32 +1,31 @@
 "use client";
 
-import { useState } from "react";
 import { useTheme } from "@/lib/useTheme";
+import { Icon } from "@/components/Icon";
 
-const COLOR_THEMES = [
-  { id: "default", label: "Default", gradient: "from-blue-500 to-blue-600" },
-  { id: "sky", label: "Sky", gradient: "from-cyan-400 to-blue-500" },
-  { id: "lavender", label: "Lavender", gradient: "from-purple-400 to-pink-400" },
-  { id: "mint", label: "Mint", gradient: "from-emerald-400 to-teal-400" },
-  { id: "netflix", label: "Netflix", gradient: "from-red-500 to-red-600" },
-  { id: "uber", label: "Uber", gradient: "from-neutral-500 to-neutral-600" },
-  { id: "spotify", label: "Spotify", gradient: "from-green-400 to-green-600" },
-  { id: "coinbase", label: "Coinbase", gradient: "from-blue-400 to-blue-600" },
-  { id: "airbnb", label: "Airbnb", gradient: "from-pink-400 to-rose-500" },
-  { id: "discord", label: "Discord", gradient: "from-indigo-400 to-indigo-600" },
-  { id: "rabbit", label: "Rabbit", gradient: "from-orange-400 to-amber-500" },
-];
-
-const APPEARANCE_MODES = [
-  { id: "light", label: "Light", icon: "☀️" },
-  { id: "dark", label: "Dark", icon: "🌙" },
-  { id: "system", label: "System", icon: "💻" },
+const THEMES = [
+  { id: "light", label: "White", dot: "from-white to-neutral-300", ring: "#e4e4e7", text: "text-neutral-700" },
+  { id: "dark", label: "Dark", dot: "from-[#111111] to-[#262626]", ring: "#111111", text: "text-neutral-300" },
+  { id: "blue", label: "Blue", dot: "from-blue-500 to-blue-600", ring: "#2563eb", text: "text-neutral-600" },
+  { id: "sky", label: "Sky", dot: "from-cyan-400 to-blue-500", ring: "#06b6d4", text: "text-neutral-600" },
+  { id: "lavender", label: "Lavender", dot: "from-purple-400 to-pink-400", ring: "#a855f7", text: "text-neutral-600" },
+  { id: "mint", label: "Mint", dot: "from-emerald-400 to-teal-400", ring: "#10b981", text: "text-neutral-600" },
+  { id: "netflix", label: "Netflix", dot: "from-red-500 to-red-600", ring: "#dc2626", text: "text-neutral-600" },
+  { id: "spotify", label: "Spotify", dot: "from-green-400 to-green-600", ring: "#22c55e", text: "text-neutral-600" },
+  { id: "coinbase", label: "Coinbase", dot: "from-blue-400 to-blue-600", ring: "#3b82f6", text: "text-neutral-600" },
+  { id: "airbnb", label: "Airbnb", dot: "from-pink-400 to-rose-500", ring: "#ec4899", text: "text-neutral-600" },
+  { id: "discord", label: "Discord", dot: "from-indigo-400 to-indigo-600", ring: "#6366f1", text: "text-neutral-600" },
+  { id: "rabbit", label: "Rabbit", dot: "from-orange-400 to-amber-500", ring: "#f97316", text: "text-neutral-600" },
 ] as const;
 
+const SECTIONS = [
+  { label: "Modes", ids: ["light", "dark"] },
+  { label: "Accents", ids: ["blue", "sky", "lavender", "mint", "netflix", "spotify", "coinbase", "airbnb", "discord", "rabbit"] },
+];
+
 export default function AppearanceSettingsPage() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
-  const [activeColor, setActiveColor] = useState("default");
-  const isDark = resolvedTheme === "dark";
+  const { theme, accent, setTheme, setAccent } = useTheme();
+  const isDark = theme === "dark";
 
   return (
     <div className="flex flex-col gap-6">
@@ -40,55 +39,42 @@ export default function AppearanceSettingsPage() {
         <div className="p-5">
           <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Color Theme</div>
           <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>Choose your accent color for the interface.</div>
-          <div className="mt-4 grid grid-cols-6 gap-3">
-            {COLOR_THEMES.map((color) => (
-              <button
-                key={color.id}
-                onClick={() => setActiveColor(color.id)}
-                className="flex flex-col items-center gap-2"
-              >
-                <div className={`size-10 rounded-full bg-gradient-to-br ${color.gradient} transition-all ${
-                  activeColor === color.id
-                    ? "ring-2 ring-offset-2 ring-[#CDCCCC] ring-offset-white"
-                    : "hover:scale-110"
-                } ${isDark && activeColor !== color.id ? "ring-offset-[#191918]" : ""}`} />
-                <span className={`text-xs ${activeColor === color.id ? "font-medium text-[#CDCCCC]" : isDark ? "text-[#656565]" : "text-neutral-500"}`}>
-                  {color.label}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* Appearance Mode */}
-      <div className={`overflow-hidden rounded-xl border ${isDark ? "border-[#2a2a29] bg-[#191918]" : "border-trell-line bg-white"}`}>
-        <div className="p-5">
-          <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Appearance</div>
-          <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>Select your preferred color scheme.</div>
-          <div className="mt-4 flex gap-3">
-            {APPEARANCE_MODES.map((mode) => {
-              const isActive = theme === mode.id;
-              return (
-                <button
-                  key={mode.id}
-                  onClick={() => setTheme(mode.id)}
-                  className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${
-                    isActive
-                      ? "border-[#CDCCCC] bg-[#CDCCCC]/10 shadow-sm"
-                      : isDark
-                        ? "border-[#2a2a29] bg-[#191918] hover:border-[#656565] hover:bg-[#1e1e1d]"
-                        : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
-                  }`}
-                >
-                  <span className="text-2xl">{mode.icon}</span>
-                  <span className={`text-sm font-medium ${isActive ? "text-[#CDCCCC]" : isDark ? "text-[#CDCCCC]" : "text-neutral-600"}`}>
-                    {mode.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          {SECTIONS.map((section) => (
+            <div key={section.label} className="mt-6">
+              <div className={`mb-3 text-xs font-medium uppercase tracking-wider ${isDark ? "text-[#656565]" : "text-neutral-400"}`}>
+                {section.label}
+              </div>
+              <div className="grid grid-cols-6 gap-x-2 gap-y-4">
+                {section.ids.map((id) => {
+                  const t = THEMES.find((x) => x.id === id)!;
+                  const isSelected = section.label === "Modes" ? theme === id : accent === id;
+                  const isMode = section.label === "Modes";
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => (isMode ? setTheme(id as "light" | "dark") : setAccent(id))}
+                      className="group flex flex-col items-center gap-2"
+                    >
+                      <div
+                        className={`size-10 transition-all duration-200 ${
+                          isMode ? "rounded-xl shadow-sm" : "rounded-full bg-gradient-to-br"
+                        } ${isMode ? "" : t.dot} ${
+                          isSelected
+                            ? "ring-2 ring-offset-2 ring-offset-[#191918]"
+                            : "hover:scale-110"
+                        } ${isMode ? (id === "light" ? "bg-gradient-to-br from-white to-neutral-300" : "bg-gradient-to-br from-[#111111] to-[#262626]") : ""}`}
+                        style={isSelected ? { boxShadow: `0 0 0 2px ${t.ring}` } : undefined}
+                      />
+                      <span className={`text-xs ${isSelected ? "font-medium" : isDark ? "text-[#656565]" : "text-neutral-500"}`}>
+                        {t.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -103,13 +89,13 @@ export default function AppearanceSettingsPage() {
               : "border-neutral-200 bg-neutral-50 text-neutral-900"
           }`}>
             <div className="flex items-center gap-3">
-              <div className={`size-8 rounded-full bg-gradient-to-br ${
-                COLOR_THEMES.find(c => c.id === activeColor)?.gradient || "from-blue-500 to-blue-600"
-              }`} />
+              <div className={`flex size-10 items-center justify-center rounded-xl ${isDark ? "bg-[#1e1e1d]" : "bg-white shadow-sm"}`}>
+                <Icon name="chart-2" size={20} className={isDark ? "text-[#CDCCCC]" : "text-neutral-400"} />
+              </div>
               <div>
                 <div className="text-sm font-medium">Sample Card</div>
                 <div className={`text-xs ${isDark ? "text-[#656565]" : "text-neutral-500"}`}>
-                  This is how content will appear in {resolvedTheme} mode.
+                  This is how content will appear in {isDark ? "dark" : "light"} mode.
                 </div>
               </div>
             </div>

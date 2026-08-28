@@ -67,11 +67,11 @@ export default function SettingsLayout({
               <div className="mb-5 px-1">
                 <Link
                   href={`/${slug}/analytics`}
-                  className="group flex w-full items-center rounded-lg px-2 py-1.5 text-[17px] font-semibold tracking-tight text-neutral-900 transition-colors hover:bg-neutral-200/70"
+                  className="group flex w-full items-center rounded-lg px-2 py-1.5 text-[17px] font-semibold tracking-tight text-neutral-900 transition-colors hover:bg-neutral-200/70 dark:text-[#CDCCCC] dark:hover:bg-[#1e1e1d]"
                 >
                   <span className="truncate">Settings</span>
-                  <span className="ml-auto flex size-6 shrink-0 items-center justify-center rounded-md bg-neutral-200 transition-colors group-hover:bg-neutral-300">
-                    <Icon name="arrow-right-01" size={14} className="rotate-180 text-neutral-500" />
+                  <span className="ml-auto flex size-6 shrink-0 items-center justify-center rounded-md bg-neutral-200 transition-colors group-hover:bg-neutral-300 dark:bg-[#1e1e1d] dark:text-[#656565] dark:group-hover:bg-[#2a2a29]">
+                    <Icon name="arrow-right-01" size={14} className="rotate-180 text-neutral-500 dark:text-[#656565]" />
                   </span>
                 </Link>
               </div>
@@ -89,7 +89,7 @@ export default function SettingsLayout({
                         <Link
                           key={item.id}
                           href={`/${slug}/settings/${item.id}`}
-                          className={`group flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[14px] leading-none transition-all duration-100 ${
+                          className={`trell-nav-item group flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[14px] leading-none transition-all duration-100 ${
                             active
                               ? "bg-blue-50 font-medium text-blue-600"
                               : "text-neutral-600 hover:bg-neutral-200/70 hover:text-neutral-900"
