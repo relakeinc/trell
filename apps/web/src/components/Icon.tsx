@@ -28,6 +28,7 @@ import {
   Check,
   Layers,
   Moon,
+  Menu,
   Search,
   Info,
   type LucideIcon,
@@ -212,6 +213,7 @@ const ICON_MAP: Record<string, LucideIcon | ((props: { size?: number | string; c
   "export-arrow-01": Upload,
   "close-circle": XCircle,
   moon: Moon,
+  "menu-01": Menu,
   search: Search,
   info: Info,
   // Settings icons

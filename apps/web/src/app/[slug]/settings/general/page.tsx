@@ -183,8 +183,8 @@ export default function GeneralSettingsPage() {
               Delete Workspace
             </button>
           ) : (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-red-600">Type</span>
                 <code className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700">{project.slug}</code>
                 <span className="text-xs text-red-600">to confirm:</span>

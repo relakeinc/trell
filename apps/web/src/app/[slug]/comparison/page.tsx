@@ -98,9 +98,9 @@ export default function ComparisonPage() {
           <label className="mb-1 block text-xs text-trell-ink-muted">Previous period to</label>
           <input type="datetime-local" value={compTo} onChange={(e) => setCompTo(e.target.value)} className="trell-input h-9 w-full" />
         </div>
-        <div className="flex h-9 items-center gap-2 rounded-lg border border-trell-line bg-neutral-50 px-3 text-sm text-trell-ink-subtle">
+        <div className="flex h-9 min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-trell-line bg-neutral-50 px-3 text-sm text-trell-ink-subtle">
           <Icon name="calendar-2" size={15} />
-          <span className="whitespace-nowrap">{formatDate(from)} → {formatDate(to)}</span>
+          <span className="truncate">{formatDate(from)} → {formatDate(to)}</span>
         </div>
         <button type="submit" disabled={comparing} className="trell-btn-primary h-9 px-6 disabled:opacity-50">{comparing ? "Comparing…" : "Compare"}</button>
       </form>

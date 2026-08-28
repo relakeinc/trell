@@ -182,7 +182,7 @@ function PanelCard({ title, tabs, selectedTab, onSelectTab, children }: {
       <div className="flex items-center justify-between border-b border-trell-line px-4">
         <span className="py-3 text-sm font-medium text-trell-ink">{title}</span>
         {tabs && selectedTab && onSelectTab && (
-          <div className="flex items-center gap-1 py-2">
+          <div className="scrollbar-hide flex items-center gap-1 overflow-x-auto whitespace-nowrap py-2">
             {tabs.map((t) => (
               <button
                 key={t.id}

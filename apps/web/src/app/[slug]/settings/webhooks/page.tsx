@@ -202,15 +202,15 @@ export default function WebhooksSettingsPage() {
           ) : (
             <div className="flex flex-col gap-2">
               {webhooks.map((w) => (
-                <div key={w.id} className="flex items-center justify-between rounded-md border border-trell-line px-3 py-2">
-                  <div className="flex items-center gap-3">
+                <div key={w.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-trell-line px-3 py-2">
+                  <div className="flex min-w-0 items-center gap-3">
                     <Icon name="webhooks" size={14} className="text-trell-ink-muted" />
-                    <div>
-                      <div className="text-sm font-medium text-trell-ink">{w.url}</div>
+                    <div className="min-w-0">
+                      <div className="min-w-0 truncate text-sm font-medium text-trell-ink">{w.url}</div>
                       <div className="text-xs text-trell-ink-muted">{w.events.join(", ")} · {w.enabled ? "Active" : "Paused"}</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => setShowSecret(showSecret === w.id ? null : w.id)}
                       className="text-xs text-trell-ink-muted hover:text-trell-ink transition-colors"

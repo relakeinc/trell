@@ -525,6 +525,15 @@ body {
   @apply flex h-screen gap-2 bg-neutral-200 p-2;
 }
 
+/* Mobile: no gap, compact padding, top space for hamburger */
+@media (max-width: 767px) {
+  .trell-page {
+    gap: 0;
+    padding: 0;
+    padding-top: 48px;
+  }
+}
+
 .dark .trell-page {
   background-color: var(--trell-dark-bg) !important;
 }
@@ -535,6 +544,13 @@ body {
 
 .trell-main {
   @apply min-w-0 flex-1 overflow-y-auto rounded-xl bg-white;
+}
+
+/* Mobile: no rounded corners on main (sidebar is overlay) */
+@media (max-width: 767px) {
+  .trell-main {
+    border-radius: 0;
+  }
 }
 
 .dark .trell-main {

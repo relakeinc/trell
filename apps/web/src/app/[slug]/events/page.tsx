@@ -54,7 +54,7 @@ export default function EventsPage() {
         </button>
       </header>
 
-      <div className="trell-card max-h-[600px] overflow-y-auto p-4">
+      <div className="trell-card max-h-[600px] overflow-auto p-4">
         <table className="trell-table w-full text-sm">
           <thead>
             <tr className="border-b border-trell-line text-left text-xs text-trell-ink-muted">

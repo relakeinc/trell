@@ -5,6 +5,7 @@ import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { KeyboardShortcutsProvider } from "@/components/KeyboardShortcutsProvider";
 import { CommandPalette } from "@/components/CommandPalette";
 import { prisma } from "@/lib/prisma";
+import { MobileShell, MobileShellProvider } from "./MobileShell";
 
 export default async function ProjectLayout({
   children,
@@ -22,7 +23,6 @@ export default async function ProjectLayout({
     getAllProjects(),
   ]);
 
-  // Fetch logoVariant from DB
   const projectData = await prisma.project.findUnique({
     where: { slug },
     select: { logoVariant: true },
@@ -31,20 +31,30 @@ export default async function ProjectLayout({
   return (
     <KeyboardShortcutsProvider>
       <CommandPalette />
-      <div className="trell-page">
-        <aside className="flex h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-xl bg-neutral-100 py-2 pr-2">
-          <ProjectSidebar
-            projectSlug={project.slug}
-            projectName={project.name}
-            projects={projects}
-            userEmail={session.user.email ?? ""}
-            logoVariant={projectData?.logoVariant ?? 0}
-          />
-        </aside>
-        <div className="trell-main-frame">
-          <div className="trell-main">{children}</div>
-        </div>
-      </div>
+      <MobileShellProvider>
+        <MobileShell
+          projectSlug={project.slug}
+          projectName={project.name}
+          projects={projects}
+          userEmail={session.user.email ?? ""}
+          logoVariant={projectData?.logoVariant ?? 0}
+        >
+          <div className="trell-page">
+            <aside className="trell-sidebar hidden md:flex h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-xl bg-neutral-100 py-2 pr-2">
+              <ProjectSidebar
+                projectSlug={project.slug}
+                projectName={project.name}
+                projects={projects}
+                userEmail={session.user.email ?? ""}
+                logoVariant={projectData?.logoVariant ?? 0}
+              />
+            </aside>
+            <div className="trell-main-frame">
+              <div className="trell-main">{children}</div>
+            </div>
+          </div>
+        </MobileShell>
+      </MobileShellProvider>
     </KeyboardShortcutsProvider>
   );
 }

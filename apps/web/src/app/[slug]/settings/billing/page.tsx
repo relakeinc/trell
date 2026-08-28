@@ -37,7 +37,7 @@ export default function BillingSettingsPage() {
           <div className="text-sm font-semibold text-trell-ink">Current Plan</div>
           <div className="mt-1 text-sm text-trell-ink-muted">Your workspace is on the {isFree ? "Free" : "Pro"} plan.</div>
         </div>
-        <div className="mt-4 flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-trell-line bg-neutral-50/80 px-5 py-3">
           <div className="flex items-center gap-2">
             <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${isFree ? "bg-neutral-100 text-neutral-600" : "bg-blue-100 text-blue-600"}`}>
               {isFree ? "Free" : "Pro"}
@@ -81,7 +81,7 @@ export default function BillingSettingsPage() {
             )}
           </div>
         </div>
-        <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-trell-line bg-neutral-50/80 px-5 py-3">
           <span className="text-xs text-trell-ink-muted">Resets {resetDate}</span>
           {isFree && <span className="text-xs text-trell-ink-muted">Upgrade to Pro for 50K events/mo</span>}
         </div>
@@ -109,7 +109,7 @@ export default function BillingSettingsPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-trell-line bg-neutral-50/80 px-5 py-3">
           <span className="text-xs text-trell-ink-muted">Lifetime limit</span>
           {isFree && <span className="text-xs text-trell-ink-muted">Upgrade to Pro for 100 domains</span>}
         </div>

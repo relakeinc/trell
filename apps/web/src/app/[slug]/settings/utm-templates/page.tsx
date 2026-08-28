@@ -263,15 +263,15 @@ export default function UtmTemplatesSettingsPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-3">
                         <Icon name="links" size={14} className="text-trell-ink-muted" />
-                        <div>
-                          <div className="text-sm font-medium text-trell-ink">{t.name}</div>
+                        <div className="min-w-0">
+                          <div className="min-w-0 truncate text-sm font-medium text-trell-ink">{t.name}</div>
                           <div className="text-xs text-trell-ink-muted">{activeParams(t)} parameters{t.createdAt && ` · ${new Date(t.createdAt).toLocaleDateString()}`}</div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         {activeParams(t) > 0 && (
                           <button onClick={() => copyQueryString(t)} className="text-xs text-trell-ink-muted hover:text-trell-ink transition-colors" title="Copy query string">
                             Copy UTM
