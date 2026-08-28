@@ -150,13 +150,13 @@
 
 /* Sidebar bottom "Upgrade plan" button */
 .dark aside > div:last-child > a[class*="bg-neutral-900"] {
-  background-color: var(--trell-dark-accent) !important;
-  border-color: var(--trell-dark-accent) !important;
+  background-color: white !important;
+  border-color: white !important;
   color: #111111 !important;
 }
 
 .dark aside > div:last-child > a[class*="bg-neutral-900"]:hover {
-  background-color: #b8b8b7 !important;
+  background-color: #e5e5e5 !important;
 }
 
 /* Sidebar user avatar */
