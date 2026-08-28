@@ -36,10 +36,10 @@ export default function AppearanceSettingsPage() {
       </div>
 
       {/* Color Theme */}
-      <div className={`overflow-hidden rounded-xl border ${isDark ? "border-[#363940] bg-[#2a2d33]" : "border-trell-line bg-white"}`}>
+      <div className={`overflow-hidden rounded-xl border ${isDark ? "border-[#2a2a29] bg-[#191918]" : "border-trell-line bg-white"}`}>
         <div className="p-5">
-          <div className={`text-sm font-semibold ${isDark ? "text-[#e4e4e7]" : "text-trell-ink"}`}>Color Theme</div>
-          <div className={`mt-1 text-sm ${isDark ? "text-[#a0a4ad]" : "text-trell-ink-muted"}`}>Choose your accent color for the interface.</div>
+          <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Color Theme</div>
+          <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>Choose your accent color for the interface.</div>
           <div className="mt-4 grid grid-cols-6 gap-3">
             {COLOR_THEMES.map((color) => (
               <button
@@ -49,10 +49,10 @@ export default function AppearanceSettingsPage() {
               >
                 <div className={`size-10 rounded-full bg-gradient-to-br ${color.gradient} transition-all ${
                   activeColor === color.id
-                    ? "ring-2 ring-offset-2 ring-blue-500 ring-offset-white"
+                    ? "ring-2 ring-offset-2 ring-[#CDCCCC] ring-offset-white"
                     : "hover:scale-110"
-                } ${isDark && activeColor !== color.id ? "ring-offset-[#2a2d33]" : ""}`} />
-                <span className={`text-xs ${activeColor === color.id ? "font-medium text-blue-500" : isDark ? "text-[#a0a4ad]" : "text-neutral-500"}`}>
+                } ${isDark && activeColor !== color.id ? "ring-offset-[#191918]" : ""}`} />
+                <span className={`text-xs ${activeColor === color.id ? "font-medium text-[#CDCCCC]" : isDark ? "text-[#656565]" : "text-neutral-500"}`}>
                   {color.label}
                 </span>
               </button>
@@ -62,10 +62,10 @@ export default function AppearanceSettingsPage() {
       </div>
 
       {/* Appearance Mode */}
-      <div className={`overflow-hidden rounded-xl border ${isDark ? "border-[#363940] bg-[#2a2d33]" : "border-trell-line bg-white"}`}>
+      <div className={`overflow-hidden rounded-xl border ${isDark ? "border-[#2a2a29] bg-[#191918]" : "border-trell-line bg-white"}`}>
         <div className="p-5">
-          <div className={`text-sm font-semibold ${isDark ? "text-[#e4e4e7]" : "text-trell-ink"}`}>Appearance</div>
-          <div className={`mt-1 text-sm ${isDark ? "text-[#a0a4ad]" : "text-trell-ink-muted"}`}>Select your preferred color scheme.</div>
+          <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Appearance</div>
+          <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>Select your preferred color scheme.</div>
           <div className="mt-4 flex gap-3">
             {APPEARANCE_MODES.map((mode) => {
               const isActive = theme === mode.id;
@@ -75,14 +75,14 @@ export default function AppearanceSettingsPage() {
                   onClick={() => setTheme(mode.id)}
                   className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${
                     isActive
-                      ? "border-blue-500 bg-blue-500/10 shadow-sm"
+                      ? "border-[#CDCCCC] bg-[#CDCCCC]/10 shadow-sm"
                       : isDark
-                        ? "border-[#363940] bg-[#22252a] hover:border-[#595d66] hover:bg-[#2a2d33]"
+                        ? "border-[#2a2a29] bg-[#191918] hover:border-[#656565] hover:bg-[#1e1e1d]"
                         : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
                   }`}
                 >
                   <span className="text-2xl">{mode.icon}</span>
-                  <span className={`text-sm font-medium ${isActive ? "text-blue-500" : isDark ? "text-[#e4e4e7]" : "text-neutral-600"}`}>
+                  <span className={`text-sm font-medium ${isActive ? "text-[#CDCCCC]" : isDark ? "text-[#CDCCCC]" : "text-neutral-600"}`}>
                     {mode.label}
                   </span>
                 </button>
@@ -93,13 +93,13 @@ export default function AppearanceSettingsPage() {
       </div>
 
       {/* Preview */}
-      <div className={`overflow-hidden rounded-xl border ${isDark ? "border-[#363940] bg-[#2a2d33]" : "border-trell-line bg-white"}`}>
+      <div className={`overflow-hidden rounded-xl border ${isDark ? "border-[#2a2a29] bg-[#191918]" : "border-trell-line bg-white"}`}>
         <div className="p-5">
-          <div className={`text-sm font-semibold ${isDark ? "text-[#e4e4e7]" : "text-trell-ink"}`}>Preview</div>
-          <div className={`mt-1 text-sm ${isDark ? "text-[#a0a4ad]" : "text-trell-ink-muted"}`}>See how your theme looks with sample content.</div>
+          <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Preview</div>
+          <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>See how your theme looks with sample content.</div>
           <div className={`mt-4 rounded-lg border p-4 ${
             isDark
-              ? "border-[#363940] bg-[#22252a] text-[#e4e4e7]"
+              ? "border-[#2a2a29] bg-[#111111] text-[#CDCCCC]"
               : "border-neutral-200 bg-neutral-50 text-neutral-900"
           }`}>
             <div className="flex items-center gap-3">
@@ -108,7 +108,7 @@ export default function AppearanceSettingsPage() {
               }`} />
               <div>
                 <div className="text-sm font-medium">Sample Card</div>
-                <div className={`text-xs ${isDark ? "text-[#a0a4ad]" : "text-neutral-500"}`}>
+                <div className={`text-xs ${isDark ? "text-[#656565]" : "text-neutral-500"}`}>
                   This is how content will appear in {resolvedTheme} mode.
                 </div>
               </div>

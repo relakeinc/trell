@@ -18,13 +18,13 @@
   color-scheme: dark;
 
   /* Core palette */
-  --trell-dark-bg: #1a1c20;
-  --trell-dark-surface: #22252a;
-  --trell-dark-surface-2: #2a2d33;
-  --trell-dark-border: #363940;
-  --trell-dark-text: #e4e4e7;
-  --trell-dark-text-muted: #a0a4ad;
-  --trell-dark-accent: #595d66;
+  --trell-dark-bg: #111111;
+  --trell-dark-surface: #191918;
+  --trell-dark-surface-2: #1e1e1d;
+  --trell-dark-border: #2a2a29;
+  --trell-dark-text: #CDCCCC;
+  --trell-dark-text-muted: #656565;
+  --trell-dark-accent: #CDCCCC;
 }
 
 .dark body {
@@ -32,58 +32,41 @@
   color: var(--trell-dark-text);
 }
 
-.dark .trell-page {
-  background-color: var(--trell-dark-bg);
-}
-
-.dark .trell-main {
-  background-color: var(--trell-dark-bg) !important;
-}
-
-.dark .trell-header {
-  background-color: rgba(26, 28, 32, 0.9) !important;
-  border-color: var(--trell-dark-border) !important;
-}
-
 /* Sidebar */
 .dark aside {
   background-color: var(--trell-dark-surface) !important;
 }
 
-/* Cards and panels */
-.dark .trell-card,
-.dark [class*="bg-white"] {
-  background-color: var(--trell-dark-surface-2) !important;
-  border-color: var(--trell-dark-border) !important;
-}
-
 /* Sidebar nav items */
 .dark .trell-nav-item {
   color: var(--trell-dark-text-muted) !important;
+  background-color: transparent !important;
 }
 
 .dark .trell-nav-item:hover {
-  background-color: var(--trell-dark-surface-2) !important;
+  background-color: transparent !important;
   color: var(--trell-dark-text) !important;
 }
 
 .dark .trell-nav-item.active,
 .dark .trell-nav-item[class*="bg-blue-50"] {
-  background-color: rgba(59, 130, 246, 0.15) !important;
-  color: #60a5fa !important;
+  background-color: transparent !important;
+  color: var(--trell-dark-text) !important;
 }
 
 /* Sidebar nav items with inline Tailwind classes */
 .dark aside a[class*="text-neutral-600"] {
   color: var(--trell-dark-text-muted) !important;
+  background-color: transparent !important;
 }
 
 .dark aside a[class*="text-neutral-600"]:hover {
   color: var(--trell-dark-text) !important;
+  background-color: transparent !important;
 }
 
 .dark aside a[class*="hover:bg-neutral-200/70"]:hover {
-  background-color: var(--trell-dark-surface-2) !important;
+  background-color: transparent !important;
 }
 
 /* Sidebar project dropdown button */
@@ -151,11 +134,11 @@
 .dark aside > div:last-child > a[class*="bg-neutral-900"] {
   background-color: var(--trell-dark-accent) !important;
   border-color: var(--trell-dark-accent) !important;
-  color: white !important;
+  color: #111111 !important;
 }
 
 .dark aside > div:last-child > a[class*="bg-neutral-900"]:hover {
-  background-color: #6b7080 !important;
+  background-color: #b8b8b7 !important;
 }
 
 /* Sidebar user avatar */
@@ -187,13 +170,13 @@
 }
 
 .dark [class*="w-[220px]"] a[class*="hover:bg-neutral-200/70"]:hover {
-  background-color: var(--trell-dark-surface-2) !important;
+  background-color: transparent !important;
 }
 
 /* Settings nav active state */
 .dark [class*="w-[220px]"] a[class*="bg-blue-50"][class*="text-blue-600"] {
-  background-color: rgba(59, 130, 246, 0.15) !important;
-  color: #60a5fa !important;
+  background-color: transparent !important;
+  color: var(--trell-dark-text) !important;
 }
 
 /* Settings back button - no bg in dark mode */
@@ -202,17 +185,12 @@
 }
 
 .dark [class*="w-[220px]"] a[class*="group"][class*="rounded-lg"][class*="text-[17px]"]:hover {
-  background-color: var(--trell-dark-surface-2) !important;
+  background-color: transparent !important;
 }
 
 /* Arrow icon container in settings back button */
 .dark [class*="w-[220px]"] [class*="bg-neutral-200"][class*="size-6"] {
   background-color: var(--trell-dark-surface-2) !important;
-}
-
-/* Settings main content */
-.dark .trell-main {
-  background-color: var(--trell-dark-bg) !important;
 }
 
 /* Empty state in dark mode */
@@ -304,31 +282,6 @@
   color: var(--trell-dark-text-muted);
 }
 
-.dark .trell-input:focus {
-  border-color: #6b7280;
-  box-shadow: 0 0 0 3px rgba(89, 93, 102, 0.25);
-}
-
-/* Buttons */
-.dark .trell-btn-primary {
-  border-color: var(--trell-dark-accent);
-  background-color: var(--trell-dark-accent);
-  color: white;
-}
-
-.dark .trell-btn-primary:hover {
-  background-color: #6b7080;
-}
-
-.dark .trell-btn-outline {
-  border-color: var(--trell-dark-border);
-  color: var(--trell-dark-text);
-}
-
-.dark .trell-btn-outline:hover {
-  background-color: var(--trell-dark-surface-2);
-}
-
 /* Text colors */
 .dark [class*="text-trell-ink"],
 .dark [class*="text-trell-ink-default"],
@@ -395,6 +348,10 @@ body {
   @apply trell-btn border-black bg-black text-white hover:bg-neutral-800 hover:ring-4 hover:ring-neutral-200;
 }
 
+.dark .trell-btn-primary {
+  @apply border-[#CDCCCC] bg-[#CDCCCC] text-[#111111] hover:bg-[#b8b8b7];
+}
+
 /* Secondary: bordered */
 .trell-btn-secondary {
   @apply trell-btn border-trell-line-default bg-white text-trell-ink hover:bg-neutral-100;
@@ -410,6 +367,10 @@ body {
   @apply trell-btn border-red-500 bg-red-500 text-white hover:bg-red-600 hover:ring-4 hover:ring-red-100;
 }
 
+.dark .trell-btn-danger {
+  @apply border-red-600 bg-red-600 text-white hover:bg-red-500;
+}
+
 /* ── Inputs (Dub-style) ─────────────────────────────────────── */
 
 .trell-input {
@@ -422,8 +383,18 @@ body {
   @apply rounded-xl border border-trell-line bg-white;
 }
 
+.dark .trell-card {
+  background-color: var(--trell-dark-surface) !important;
+  border-color: var(--trell-dark-border) !important;
+}
+
 .trell-card-sm {
   @apply rounded-lg border border-trell-line bg-white;
+}
+
+.dark .trell-card-sm {
+  background-color: var(--trell-dark-surface) !important;
+  border-color: var(--trell-dark-border) !important;
 }
 
 /* ── Sidebar rail (Dub: narrow icon column on the gray frame) ── */
@@ -436,10 +407,18 @@ body {
   @apply trell-sidebar-rail-btn bg-white;
 }
 
+.dark .trell-sidebar-rail-btn-active {
+  background-color: transparent !important;
+}
+
 /* ── Sidebar nav panel (Dub: neutral card with sections) ─────── */
 
 .trell-sidebar-panel {
   @apply flex h-full w-full flex-col rounded-xl bg-neutral-100 text-neutral-500;
+}
+
+.dark .trell-sidebar-panel {
+  background-color: transparent !important;
 }
 
 .trell-sidebar-item {
@@ -448,6 +427,11 @@ body {
 
 .trell-sidebar-item-active {
   @apply bg-blue-100/50 font-medium text-blue-600 hover:bg-blue-100/80 active:bg-blue-100;
+}
+
+.dark .trell-sidebar-item-active {
+  background-color: transparent !important;
+  color: var(--trell-dark-text) !important;
 }
 
 .trell-sidebar-section {
@@ -460,6 +444,10 @@ body {
   @apply flex h-screen gap-2 bg-neutral-200 p-2;
 }
 
+.dark .trell-page {
+  background-color: var(--trell-dark-bg) !important;
+}
+
 .trell-main-frame {
   @apply flex h-full min-w-0 flex-1;
 }
@@ -468,8 +456,17 @@ body {
   @apply min-w-0 flex-1 overflow-y-auto rounded-xl bg-white;
 }
 
+.dark .trell-main {
+  background-color: var(--trell-dark-bg) !important;
+}
+
 .trell-header {
   @apply sticky top-0 z-10 flex items-center justify-between border-b border-trell-line bg-white/90 px-4 py-3 backdrop-blur sm:px-6;
+}
+
+.dark .trell-header {
+  background-color: rgba(17, 17, 17, 0.9) !important;
+  border-color: var(--trell-dark-border) !important;
 }
 
 .trell-content {
@@ -481,8 +478,22 @@ body {
   @apply mb-3 flex items-center gap-2 border-b border-trell-line bg-white;
 }
 
+.dark .trell-nav-tabs {
+  background-color: var(--trell-dark-bg) !important;
+  border-color: var(--trell-dark-border) !important;
+}
+
 .trell-nav-tabs-btn {
   @apply flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-500 transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-700;
+}
+
+.dark .trell-nav-tabs-btn {
+  color: var(--trell-dark-text-muted) !important;
+}
+
+.dark .trell-nav-tabs-btn:hover {
+  background-color: transparent !important;
+  color: var(--trell-dark-text) !important;
 }
 
 /* ── Sidebar nav link transitions ─────────────────────────── */
@@ -494,12 +505,25 @@ body {
   @apply bg-neutral-100;
 }
 
+.dark .trell-sidebar-link:hover {
+  background-color: transparent !important;
+}
+
 .trell-sidebar-link.active {
   @apply bg-blue-50 font-medium text-blue-600;
 }
 
+.dark .trell-sidebar-link.active {
+  background-color: transparent !important;
+  color: var(--trell-dark-text) !important;
+}
+
 .trell-badge {
   @apply inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold;
+}
+
+.dark .trell-badge {
+  background-color: var(--trell-dark-surface-2) !important;
 }
 
 /* ── Scrollbar hide (Dub: panels hide native scrollbar) ────── */
@@ -715,21 +739,6 @@ body {
   border-spacing: 0;
 }
 
-/* ── Nav tabs ──────────────────────────────────────────── */
-.dark .trell-nav-tabs {
-  background-color: var(--trell-dark-bg) !important;
-  border-color: var(--trell-dark-border) !important;
-}
-
-.dark .trell-nav-tabs-btn {
-  color: var(--trell-dark-text-muted) !important;
-}
-
-.dark .trell-nav-tabs-btn:hover {
-  background-color: var(--trell-dark-surface-2) !important;
-  color: var(--trell-dark-text) !important;
-}
-
 /* ── Theme toggle switch (Material Design 3 style) ─────── */
 .trell-theme-switch {
   position: relative;
@@ -742,7 +751,7 @@ body {
 }
 
 .trell-theme-switch.active {
-  background-color: #595d66;
+  background-color: #CDCCCC;
 }
 
 .trell-theme-switch::after {
@@ -763,11 +772,11 @@ body {
 }
 
 .trell-theme-switch:hover {
-  box-shadow: 0 0 0 4px rgba(89, 93, 102, 0.12);
+  box-shadow: 0 0 0 4px rgba(205, 204, 204, 0.12);
 }
 
 .trell-theme-switch.active:hover {
-  box-shadow: 0 0 0 4px rgba(89, 93, 102, 0.2);
+  box-shadow: 0 0 0 4px rgba(205, 204, 204, 0.2);
 }
 
 /* ── Empty state illustration ─────────────────────────────── */
@@ -801,5 +810,9 @@ body {
 .trell-card-hover:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.05);
+}
+
+.dark .trell-card-hover:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
