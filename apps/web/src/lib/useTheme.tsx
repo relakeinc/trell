@@ -38,7 +38,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setTheme = useCallback((t: Theme) => {
     setThemeState(t);
     localStorage.setItem("trell-theme", t);
-    applyTheme(t);
+    
+    const switchTheme = () => {
+      applyTheme(t);
+    };
+
+    if (!document.startViewTransition) {
+      switchTheme();
+      return;
+    }
+
+    document.startViewTransition(switchTheme);
   }, [applyTheme]);
 
   useEffect(() => {
