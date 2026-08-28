@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOutAction } from "@/app/actions";
-import { useTheme } from "@/lib/useTheme";
 import { Icon } from "./Icon";
 import { TrellLogo } from "./TrellLogo";
 import { WorkspaceIcon } from "./WorkspaceIcon";
@@ -296,7 +295,6 @@ export function ProjectSidebar({
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <ThemeToggle />
             <button
               onClick={() => void signOutAction()}
               className="flex size-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
@@ -314,20 +312,6 @@ export function ProjectSidebar({
       onCreated={() => router.refresh()}
     />
     </>
-  );
-}
-
-function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
-  return (
-    <button
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      className={`trell-theme-switch ${isDark ? "active" : ""}`}
-      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-    />
   );
 }
 

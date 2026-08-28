@@ -46,15 +46,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setThemeState(t);
     setResolvedTheme(resolved);
     localStorage.setItem("trell-theme", t);
-
-    if (!document.startViewTransition) {
-      applyThemeToDOM(resolved);
-      return;
-    }
-
-    document.startViewTransition(() => {
-      applyThemeToDOM(resolved);
-    });
+    applyThemeToDOM(resolved);
   }, []);
 
   const setAccent = useCallback((a: string) => {

@@ -40,7 +40,7 @@ export default function GeneralSettingsPage() {
     }
   }, [project]);
 
-  if (loading || !project) return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
+  if (!project) return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
 
   return (
     <div className="flex flex-col gap-6">
@@ -53,8 +53,9 @@ export default function GeneralSettingsPage() {
       <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
         <form onSubmit={async (e) => {
           e.preventDefault();
+          if (!nameValue.trim()) { toast.error("Name cannot be empty"); return; }
           const ok = await toast.promise(
-            saveProject({ name: nameValue }),
+            saveProject({ name: nameValue.trim() }),
             { loading: "Saving…", success: "Name updated", error: "Failed to save" }
           );
           if (ok) { setName(null); setNameSaved(true); }
@@ -87,8 +88,10 @@ export default function GeneralSettingsPage() {
       <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
         <form onSubmit={async (e) => {
           e.preventDefault();
+          if (!slugValue.trim()) { toast.error("Slug cannot be empty"); return; }
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugValue.trim())) { toast.error("Slug must be lowercase with dashes only"); return; }
           const ok = await toast.promise(
-            saveProject({ slug: slugValue }),
+            saveProject({ slug: slugValue.trim() }),
             { loading: "Saving…", success: "Slug updated", error: "Failed to save" }
           );
           if (ok) { setSlug(null); setSlugSaved(true); }
@@ -167,7 +170,7 @@ export default function GeneralSettingsPage() {
 
       {/* Delete Workspace */}
       <div className="overflow-hidden rounded-xl border border-red-200 bg-white">
-        <div className="p-5 pb-0">
+        <div className="p-5 pb-4">
           <div className="text-sm font-semibold text-red-600">Delete Workspace</div>
           <div className="mt-1 text-sm text-red-500/80">Permanently delete your workspace, custom domain, and all associated links + their stats. This action cannot be undone.</div>
         </div>
