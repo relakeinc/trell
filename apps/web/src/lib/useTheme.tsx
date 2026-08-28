@@ -25,43 +25,50 @@ function getSystemTheme(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+function applyThemeToDOM(resolved: "light" | "dark") {
+  document.documentElement.classList.toggle("dark", resolved === "dark");
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
-  const applyTheme = useCallback((t: Theme) => {
-    const resolved = t === "system" ? getSystemTheme() : t;
-    setResolvedTheme(resolved);
-    document.documentElement.classList.toggle("dark", resolved === "dark");
-  }, []);
-
   const setTheme = useCallback((t: Theme) => {
+    const resolved = t === "system" ? getSystemTheme() : t;
+
     setThemeState(t);
+    setResolvedTheme(resolved);
     localStorage.setItem("trell-theme", t);
-    
-    const switchTheme = () => {
-      applyTheme(t);
-    };
 
     if (!document.startViewTransition) {
-      switchTheme();
+      applyThemeToDOM(resolved);
       return;
     }
 
-    document.startViewTransition(switchTheme);
-  }, [applyTheme]);
+    document.startViewTransition(() => {
+      applyThemeToDOM(resolved);
+    });
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem("trell-theme") as Theme | null;
     const initial = stored ?? "system";
+    const resolved = initial === "system" ? getSystemTheme() : initial;
     setThemeState(initial);
-    applyTheme(initial);
+    setResolvedTheme(resolved);
+    applyThemeToDOM(resolved);
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => { if (theme === "system") applyTheme("system"); };
+    const handler = () => {
+      if (theme === "system") {
+        const r = getSystemTheme();
+        setResolvedTheme(r);
+        applyThemeToDOM(r);
+      }
+    };
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
-  }, [applyTheme, theme]);
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
