@@ -61,14 +61,14 @@ export default async function SignInPage() {
         />
 
         {/* Shapes image */}
-        <Image
+        {/* <Image
           src="/img/img_shapes.png"
           alt=""
           width={280}
           height={280}
           className="absolute left-0 top-1/2 z-[1] -translate-y-1/2"
           priority
-        />
+        /> */}
 
         {/* Dotted globe canvas — anchored to the right, cut off by the panel edge */}
         <div className="absolute top-1/2 right-[-18%] z-0 h-[34rem] w-[34rem] -translate-y-1/2">

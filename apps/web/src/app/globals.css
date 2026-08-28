@@ -377,6 +377,9 @@ body {
 .force-light .bg-neutral-200 {
   background-color: #e5e5e5 !important;
 }
+.force-light img[alt="Trell"] {
+  filter: none !important;
+}
 
 /* ── Buttons (Dub-style) ────────────────────────────────────── */
 
