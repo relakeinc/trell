@@ -73,6 +73,19 @@
   color: #60a5fa !important;
 }
 
+/* Sidebar nav items with inline Tailwind classes */
+.dark aside a[class*="text-neutral-600"] {
+  color: var(--trell-dark-text-muted) !important;
+}
+
+.dark aside a[class*="text-neutral-600"]:hover {
+  color: var(--trell-dark-text) !important;
+}
+
+.dark aside a[class*="hover:bg-neutral-200/70"]:hover {
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
 /* Sidebar project dropdown button */
 .dark [class*="hover:bg-neutral-100"] {
   --tw-bg-opacity: 1;
@@ -138,15 +151,17 @@
 .dark aside > div:last-child > a[class*="bg-neutral-900"] {
   background-color: var(--trell-dark-accent) !important;
   border-color: var(--trell-dark-accent) !important;
+  color: white !important;
 }
 
 .dark aside > div:last-child > a[class*="bg-neutral-900"]:hover {
-  background-color: var(--trell-dark-accent-dark) !important;
+  background-color: #6b7080 !important;
 }
 
 /* Sidebar user avatar */
 .dark aside [class*="bg-neutral-200"] {
   background-color: var(--trell-dark-surface-2) !important;
+  color: var(--trell-dark-text-muted) !important;
 }
 
 /* Sidebar sign-out button */
@@ -175,13 +190,24 @@
   background-color: var(--trell-dark-surface-2) !important;
 }
 
-.dark [class*="w-[220px]"] [class*="bg-neutral-200"] {
+/* Settings nav active state */
+.dark [class*="w-[220px]"] a[class*="bg-blue-50"][class*="text-blue-600"] {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+}
+
+/* Settings back button - no bg in dark mode */
+.dark [class*="w-[220px]"] a[class*="group"][class*="rounded-lg"][class*="text-[17px]"] {
+  background-color: transparent !important;
+}
+
+.dark [class*="w-[220px]"] a[class*="group"][class*="rounded-lg"][class*="text-[17px]"]:hover {
   background-color: var(--trell-dark-surface-2) !important;
 }
 
-.dark [class*="w-[220px]"] a[class*="bg-blue-50"] {
-  background-color: rgba(59, 130, 246, 0.15) !important;
-  color: #60a5fa !important;
+/* Arrow icon container in settings back button */
+.dark [class*="w-[220px]"] [class*="bg-neutral-200"][class*="size-6"] {
+  background-color: var(--trell-dark-surface-2) !important;
 }
 
 /* Settings main content */
@@ -207,6 +233,25 @@
 
 .dark [class*="fixed"][class*="border-neutral-200"] {
   border-color: var(--trell-dark-border) !important;
+}
+
+/* Modal content */
+.dark [class*="fixed"] [class*="text-neutral-900"] {
+  color: var(--trell-dark-text) !important;
+}
+
+.dark [class*="fixed"] [class*="text-neutral-500"] {
+  color: var(--trell-dark-text-muted) !important;
+}
+
+.dark [class*="fixed"] [class*="bg-neutral-100"] {
+  background-color: var(--trell-dark-surface) !important;
+}
+
+.dark [class*="fixed"] input[class*="border-neutral-200"] {
+  border-color: var(--trell-dark-border) !important;
+  background-color: var(--trell-dark-surface) !important;
+  color: var(--trell-dark-text) !important;
 }
 
 /* Modal overlay */
@@ -235,6 +280,11 @@
 /* Skeleton in dark mode */
 .dark .trell-skeleton {
   background-color: var(--trell-dark-surface-2) !important;
+}
+
+/* Logo in dark mode - invert black text to white */
+.dark img[alt="Trell"] {
+  filter: invert(1) brightness(1.2);
 }
 
 /* Dividers */
@@ -294,12 +344,9 @@
   color: var(--trell-dark-text-muted) !important;
 }
 
-/* Subtle backgrounds */
-.dark [class*="bg-neutral-50"] {
-  background-color: var(--trell-dark-surface) !important;
-}
-
-.dark [class*="bg-neutral-100"] {
+/* Subtle backgrounds - only for panels, not buttons */
+.dark aside [class*="bg-neutral-100"],
+.dark [class*="w-[220px]"][class*="bg-neutral-100"] {
   background-color: var(--trell-dark-surface) !important;
 }
 
