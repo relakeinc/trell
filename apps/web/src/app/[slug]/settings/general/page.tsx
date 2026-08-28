@@ -20,9 +20,9 @@ export default function GeneralSettingsPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteSlug, setDeleteSlug] = useState("");
 
-  // Field state
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
+  // Field state — initialized from project, edited locally
+  const [name, setName] = useState<string | null>(null);
+  const [slug, setSlug] = useState<string | null>(null);
   const [defaultView, setDefaultView] = useState("analytics");
 
   // Success feedback
@@ -30,11 +30,16 @@ export default function GeneralSettingsPage() {
   const [slugSaved, setSlugSaved] = useState(false);
   const [logoSaved, setLogoSaved] = useState(false);
 
-  const nameValue = project ? (name || project.name) : "";
-  const slugValue = project ? (slug || project.slug) : "";
+  const nameValue = project ? (name ?? project.name) : "";
+  const slugValue = project ? (slug ?? project.slug) : "";
 
   useEffect(() => {
-    if (project) setLogoVariantState(project.logoVariant);
+    if (project) {
+      setLogoVariantState(project.logoVariant);
+      // Sync local state when project changes from server
+      setName((prev) => prev === null ? project.name : prev);
+      setSlug((prev) => prev === null ? project.slug : prev);
+    }
   }, [project]);
 
   if (loading || !project) return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
@@ -54,7 +59,7 @@ export default function GeneralSettingsPage() {
             saveProject({ name: nameValue }),
             { loading: "Saving…", success: "Name updated", error: "Failed to save" }
           );
-          if (ok) { setName(""); setNameSaved(true); }
+          if (ok) { setName(null); setNameSaved(true); }
         }}>
           <div className="p-5 pb-0">
             <div className="text-sm font-semibold text-trell-ink">Workspace Name</div>
@@ -88,7 +93,7 @@ export default function GeneralSettingsPage() {
             saveProject({ slug: slugValue }),
             { loading: "Saving…", success: "Slug updated", error: "Failed to save" }
           );
-          if (ok) { setSlug(""); setSlugSaved(true); }
+          if (ok) { setSlug(null); setSlugSaved(true); }
         }}>
           <div className="p-5 pb-0">
             <div className="text-sm font-semibold text-trell-ink">Workspace Slug</div>

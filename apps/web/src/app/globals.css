@@ -38,15 +38,13 @@
 }
 
 /* Cards and panels with bg-white */
-.dark .bg-white,
-.dark [class*="bg-white"] {
+.dark .bg-white {
   background-color: var(--trell-dark-surface) !important;
   border-color: var(--trell-dark-border) !important;
 }
 
 /* Form footers and subtle bg sections */
-.dark .bg-neutral-50\/80,
-.dark [class*="bg-neutral-50"] {
+.dark .bg-neutral-50\/80 {
   background-color: var(--trell-dark-surface-2) !important;
 }
 
@@ -67,13 +65,12 @@
 }
 
 .dark .trell-nav-item.active,
-.dark .trell-nav-item[class*="bg-blue-50"] {
+.dark .trell-nav-item.active {
   background-color: var(--trell-dark-surface-2) !important;
   color: var(--trell-dark-text) !important;
 }
 
-.dark .trell-nav-item.active svg,
-.dark .trell-nav-item[class*="bg-blue-50"] svg {
+.dark .trell-nav-item.active svg {
   color: var(--trell-dark-text) !important;
 }
 
@@ -217,8 +214,9 @@
 }
 
 /* Arrow icon container in settings back button */
-.dark [class*="w-[220px]"] [class*="bg-neutral-200"][class*="size-6"] {
+.dark .dark-settings-arrow {
   background-color: var(--trell-dark-surface-2) !important;
+  color: var(--trell-dark-text-muted) !important;
 }
 
 /* Empty state in dark mode */
@@ -368,28 +366,64 @@ body {
 
 /* Primary: dark bg, white text */
 .trell-btn-primary {
-  @apply trell-btn border-black bg-black text-white hover:bg-neutral-800 hover:ring-4 hover:ring-neutral-200 dark:border-[#CDCCCC] dark:bg-[#CDCCCC] dark:text-[#111111] dark:hover:bg-[#b8b8b7];
+  @apply trell-btn border-black bg-black text-white hover:bg-neutral-800 hover:ring-4 hover:ring-neutral-200;
+}
+.dark .trell-btn-primary {
+  border-color: var(--trell-dark-accent) !important;
+  background-color: var(--trell-dark-accent) !important;
+  color: var(--trell-dark-bg) !important;
+}
+.dark .trell-btn-primary:hover {
+  background-color: #b8b8b7 !important;
 }
 
 /* Secondary: bordered */
 .trell-btn-secondary {
-  @apply trell-btn border-trell-line-default bg-white text-trell-ink hover:bg-neutral-100 dark:border-[#2a2a29] dark:bg-[#191918] dark:text-[#CDCCCC] dark:hover:bg-[#1e1e1d];
+  @apply trell-btn border-trell-line-default bg-white text-trell-ink hover:bg-neutral-100;
+}
+.dark .trell-btn-secondary {
+  border-color: var(--trell-dark-border) !important;
+  background-color: var(--trell-dark-surface) !important;
+  color: var(--trell-dark-text) !important;
+}
+.dark .trell-btn-secondary:hover {
+  background-color: var(--trell-dark-surface-2) !important;
 }
 
 /* Outline: transparent bg */
 .trell-btn-outline {
-  @apply trell-btn border-transparent text-trell-ink-default hover:bg-neutral-900/5 dark:text-[#CDCCCC] dark:hover:bg-[#1e1e1d];
+  @apply trell-btn border-transparent bg-transparent text-trell-ink-default hover:bg-neutral-900/5;
+}
+.dark .trell-btn-outline {
+  color: var(--trell-dark-text) !important;
+}
+.dark .trell-btn-outline:hover {
+  background-color: var(--trell-dark-surface-2) !important;
 }
 
 /* Danger */
 .trell-btn-danger {
-  @apply trell-btn border-red-500 bg-red-500 text-white hover:bg-red-600 hover:ring-4 hover:ring-red-100 dark:border-red-600 dark:bg-red-600 dark:hover:bg-red-500;
+  @apply trell-btn border-red-500 bg-red-500 text-white hover:bg-red-600 hover:ring-4 hover:ring-red-100;
+}
+.dark .trell-btn-danger {
+  border-color: #dc2626 !important;
+  background-color: #dc2626 !important;
+}
+.dark .trell-btn-danger:hover {
+  background-color: #ef4444 !important;
 }
 
 /* ── Inputs (Dub-style) ─────────────────────────────────────── */
 
 .trell-input {
-  @apply w-full rounded-lg border border-trell-line-default bg-white px-3 py-2 text-sm outline-none transition-all placeholder:text-trell-ink-muted focus:border-trell-ink focus:ring-4 focus:ring-neutral-100 dark:border-[#2a2a29] dark:bg-[#191918] dark:text-[#CDCCCC] dark:placeholder:text-[#656565] dark:focus:border-[#656565] dark:focus:ring-[#CDCCCC]/10;
+  @apply w-full rounded-lg border border-trell-line-default px-3 py-2 text-sm outline-none transition-all placeholder:text-trell-ink-muted focus:border-trell-ink focus:ring-4 focus:ring-neutral-100;
+  background-color: white;
+  color: #171717;
+}
+.dark .trell-input {
+  border-color: var(--trell-dark-border);
+  background-color: var(--trell-dark-surface);
+  color: var(--trell-dark-text);
 }
 
 /* ── Cards ──────────────────────────────────────────────────── */
