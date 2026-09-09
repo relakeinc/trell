@@ -99,7 +99,7 @@ export function makeAnalytics(repo: Repo) {
 
       const events = await repo.getEventsForAnalytics(projectId, { from, to, type: type?.split(",").filter(Boolean), form });
       const filtered = segment ? filterEvents(events, segment) : events;
-      return sendOk(c, 200, { interval, series: computeSeries(filtered, interval) });
+      return sendOk(c, 200, { interval, series: computeSeries(filtered, interval, { from, to }) });
     }),
 
     breakdown: guard(async (c: Context): Promise<Response> => {
@@ -123,20 +123,23 @@ export function makeAnalytics(repo: Repo) {
     forms: guard(async (c: Context): Promise<Response> => {
       const projectId = c.get("projectId");
       const events = await repo.getEventsForAnalytics(projectId, {});
-      const map = new Map<string, { id: string; name: string | null; events: number; successes: number }>();
+      const map = new Map<string, { id: string; name: string | null; events: number; starts: number; successes: number }>();
       for (const e of events) {
         if (!e.formId) continue;
         let row = map.get(e.formId);
         if (!row) {
-          row = { id: e.formId, name: e.formName, events: 0, successes: 0 };
+          row = { id: e.formId, name: e.formName, events: 0, starts: 0, successes: 0 };
           map.set(e.formId, row);
         }
         row.events++;
+        if (e.type === "form_start") row.starts++;
         if (e.type === "form_success") row.successes++;
       }
       const rows = Array.from(map.values())
         .sort((a, b) => b.events - a.events)
-        .map((r) => ({ ...r, conversionRate: r.events > 0 ? r.successes / r.events : null }));
+        // Completion = successes / starts (same definition as the dashboard KPI),
+        // not successes / all events — that diluted the rate with views/interactions.
+        .map((r) => ({ ...r, conversionRate: r.starts > 0 ? r.successes / r.starts : null }));
       return sendOk(c, 200, { forms: rows });
     }),
 
@@ -217,7 +220,7 @@ export function makeAnalytics(repo: Repo) {
       const byType: Record<string, number> = {};
       const recent = events.slice(-10).reverse().map((e) => ({
         type: e.type,
-        page: e.page,
+        page: e.pagePath,
         ts: e.ts.toISOString(),
       }));
 

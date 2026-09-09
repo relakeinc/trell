@@ -100,7 +100,7 @@ describe("analytics routes (sk auth)", () => {
     await seedEvents(repo, projectId);
     const res = await app.request(`/v1/projects/${projectId}/forms`, { headers: headers() });
     const body = await res.json();
-    expect(body.forms[0]).toMatchObject({ id: "c", name: "Contacto", events: 2, successes: 1 });
+    expect(body.forms[0]).toMatchObject({ id: "c", name: "Contacto", events: 2, starts: 1, successes: 1, conversionRate: 1 });
   });
 
   it("returns 400 for an invalid dimension", async () => {

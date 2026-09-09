@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { Icon } from "@/components/Icon";
-import { ProjectProvider } from "./_components/ProjectContext";
+import { ProjectProvider, useProject } from "./_components/ProjectContext";
 
 type SettingsSection = "general" | "appearance" | "billing" | "domains" | "api" | "tracking" | "webhooks" | "utm-templates";
 
@@ -35,6 +36,21 @@ const GROUPS: Group[] = [
 ];
 
 const ALL_ITEMS = GROUPS.flatMap((g) => g.items);
+
+/** If the slug doesn't resolve to an accessible workspace, leave settings. */
+function RequireProject({ children }: { children: React.ReactNode }) {
+  const { project, loading } = useProject();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !project) router.replace("/");
+  }, [loading, project, router]);
+
+  if (loading || !project) {
+    return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
+  }
+  return <>{children}</>;
+}
 
 export default function SettingsLayout({
   children,
@@ -94,9 +110,9 @@ export default function SettingsLayout({
           </div>
         </div>
 
-        {/* Desktop: sidebar + content */}
-        <div className="hidden flex-1 gap-3 md:flex md:h-full">
-          <aside className="flex h-full w-[220px] shrink-0 flex-col overflow-hidden rounded-xl bg-neutral-100 py-2 pr-2">
+        {/* Desktop: sidebar + content / Mobile: full-width content (single mount) */}
+        <div className="flex min-w-0 flex-1 gap-3 md:h-full">
+          <aside className="hidden h-full w-[220px] shrink-0 flex-col overflow-hidden rounded-xl bg-neutral-100 py-2 pr-2 md:flex">
             <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
               <div className="flex flex-col p-3">
                 <div className="mb-5 px-1">
@@ -148,19 +164,10 @@ export default function SettingsLayout({
           <main className="flex h-full min-w-0 flex-1">
             <div className="trell-main">
               <div className="trell-content">
-                <div>{children}</div>
+                <div><RequireProject>{children}</RequireProject></div>
               </div>
             </div>
           </main>
-        </div>
-
-        {/* Mobile: full-width content */}
-        <div className="flex min-w-0 flex-1 md:hidden">
-          <div className="trell-main" style={{ borderRadius: 0 }}>
-            <div className="trell-content">
-              <div>{children}</div>
-            </div>
-          </div>
         </div>
       </div>
     </ProjectProvider>

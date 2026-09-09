@@ -4,7 +4,30 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
 
-const devMode = process.env.AUTH_DEV_MODE === "true";
+const devModeRequested = process.env.AUTH_DEV_MODE === "true";
+
+// Fail closed: the dev bypass must NEVER be active in production, even if the
+// flag leaks into a production environment (e.g. a copied .env file).
+if (devModeRequested && process.env.NODE_ENV === "production") {
+  throw new Error("AUTH_DEV_MODE must never be enabled in production");
+}
+
+const devMode = devModeRequested && process.env.NODE_ENV !== "production";
+
+if (devMode) {
+  console.warn("[trell:auth] AUTH_DEV_MODE is on — email-only sign-in (dev only).");
+}
+
+// Production boot guard: refuse weak/missing secrets instead of running insecure.
+if (process.env.NODE_ENV === "production" && process.env.NEXT_PHASE !== "phase-production-build") {
+  const secret = process.env.AUTH_SECRET ?? "";
+  if (!secret || secret.length < 32 || secret === "change-me-auth-secret") {
+    throw new Error("AUTH_SECRET must be set to a strong random value in production");
+  }
+  if (!process.env.TRELL_ENC_KEY) {
+    throw new Error("TRELL_ENC_KEY must be set in production");
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),

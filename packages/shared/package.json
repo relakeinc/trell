@@ -23,6 +23,7 @@
   },
   "files": ["dist"],
   "scripts": {
+    "dev": "tsup --watch",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "lint": "echo \"no linter yet\" && exit 0"

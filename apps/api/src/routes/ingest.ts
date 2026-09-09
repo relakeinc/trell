@@ -1,8 +1,10 @@
 import type { Context } from "hono";
 import type { ApiConfig } from "../config";
 import type { Repo } from "../repositories/types";
+import type { PrismaClient } from "@prisma/client";
 import { RateLimiter } from "../middleware/ratelimit";
 import { payloadTooLarge, sendError, sendOk, tooMany } from "../lib/errors";
+import { EventQuota } from "../lib/quota";
 import { parseAndValidate, toStoredEvent, BatchTooLargeError, InvalidEventError } from "../validation";
 import { deliverWebhooks } from "../lib/webhook-delivery";
 
@@ -15,6 +17,8 @@ export interface IngestDeps {
   repo: Repo;
   config: ApiConfig;
   limiter?: RateLimiter;
+  /** Shared Prisma client for webhook delivery. Absent in memory/dev mode. */
+  prisma?: PrismaClient;
 }
 
 function clientIp(c: Context): string {
@@ -23,6 +27,7 @@ function clientIp(c: Context): string {
 
 export function makeIngest(deps: IngestDeps): { handler: (c: Context) => Promise<Response>; preflight: (c: Context) => Promise<Response> } {
   const limiter = deps.limiter ?? new RateLimiter(deps.config.rateLimitMax, deps.config.rateLimitWindowMs);
+  const quota = new EventQuota();
   const maxBodyBytes = deps.config.maxBodyBytes;
   const maxBatch = deps.config.maxBatch;
 
@@ -46,10 +51,10 @@ export function makeIngest(deps: IngestDeps): { handler: (c: Context) => Promise
         const rl = limiter.check(`${projectId}:${clientIp(c)}`);
         if (!rl.allowed) return tooMany(c, rl.retryAfterMs);
 
-        // Check event limit
+        // Check event limit (cached count — no COUNT query per request)
         const plan = project.plan ?? "free";
         const limit = PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS]?.events ?? PLAN_LIMITS.free.events;
-        const count = await deps.repo.countEventsForAnalytics(projectId, {});
+        const count = await quota.getCount(deps.repo, projectId);
         if (count >= limit) {
           return sendError(c, 403, "limit_reached", `Event limit reached (${limit}). Upgrade to Pro for more.`);
         }
@@ -62,27 +67,30 @@ export function makeIngest(deps: IngestDeps): { handler: (c: Context) => Promise
 
         const stored = events.map(toStoredEvent);
         const result = await deps.repo.insertEvents({ projectId, events: stored });
+        quota.trackInserted(projectId, result.inserted);
 
-        // Deliver webhooks async (don't block response)
-        const webhookEvents = events.filter((e) =>
-          ["form_submit", "cta_click", "form_abandon"].includes(e.type),
-        );
-        if (webhookEvents.length > 0) {
-          Promise.allSettled(
-            webhookEvents.map((e) =>
-              deliverWebhooks(projectId, e.type, {
-                event_id: e.id,
-                type: e.type,
-                page: e.page,
-                form_id: e.form_id,
-                properties: e.properties,
-                visitor_id: e.visitor_id,
-                session_id: e.session_id,
-                timestamp: e.ts,
-              }),
-            ),
-          ).catch(() => {});
+        // Deliver webhooks async (don't block response).
+        // No hardcoded type filter: deliverWebhooks only sends event types the
+        // webhook actually subscribes to (events array in DB).
+        const prisma = deps.prisma;
+        if (!prisma || events.length === 0) {
+          return sendOk(c, 202, { inserted: result.inserted, duplicates: result.duplicates });
         }
+        Promise.allSettled(
+          events.map((e) => {
+            const form = "form" in e ? e.form : undefined;
+            return deliverWebhooks(projectId, e.type, {
+              event_id: e.event_id,
+              type: e.type,
+              page: e.page,
+              form_id: form?.id ?? null,
+              properties: e.properties,
+              visitor_id: e.visitor_id,
+              session_id: e.session_id,
+              timestamp: e.ts,
+            }, prisma);
+          }),
+        ).catch(() => {});
 
         return sendOk(c, 202, { inserted: result.inserted, duplicates: result.duplicates });
       } catch (e) {

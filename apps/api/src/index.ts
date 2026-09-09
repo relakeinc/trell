@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { PrismaClient } from "@prisma/client";
 import { createApp } from "./app";
@@ -6,13 +7,15 @@ import { MemoryRepo } from "./repositories/memory";
 import { PrismaRepo } from "./repositories/prisma";
 import { RateLimiter } from "./middleware/ratelimit";
 import { seedSyntheticEvents } from "./dev/synthetic";
+import { retryStuckDeliveries } from "./lib/webhook-delivery";
 
 const config = configFromEnv();
 const port = Number(process.env.PORT ?? 8787);
 
 let repo;
+let prisma: PrismaClient | null = null;
 if (process.env.DATABASE_URL) {
-  const prisma = new PrismaClient();
+  prisma = new PrismaClient();
   repo = new PrismaRepo(prisma);
   console.log("[trell:api] using Postgres (Prisma)");
 } else {
@@ -24,10 +27,19 @@ const app = createApp({
   repo,
   config,
   limiter: new RateLimiter(config.rateLimitMax, config.rateLimitWindowMs),
+  ...(prisma ? { prisma } : {}),
 });
 
 serve({ fetch: app.fetch, port }, async (info) => {
   console.log(`[trell:api] listening on http://localhost:${info.port}`);
+  if (prisma) {
+    // Sweep deliveries stuck in "pending" (crash mid-retry). Memory repo has no deliveries.
+    const sweepStore = prisma;
+    const sweep = setInterval(() => {
+      retryStuckDeliveries(sweepStore).catch((e) => console.error("[trell:api] webhook retry sweep failed", e));
+    }, 60_000);
+    (sweep as unknown as { unref?: () => void }).unref?.();
+  }
   if (process.env.TRELL_DEV_SEED === "1") {
     const seed = await seedSyntheticEvents(repo);
     console.log("[trell:api] seeded synthetic data (dev). Project id + keys to paste in the dashboard:");

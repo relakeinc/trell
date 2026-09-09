@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 
 // ── Projects (slug → ID resolution, cached globally) ──────
@@ -84,16 +84,24 @@ interface Metrics {
   avgTimeOnPageMs: number | null;
 }
 
+interface StatsComparison {
+  baseline: Record<string, number | null>;
+  compare: Record<string, number | null>;
+  deltas: Record<string, { absolute: number; percentage: number | null; direction: "up" | "down" | "flat" }>;
+}
+
 interface StatsResponse {
   metrics: Metrics;
+  comparison?: StatsComparison;
   error?: { code?: string; message?: string };
 }
 
-export function useProjectStats(projectId: string | null, qs: string) {
+export function useProjectStats(projectId: string | null, qs: string | null) {
   return useQuery({
     queryKey: ["stats", projectId, qs],
     queryFn: () => fetch(`/api/projects/${projectId}/stats?${qs}`).then((r) => r.json() as Promise<StatsResponse>),
-    enabled: !!projectId,
+    enabled: !!projectId && !!qs,
+    staleTime: 60_000,
   });
 }
 
@@ -108,11 +116,11 @@ interface SeriesResponse {
   series: TimelinePoint[];
 }
 
-export function useProjectSeries(projectId: string | null, interval: string, qs: string) {
+export function useProjectSeries(projectId: string | null, interval: string, qs: string | null) {
   return useQuery({
     queryKey: ["series", projectId, interval, qs],
     queryFn: () => fetch(`/api/projects/${projectId}/series?interval=${interval}&${qs}`).then((r) => r.json() as Promise<SeriesResponse>),
-    enabled: !!projectId,
+    enabled: !!projectId && !!qs,
   });
 }
 
@@ -125,11 +133,18 @@ interface BreakdownResponse {
   rows: Row[];
 }
 
+export function fetchBreakdown(projectId: string, dim: string, qs: string): Promise<BreakdownResponse> {
+  return fetch(`/api/projects/${projectId}/breakdown?dimension=${dim}&${qs}`).then((r) => r.json() as Promise<BreakdownResponse>);
+}
+
 export function useProjectBreakdown(projectId: string | null, dim: string, qs: string) {
   return useQuery({
     queryKey: ["breakdown", projectId, dim, qs],
-    queryFn: () => fetch(`/api/projects/${projectId}/breakdown?dimension=${dim}&${qs}`).then((r) => r.json() as Promise<BreakdownResponse>),
+    queryFn: () => fetchBreakdown(projectId!, dim, qs),
     enabled: !!projectId,
+    staleTime: 60_000,
+    // Keep the previous dimension's rows while the new one loads — no "no data" flash.
+    placeholderData: keepPreviousData,
   });
 }
 

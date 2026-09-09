@@ -23,7 +23,19 @@ export class MemoryRepo implements Repo {
   private funnelsByProject = new Map<string, Set<string>>();
   private savedViews = new Map<string, SavedViewRecord>();
   private savedViewsByProject = new Map<string, Set<string>>();
+  /** sha256(sk) → projectId for named server keys. */
+  private apiKeyHashes = new Map<string, string>();
   private seq = 0;
+
+  /** Test/demo helper: register a named server key hash for a project. */
+  seedApiKey(keyHash: string, projectId: string): void {
+    this.apiKeyHashes.set(keyHash, projectId);
+  }
+
+  async findApiKeyProject(keyHash: string): Promise<{ projectId: string } | null> {
+    const projectId = this.apiKeyHashes.get(keyHash);
+    return projectId ? { projectId } : null;
+  }
 
   async createOrganizationAndProject(input: CreateProjectInput): Promise<ProjectRecord> {
     const project: ProjectRecord = {

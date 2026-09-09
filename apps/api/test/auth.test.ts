@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { createApp } from "../src/app";
 import { MemoryRepo } from "../src/repositories/memory";
 import { configFromEnv, type ApiConfig } from "../src/config";
+import { hashSk } from "../src/lib/crypto";
 import type { Repo } from "../src/repositories/types";
 
 const PK = "pk_live_123";
@@ -70,6 +71,20 @@ describe("API auth + ingestion", () => {
     expect((await res.json()).error.code).toBe("missing_api_key");
   });
 
+  it("accepts the publishable key via ?key= query param (sendBeacon compat)", async () => {
+    const { app } = await makeApp();
+    const res = await app.request(`/v1/events?key=${PK}`, { method: "POST", headers: { origin: "https://example.com", "content-type": "application/json" }, body: validEvent() });
+    expect(res.status).toBe(202);
+    expect(await res.json()).toEqual({ inserted: 1, duplicates: 0 });
+  });
+
+  it("returns 401 for an invalid ?key= query param", async () => {
+    const { app } = await makeApp();
+    const res = await app.request("/v1/events?key=pk_bogus", { method: "POST", headers: { origin: "https://example.com", "content-type": "application/json" }, body: validEvent() });
+    expect(res.status).toBe(401);
+    expect((await res.json()).error.code).toBe("invalid_api_key");
+  });
+
   it("returns 401 when the API key is invalid", async () => {
     const { app } = await makeApp();
     const res = await app.request("/v1/events", { method: "POST", headers: { authorization: "Bearer pk_bogus", origin: "https://example.com", "content-type": "application/json" }, body: validEvent() });
@@ -99,6 +114,80 @@ describe("API auth + ingestion", () => {
     const res = await app.request("/v1/events", { method: "POST", headers: await headers(), body: validEvent() });
     expect(res.status).toBe(202);
     expect(await res.json()).toEqual({ inserted: 0, duplicates: 1 });
+  });
+});
+
+describe("server keys (sk_... named keys)", () => {
+  const SK = "sk_test_serverkey_abc123";
+
+  async function makeAppWithKey() {
+    const config = configFromEnv({ TRELL_ADMIN_KEY: ADMIN } as NodeJS.ProcessEnv);
+    const repo = new MemoryRepo();
+    const app = createApp({ repo, config });
+    const project = await repo.createOrganizationAndProject({
+      name: "Site",
+      slug: "site",
+      organizationName: "Site",
+      pk: PK,
+      skHash: "sk_hash",
+      domains: "example.com",
+    });
+    repo.seedApiKey(hashSk(SK), project.id);
+    return { app, projectId: project.id, repo };
+  }
+
+  it("ingest accepts sk via header even from a non-allowlisted origin", async () => {
+    const { app } = await makeAppWithKey();
+    const res = await app.request("/v1/events", {
+      method: "POST",
+      headers: { authorization: `Bearer ${SK}`, origin: "https://evil.com", "content-type": "application/json" },
+      body: validEvent(),
+    });
+    expect(res.status).toBe(202);
+  });
+
+  it("ingest rejects sk via ?key= (server keys are header-only)", async () => {
+    const { app } = await makeAppWithKey();
+    const res = await app.request(`/v1/events?key=${SK}`, {
+      method: "POST",
+      headers: { origin: "https://example.com", "content-type": "application/json" },
+      body: validEvent(),
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it("ingest rejects an unknown sk", async () => {
+    const { app } = await makeAppWithKey();
+    const res = await app.request("/v1/events", {
+      method: "POST",
+      headers: { authorization: "Bearer sk_bogus_key", origin: "https://example.com", "content-type": "application/json" },
+      body: validEvent(),
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it("management routes accept a named sk for their own project", async () => {
+    const { app, projectId } = await makeAppWithKey();
+    const res = await app.request(`/v1/projects/${projectId}/funnels`, {
+      headers: { authorization: `Bearer ${SK}` },
+    });
+    expect(res.status).toBe(200);
+  });
+
+  it("management routes reject a named sk from another project", async () => {
+    const { app, repo } = await makeAppWithKey();
+    const other = await repo.createOrganizationAndProject({
+      name: "Other",
+      slug: "other",
+      organizationName: "Other",
+      pk: "pk_other_123",
+      skHash: "other_hash",
+      domains: "",
+    });
+    const res = await app.request(`/v1/projects/${other.id}/funnels`, {
+      headers: { authorization: `Bearer ${SK}` },
+    });
+    expect(res.status).toBe(401);
   });
 });
 

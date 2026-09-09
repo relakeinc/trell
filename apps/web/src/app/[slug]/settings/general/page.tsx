@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Icon } from "@/components/Icon";
 import { SuccessCheck } from "@/components/SuccessCheck";
@@ -15,10 +16,13 @@ function getBaseDomain(): string {
 }
 
 export default function GeneralSettingsPage() {
-  const { project, loading, saveProject } = useProject();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { project, loading, saveProject, deleteProject } = useProject();
   const [logoVariant, setLogoVariantState] = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteSlug, setDeleteSlug] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   // Field state — initialized from project, edited locally
   const [name, setName] = useState<string | null>(null);
@@ -42,6 +46,21 @@ export default function GeneralSettingsPage() {
 
   if (!project) return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
 
+  async function handleDelete() {
+    if (deleteSlug !== project!.slug || deleting) return;
+    setDeleting(true);
+    try {
+      await toast.promise(deleteProject(), {
+        loading: "Deleting workspace…",
+        success: "Workspace deleted",
+        error: (e) => e instanceof Error ? e.message : "Failed to delete workspace",
+      });
+      router.replace("/");
+    } catch {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="px-1 pt-2">
@@ -54,11 +73,13 @@ export default function GeneralSettingsPage() {
         <form onSubmit={async (e) => {
           e.preventDefault();
           if (!nameValue.trim()) { toast.error("Name cannot be empty"); return; }
-          const ok = await toast.promise(
-            saveProject({ name: nameValue.trim() }),
-            { loading: "Saving…", success: "Name updated", error: "Failed to save" }
-          );
-          if (ok) { setName(null); setNameSaved(true); }
+          try {
+            await toast.promise(
+              saveProject({ name: nameValue.trim() }),
+              { loading: "Saving…", success: "Name updated", error: (err) => err instanceof Error ? err.message : "Failed to save" }
+            );
+            setName(null); setNameSaved(true);
+          } catch { /* error toast already shown */ }
         }}>
           <div className="p-5 pb-0">
             <div className="text-sm font-semibold text-trell-ink">Workspace Name</div>
@@ -90,11 +111,18 @@ export default function GeneralSettingsPage() {
           e.preventDefault();
           if (!slugValue.trim()) { toast.error("Slug cannot be empty"); return; }
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugValue.trim())) { toast.error("Slug must be lowercase with dashes only"); return; }
-          const ok = await toast.promise(
-            saveProject({ slug: slugValue.trim() }),
-            { loading: "Saving…", success: "Slug updated", error: "Failed to save" }
-          );
-          if (ok) { setSlug(null); setSlugSaved(true); }
+          try {
+            const updated = await toast.promise(
+              saveProject({ slug: slugValue.trim() }),
+              { loading: "Saving…", success: "Slug updated", error: (err) => err instanceof Error ? err.message : "Failed to save" }
+            );
+            setSlug(null); setSlugSaved(true);
+            // Keep the URL in sync — otherwise a refresh lands on the old slug.
+            if (updated.slug !== project.slug) {
+              const rest = pathname.split("/").slice(2).join("/");
+              router.replace(`/${updated.slug}/${rest}`);
+            }
+          } catch { /* error toast already shown */ }
         }}>
           <div className="p-5 pb-0">
             <div className="text-sm font-semibold text-trell-ink">Workspace Slug</div>
@@ -102,7 +130,7 @@ export default function GeneralSettingsPage() {
             <div className="mt-4">
               <input
                 value={slugValue}
-                onChange={(e) => setSlug(e.target.value)}
+                onChange={(e) => setSlug(e.target.value.toLowerCase())}
                 maxLength={48}
                 className="trell-input h-10 max-w-md"
               />
@@ -153,11 +181,13 @@ export default function GeneralSettingsPage() {
         </div>
         <form onSubmit={async (e) => {
           e.preventDefault();
-          const ok = await toast.promise(
-            saveProject({ logoVariant }),
-            { loading: "Saving…", success: "Logo saved", error: "Failed to save" }
-          );
-          if (ok) setLogoSaved(true);
+          try {
+            await toast.promise(
+              saveProject({ logoVariant }),
+              { loading: "Saving…", success: "Logo saved", error: (err) => err instanceof Error ? err.message : "Failed to save" }
+            );
+            setLogoSaved(true);
+          } catch { /* error toast already shown */ }
         }} className="flex items-center justify-end border-t border-trell-line bg-neutral-50/80 px-5 py-3">
           <div className="flex items-center gap-3">
             <SuccessCheck show={logoSaved} onDone={() => setLogoSaved(false)} />
@@ -196,10 +226,12 @@ export default function GeneralSettingsPage() {
                 className="h-8 w-40 rounded-lg border border-red-300 bg-white px-2 text-xs text-trell-ink focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-none"
               />
               <button
-                disabled={deleteSlug !== project.slug}
+                type="button"
+                onClick={() => void handleDelete()}
+                disabled={deleteSlug !== project.slug || deleting}
                 className="flex h-8 cursor-pointer items-center rounded-lg bg-red-600 px-4 text-xs font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Delete
+                {deleting ? "Deleting…" : "Delete"}
               </button>
               <button
                 onClick={() => { setDeleteOpen(false); setDeleteSlug(""); }}

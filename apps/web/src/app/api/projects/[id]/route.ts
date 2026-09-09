@@ -4,10 +4,16 @@ import { prisma } from "@/lib/prisma";
 import { PrismaMembershipRepo, ProjectAccessService } from "@/lib/authz";
 import { parseDomains, sanitizeDomains, normalizeDomain } from "@/lib/domains";
 import { getProjectOwnerPlan } from "@/lib/usage";
+import { getProjectDetail } from "@/lib/projectDetail";
 
 async function authorize(projectId: string, userId: string): Promise<boolean> {
   const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
   return svc.canAccessProject(userId, projectId);
+}
+
+async function requireOwner(projectId: string, userId: string): Promise<boolean> {
+  const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
+  return (await svc.roleOf(projectId, userId)) === "owner";
 }
 
 /** Project detail + installation status. NEVER returns the secret key. */
@@ -18,57 +24,9 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
 
   if (!(await authorize(id, session.user.id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
-  const project = await prisma.project.findUnique({
-    where: { id },
-    select: { id: true, name: true, slug: true, publishableKey: true, domains: true, logoVariant: true, createdAt: true },
-  });
-  if (!project) return NextResponse.json({ error: "not_found" }, { status: 404 });
-
-  const { plan, limits, billingPeriodStart } = await getProjectOwnerPlan(id);
-  const lastEvent = await prisma.event.aggregate({ where: { projectId: id }, _max: { ts: true } });
-
-  // Account-level usage: count across ALL projects owned by this user
-  const ownerMemberships = await prisma.projectUser.findMany({
-    where: { userId: session.user.id, role: "owner" },
-    select: { projectId: true },
-  });
-  const allProjectIds = ownerMemberships.map((m) => m.projectId);
-
-  const totalEvents = await prisma.event.count({ where: { projectId: { in: allProjectIds } } });
-
-  // Count unique domains across all owned projects
-  const allProjects = await prisma.project.findMany({
-    where: { id: { in: allProjectIds } },
-    select: { domains: true },
-  });
-  const allDomains = new Set<string>();
-  for (const p of allProjects) {
-    for (const d of parseDomains(p.domains)) allDomains.add(d);
-  }
-
-  return NextResponse.json({
-    project: {
-      id: project.id,
-      name: project.name,
-      slug: project.slug,
-      plan,
-      pk: project.publishableKey,
-      domains: parseDomains(project.domains),
-      logoVariant: project.logoVariant,
-      createdAt: project.createdAt,
-    },
-    installation: {
-      connected: lastEvent._max.ts != null,
-      lastEventAt: lastEvent._max.ts ? lastEvent._max.ts.toISOString() : null,
-    },
-    usage: {
-      events: totalEvents,
-      limit: limits.events,
-      domains: allDomains.size,
-      domainLimit: limits.domains,
-      billingPeriodStart: billingPeriodStart.toISOString(),
-    },
-  });
+  const detail = await getProjectDetail(id, session.user.id);
+  if (!detail) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  return NextResponse.json(detail);
 }
 
 /** Edit the allowed domain allowlist (add/remove). Reflected immediately by ingestion. */
@@ -138,15 +96,40 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   const updated = await prisma.project.update({
     where: { id },
     data: updateData,
-    select: { id: true, name: true, slug: true, domains: true },
+    select: { id: true, name: true, slug: true, publishableKey: true, domains: true, logoVariant: true, createdAt: true },
   });
+
+  const { plan } = await getProjectOwnerPlan(id);
 
   return NextResponse.json({
     project: {
       id: updated.id,
       name: updated.name,
       slug: updated.slug,
+      plan,
+      pk: updated.publishableKey,
       domains: parseDomains(updated.domains),
+      logoVariant: updated.logoVariant,
+      createdAt: updated.createdAt,
     },
   });
+}
+
+/**
+ * Delete a workspace and everything in it (events, keys, webhooks, … via
+ * cascade). Owner-only. The secret key is never involved.
+ */
+export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const { id } = await ctx.params;
+
+  if (!(await requireOwner(id, session.user.id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+
+  try {
+    await prisma.project.delete({ where: { id } });
+  } catch {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+  return NextResponse.json({ ok: true });
 }

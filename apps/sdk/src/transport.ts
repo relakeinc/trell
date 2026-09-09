@@ -148,7 +148,10 @@ export class Transport {
     let ok = false;
     if (this.beaconFn) {
       try {
-        ok = this.beaconFn(this.endpoint, new Blob([body], { type: "application/json" }));
+        // sendBeacon cannot set headers — the publishable key travels as ?key=.
+        const sep = this.endpoint.includes("?") ? "&" : "?";
+        const url = `${this.endpoint}${sep}key=${encodeURIComponent(this.project)}`;
+        ok = this.beaconFn(url, new Blob([body], { type: "application/json" }));
       } catch {
         ok = false;
       }

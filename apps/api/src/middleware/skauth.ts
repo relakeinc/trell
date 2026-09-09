@@ -1,12 +1,13 @@
 import type { MiddlewareHandler } from "hono";
 import type { Repo } from "../repositories/types";
-import { hashSk } from "../lib/crypto";
+import { hashSk, safeEqual } from "../lib/crypto";
 import { sendError } from "../lib/errors";
 
 /**
- * Authenticates management/analytics requests with the SECRET key (sk_...).
- * The route path must contain `:id` (the project id) — sk is verified against
- * that project's stored hash. Never accepts the publishable key (pk).
+ * Authenticates management/analytics requests with a SECRET key (sk_...).
+ * The route path must contain `:id` (the project id). Accepts either the
+ * project-level sk or a named server key created in the dashboard
+ * (Settings → API Keys). Never accepts the publishable key (pk).
  */
 export function skAuth(repo: Repo): MiddlewareHandler {
   return async (c, next) => {
@@ -20,7 +21,17 @@ export function skAuth(repo: Repo): MiddlewareHandler {
     const project = await repo.findProjectById(projectId);
     if (!project) return sendError(c, 404, "not_found", "project not found");
 
-    if (hashSk(sk) !== project.apiKeyHash) {
+    const hash = hashSk(sk);
+    if (safeEqual(hash, project.apiKeyHash)) {
+      c.set("projectId", project.id);
+      c.set("project", project);
+      await next();
+      return;
+    }
+
+    // Named server key (dashboard → API Keys), scoped to this project.
+    const row = await repo.findApiKeyProject(hash);
+    if (!row || row.projectId !== project.id) {
       return sendError(c, 401, "invalid_api_key", "invalid secret key");
     }
 

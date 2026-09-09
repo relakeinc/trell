@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { PrismaMembershipRepo, ProjectAccessService } from "@/lib/authz";
+
+async function canAccess(projectId: string, userId: string): Promise<boolean> {
+  const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
+  return svc.canAccessProject(userId, projectId);
+}
 
 export async function GET(
   _req: Request,
@@ -10,6 +16,8 @@ export async function GET(
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const { id } = await params;
+  if (!(await canAccess(id, session.user.id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+
   const templates = await prisma.utmTemplate.findMany({
     where: { projectId: id },
     orderBy: { createdAt: "desc" },
@@ -26,6 +34,8 @@ export async function POST(
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const { id } = await params;
+  if (!(await canAccess(id, session.user.id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+
   const body = (await req.json()) as {
     name?: string;
     source?: string;

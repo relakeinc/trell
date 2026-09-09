@@ -22,7 +22,7 @@ export function humanMs(ms: number | null): string {
 /** Format an ISO timestamp as a short date + time. */
 export function fmtTime(iso: string): string {
   try {
-    return new Date(iso).toLocaleString(undefined, {
+    return new Date(iso).toLocaleString("en", {
       month: "short",
       day: "numeric",
       hour: "numeric",
@@ -36,7 +36,7 @@ export function fmtTime(iso: string): string {
 /** Format an ISO timestamp as a short date. */
 export function fmtShortDate(iso: string): string {
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
+    return new Date(iso).toLocaleDateString("en", {
       month: "short",
       day: "numeric",
     });

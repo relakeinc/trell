@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { Icon } from "@/components/Icon";
+import { RedirectOverlay } from "@/components/RedirectOverlay";
 import { useProject } from "../../_components/ProjectContext";
 
 interface Plan {
@@ -66,21 +68,35 @@ export default function BillingPlansPage() {
   const { project, loading } = useProject();
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   const [upgrading, setUpgrading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
+  const [managing, setManaging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleCheckout(plan: "pro_monthly" | "pro_yearly") {
+    if (!project) {
+      setError("No project selected. Please reload and try again.");
+      return;
+    }
     setUpgrading(true);
+    setError(null);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, slug: project.slug }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else alert(data.error || "Failed to start checkout");
+      if (data.url) {
+        // Full-screen loader BEFORE leaving: the handoff to Polar can take
+        // a moment and the page would otherwise look frozen.
+        setRedirecting(true);
+        window.location.href = data.url;
+      } else {
+        setError(data.error || "Failed to start checkout. Please try again.");
+        setUpgrading(false);
+      }
     } catch {
-      alert("Failed to start checkout");
-    } finally {
+      setError("Failed to start checkout. Please check your connection and try again.");
       setUpgrading(false);
     }
   }
@@ -91,6 +107,18 @@ export default function BillingPlansPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {redirecting && (
+        <RedirectOverlay
+          title="Redirecting to secure payment…"
+          subtitle="Do not close this window."
+        />
+      )}
+      {managing && (
+        <RedirectOverlay
+          title="Opening customer portal…"
+          subtitle="Do not close this window."
+        />
+      )}
       {/* Breadcrumb + cycle toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm">
@@ -120,6 +148,11 @@ export default function BillingPlansPage() {
 
       {/* Plan cards */}
       <div className="flex flex-col overflow-hidden rounded-xl border border-neutral-200">
+        {error && (
+          <div role="alert" className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
         {/* Header accent bars */}
         <div className="grid grid-cols-1 sm:grid-cols-2">
           {PLANS.map((plan) => (
@@ -145,17 +178,49 @@ export default function BillingPlansPage() {
                   </div>
                 ))}
               </div>
-              <button
-                onClick={() => plan.id === "pro" && handleCheckout(cycle === "monthly" ? "pro_monthly" : "pro_yearly")}
-                disabled={plan.id !== "pro" || upgrading}
-                className={`mt-5 h-9 w-full rounded-lg text-sm font-medium transition-colors ${
-                  plan.id === "pro"
-                    ? "bg-neutral-900 text-white hover:bg-neutral-800"
-                    : "bg-neutral-100 text-neutral-500"
-                } disabled:opacity-60`}
-              >
-                {plan.id === "pro" ? (cycle === "monthly" ? "Upgrade to Pro" : "Upgrade to Pro (Yearly)") : "Current plan"}
-              </button>
+              {plan.id === "pro" ? (
+                isPro ? (
+                  <>
+                    <button
+                      disabled
+                      className="mt-5 h-9 w-full rounded-lg bg-neutral-100 text-sm font-medium text-neutral-500"
+                    >
+                      Current plan
+                    </button>
+                    <a
+                      href={`/api/portal?project=${project.id}`}
+                      onClick={() => setManaging(true)}
+                      className="mt-2 flex h-9 w-full items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+                    >
+                      {managing ? "Opening…" : "Manage / Cancel subscription"}
+                    </a>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => handleCheckout(cycle === "monthly" ? "pro_monthly" : "pro_yearly")}
+                    disabled={upgrading}
+                    className="trell-btn-accent mt-5 h-9 w-full"
+                  >
+                    {upgrading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="size-4 animate-spin" />
+                        Preparing secure payment…
+                      </span>
+                    ) : cycle === "monthly" ? (
+                      "Upgrade to Pro"
+                    ) : (
+                      "Upgrade to Pro (Yearly)"
+                    )}
+                  </button>
+                )
+              ) : (
+                <button
+                  disabled
+                  className="mt-5 h-9 w-full rounded-lg bg-neutral-100 text-sm font-medium text-neutral-500"
+                >
+                  {isPro ? "Included in Pro" : "Current plan"}
+                </button>
+              )}
             </div>
           ))}
         </div>
