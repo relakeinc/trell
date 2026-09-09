@@ -10,4 +10,5 @@ coverage/
 !.env.example
 .DS_Store
 notes/
+apps/api/public/trell.min.js
 notes/

@@ -48,13 +48,17 @@ export function createApp(deps: AppDeps): Hono {
 
   app.get("/health", (c) => c.json({ ok: true }));
 
-  // Serve tracking SDK
+  // Serve tracking SDK (minified build when present, readable source as fallback).
   app.get("/sdk/trell.js", async (c) => {
     if (!cachedSdk) {
       try {
-        cachedSdk = await readFile(join(import.meta.dirname, "../public/trell.js"), "utf-8");
+        cachedSdk = await readFile(join(import.meta.dirname, "../public/trell.min.js"), "utf-8");
       } catch {
-        return c.text("SDK not found", 404);
+        try {
+          cachedSdk = await readFile(join(import.meta.dirname, "../public/trell.js"), "utf-8");
+        } catch {
+          return c.text("SDK not found", 404);
+        }
       }
     }
     c.header("Content-Type", "application/javascript; charset=utf-8");

@@ -39,6 +39,9 @@ importers:
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.1
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
       prisma:
         specifier: ^6.19.3
         version: 6.19.3(typescript@5.9.3)

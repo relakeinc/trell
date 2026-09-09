@@ -21,7 +21,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsup",
+    "build": "pnpm build:sdk && tsup",
+    "build:sdk": "esbuild public/trell.js --minify --outfile=public/trell.min.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "echo \"no linter yet\" && exit 0",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "esbuild": "^0.28.2",
     "prisma": "^6.19.3",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
