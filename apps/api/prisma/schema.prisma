@@ -136,6 +136,7 @@ model WebhookDelivery {
   response    String?  @db.Text
   attempts    Int      @default(0)
   nextRetryAt DateTime?
+  payload     String?  @db.Text // event data snapshot for retry-sweep redelivery
   createdAt   DateTime @default(now())
 
   @@index([webhookId, createdAt])

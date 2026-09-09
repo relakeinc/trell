@@ -3,9 +3,10 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { ApiConfig } from "./config";
 import type { Repo } from "./repositories/types";
+import type { PrismaClient } from "@prisma/client";
 import { RateLimiter } from "./middleware/ratelimit";
-import { corsMiddleware } from "./middleware/cors";
-import { pkAuth } from "./middleware/auth";
+import { corsMiddleware, openCors } from "./middleware/cors";
+import { ingestAuth } from "./middleware/auth";
 import { skAuth } from "./middleware/skauth";
 import { makeIngest } from "./routes/ingest";
 import { makeProjects } from "./routes/projects";
@@ -18,20 +19,26 @@ export interface AppDeps {
   repo: Repo;
   config: ApiConfig;
   limiter?: RateLimiter;
+  /** Shared Prisma client. Absent in memory/dev mode (no webhook delivery). */
+  prisma?: PrismaClient;
 }
 
 let cachedSdk: string | null = null;
 
 export function createApp(deps: AppDeps): Hono {
   const app = new Hono();
-  const ingest = makeIngest(deps);
+  const ingest = makeIngest({ ...deps, prisma: deps.prisma });
   const projects = makeProjects(deps.repo, deps.config);
   const analytics = makeAnalytics(deps.repo);
   const funnels = makeFunnels(deps.repo);
   const views = makeViews(deps.repo);
 
-  // CORS
-  const corsOrigins = (process.env.CORS_ORIGIN ?? "*").split(",").map((s) => s.trim());
+  // CORS: public ingestion stays open (browser SDK + publishable keys),
+  // everything else only reflects explicitly allowlisted origins.
+  // NOTE: no "*" default here — ingestion openness comes from openCors().
+  const corsOrigins = (process.env.CORS_ORIGIN ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  app.use("/v1/ingest", openCors());
+  app.use("/v1/events", openCors());
   app.use("*", corsMiddleware(corsOrigins));
 
   app.onError((err, c) => {
@@ -56,11 +63,11 @@ export function createApp(deps: AppDeps): Hono {
     return c.body(cachedSdk);
   });
 
-  // Public ingestion (pk auth).
+  // Public ingestion (pk auth) + server-to-server (sk auth).
   app.options("/v1/ingest", (c) => ingest.preflight(c));
   app.options("/v1/events", (c) => ingest.preflight(c));
-  app.post("/v1/ingest", pkAuth(deps.repo), (c) => ingest.handler(c));
-  app.post("/v1/events", pkAuth(deps.repo), (c) => ingest.handler(c));
+  app.post("/v1/ingest", ingestAuth(deps.repo), (c) => ingest.handler(c));
+  app.post("/v1/events", ingestAuth(deps.repo), (c) => ingest.handler(c));
 
   // Management/analytics (sk auth) — private, never pk.
   app.post("/v1/projects", (c) => projects.handler(c));

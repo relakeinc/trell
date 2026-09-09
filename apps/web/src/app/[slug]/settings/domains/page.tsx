@@ -52,7 +52,8 @@ export default function DomainsSettingsPage() {
         setProject({ ...project, domains: data.domains });
         toast.success("Domain removed");
       } else {
-        toast.error("Failed to remove domain");
+        const err = await res.json().catch(() => null);
+        toast.error(err?.message || "Failed to remove domain");
       }
     } catch {
       toast.error("Failed to remove domain");

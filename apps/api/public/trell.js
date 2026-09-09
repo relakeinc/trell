@@ -30,6 +30,12 @@
 
   var INGEST_URL = API_BASE + "/v1/ingest";
 
+  // navigator.sendBeacon cannot set request headers (no Authorization),
+  // so the publishable key travels as ?key= — the API accepts it there.
+  function beaconUrl() {
+    return INGEST_URL + "?key=" + encodeURIComponent(PK);
+  }
+
   // ── Helpers ─────────────────────────────────────────────────
   var V = 1;
   var SESSION_TTL_MS = 30 * 60 * 1000; // 30 min
@@ -365,7 +371,7 @@
           scrollMilestones[m] = true;
           var ev = buildBase();
           ev.type = "scroll_depth";
-          ev.properties = { depth: m, maxDepth: 100 };
+          ev.properties = { depth: m, maxDepth: maxScrollDepth };
           send(ev);
         }
       });
@@ -383,21 +389,31 @@
   // ── Auto-Track: Time on Page ────────────────────────────────
   if (AUTO_TRACK) {
     var pageLoadTime = Date.now();
+    var pageExitSent = false;
 
     function trackPageExit() {
+      // beforeunload AND hidden both fire on tab close — send only once.
+      if (pageExitSent) return;
+      pageExitSent = true;
       var durationMs = Date.now() - pageLoadTime;
       var ev = buildBase();
       ev.type = "page_exit";
       ev.properties = { durationMs: durationMs, maxScrollDepth: typeof maxScrollDepth !== "undefined" ? maxScrollDepth : 0 };
       try {
         var blob = new Blob([JSON.stringify(ev)], { type: "application/json" });
-        navigator.sendBeacon(INGEST_URL, blob);
+        navigator.sendBeacon(beaconUrl(), blob);
       } catch (_) { send(ev); }
     }
 
     window.addEventListener("beforeunload", trackPageExit);
     document.addEventListener("visibilitychange", function () {
-      if (document.visibilityState === "hidden") trackPageExit();
+      if (document.visibilityState === "hidden") {
+        trackPageExit();
+      } else {
+        // New visible session: re-arm the timer and the once-guard.
+        pageLoadTime = Date.now();
+        pageExitSent = false;
+      }
     });
   }
 
@@ -416,7 +432,7 @@
         // Use sendBeacon for reliability during page unload
         try {
           var blob = new Blob([JSON.stringify(ev)], { type: "application/json" });
-          navigator.sendBeacon(INGEST_URL, blob);
+          navigator.sendBeacon(beaconUrl(), blob);
         } catch (_) { send(ev); }
       }
     });

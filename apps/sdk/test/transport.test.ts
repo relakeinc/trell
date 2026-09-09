@@ -156,4 +156,14 @@ describe("Transport", () => {
     vi.useRealTimers();
     expect(fetchFn).toHaveBeenCalledTimes(4); // re-sent from offline queue
   });
+
+  it("sends the publishable key as ?key= when flushing via beacon", () => {
+    const fetchFn = vi.fn(async (_i: string, _init: RequestInit) => fakeRes(204));
+    const beaconFn = vi.fn((_url: string, _data: BodyInit) => true);
+    const { transport } = makeTransport(fetchFn as unknown as typeof fetch, beaconFn);
+    transport.enqueue(ev());
+    transport.flushOnHidden();
+    expect(beaconFn).toHaveBeenCalledTimes(1);
+    expect(beaconFn.mock.calls[0]?.[0]).toContain("key=pk_test");
+  });
 });

@@ -53,6 +53,18 @@ export interface BreakdownRow {
   percentage: number;
 }
 
+function parseProps(raw: string | null): Record<string, unknown> | null {
+  if (!raw) return null;
+  try {
+    const value: unknown = JSON.parse(raw);
+    return typeof value === "object" && value !== null
+      ? (value as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function bucketStart(ts: Date, interval: Interval): number {
   const d = ts;
   if (interval === "hour") {
@@ -89,7 +101,7 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
   const visitors = new Set<string>();
   const timeGroups = new Map<string, { start?: number; success?: number }>();
   const pageviewCounts = new Map<string, number>(); // sessionId → pageview count
-  const scrollDepths: number[] = [];
+  const scrollMaxByPage = new Map<string, number>(); // sessionId|pagePath → max depth
   const pageExitDurations: number[] = [];
 
   for (const e of events) {
@@ -106,12 +118,23 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
       case "cta_click": m.ctaClicks++; break;
       case "field_interaction": m.fieldInteractions++; break;
       case "scroll_depth": {
-        const depth = (e.properties as Record<string, unknown>)?.depth;
-        if (typeof depth === "number") scrollDepths.push(depth);
+        // Milestones fire repeatedly per page — keep the max per session+page
+        // so the average reflects deepest reach, not event volume.
+        const props = parseProps(e.properties);
+        const depth = props?.depth;
+        const maxDepth = props?.maxDepth;
+        const best = Math.max(
+          typeof depth === "number" ? depth : 0,
+          typeof maxDepth === "number" ? maxDepth : 0,
+        );
+        if (best > 0) {
+          const key = `${e.sessionId}|${e.pagePath}`;
+          scrollMaxByPage.set(key, Math.max(scrollMaxByPage.get(key) ?? 0, best));
+        }
         break;
       }
       case "page_exit": {
-        const dur = (e.properties as Record<string, unknown>)?.durationMs;
+        const dur = parseProps(e.properties)?.durationMs;
         if (typeof dur === "number") pageExitDurations.push(dur);
         break;
       }
@@ -132,7 +155,9 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
       }
       const t = e.ts.getTime();
       if (e.type === "form_start") g.start = g.start == null ? t : Math.min(g.start, t);
-      else g.success = g.success == null ? t : Math.min(g.success, t);
+      // Latest success: pairs earliest start with completion even when events
+      // arrive out of order, and never yields a negative duration (guarded below).
+      else g.success = g.success == null ? t : Math.max(g.success, t);
     }
   }
 
@@ -144,19 +169,21 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
   let sum = 0;
   let count = 0;
   for (const g of timeGroups.values()) {
-    if (g.start != null && g.success != null) {
+    if (g.start != null && g.success != null && g.success >= g.start) {
       sum += g.success - g.start;
       count++;
     }
   }
   m.avgTimeToCompleteMs = count > 0 ? sum / count : null;
 
-  // Bounce rate: sessions with only 1 pageview
+  // Bounce rate: sessions with ≤1 pageview over sessions WITH pageviews
+  // (sessions without any pageview can neither bounce nor stay).
   let bounceCount = 0;
   for (const pvCount of pageviewCounts.values()) {
     if (pvCount <= 1) bounceCount++;
   }
-  m.bounceRate = sessions.size > 0 ? bounceCount / sessions.size : null;
+  const sessionsWithPageviews = pageviewCounts.size;
+  m.bounceRate = sessionsWithPageviews > 0 ? bounceCount / sessionsWithPageviews : null;
 
   // Pages per session
   let totalPageviews = 0;
@@ -165,9 +192,11 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
   }
   m.pagesPerSession = sessions.size > 0 ? totalPageviews / sessions.size : null;
 
-  // Avg scroll depth
-  if (scrollDepths.length > 0) {
-    m.avgScrollDepth = scrollDepths.reduce((a, b) => a + b, 0) / scrollDepths.length;
+  // Avg scroll depth: mean of per-page maximums
+  if (scrollMaxByPage.size > 0) {
+    let depthSum = 0;
+    for (const d of scrollMaxByPage.values()) depthSum += d;
+    m.avgScrollDepth = depthSum / scrollMaxByPage.size;
   }
 
   // Avg time on page
@@ -178,25 +207,50 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
   return m;
 }
 
-export function computeSeries(events: StoredEvent[], interval: Interval): TimelinePoint[] {
-  const map = new Map<number, TimelinePoint & { s?: Set<string>; v?: Set<string> }>();
+export interface SeriesRange {
+  from?: Date;
+  to?: Date;
+}
+
+/** Max buckets generated when zero-filling (protects against hour × year ranges). */
+const MAX_FILL_BUCKETS = 1000;
+
+const INTERVAL_MS: Record<Interval, number> = {
+  hour: 3_600_000,
+  day: 86_400_000,
+  week: 7 * 86_400_000,
+};
+
+function emptyPoint(bucket: number): TimelinePoint & { s: Set<string>; v: Set<string> } {
+  return {
+    bucket,
+    date: new Date(bucket).toISOString(),
+    views: 0,
+    starts: 0,
+    submits: 0,
+    successes: 0,
+    abandons: 0,
+    ctaClicks: 0,
+    fieldInteractions: 0,
+    sessions: 0,
+    visitors: 0,
+    s: new Set(),
+    v: new Set(),
+  };
+}
+
+export function computeSeries(events: StoredEvent[], interval: Interval, range?: SeriesRange): TimelinePoint[] {
+  const map = new Map<number, TimelinePoint & { s: Set<string>; v: Set<string> }>();
 
   for (const e of events) {
     const bucket = bucketStart(e.ts, interval);
     let p = map.get(bucket);
     if (!p) {
-      p = {
-        bucket,
-        date: new Date(bucket).toISOString(),
-        views: 0, starts: 0, submits: 0, successes: 0, abandons: 0, ctaClicks: 0, fieldInteractions: 0,
-        sessions: 0, visitors: 0,
-        s: new Set(),
-        v: new Set(),
-      };
+      p = emptyPoint(bucket);
       map.set(bucket, p);
     }
-    p.s!.add(e.sessionId);
-    p.v!.add(e.visitorId);
+    p.s.add(e.sessionId);
+    p.v.add(e.visitorId);
 
     switch (e.type) {
       case "form_view": p.views++; break;
@@ -210,9 +264,24 @@ export function computeSeries(events: StoredEvent[], interval: Interval): Timeli
     }
   }
 
+  // Zero-fill the requested range so charts render the full selected period
+  // (not just buckets that happen to contain events).
+  if (range?.from && range?.to && range.to.getTime() > range.from.getTime()) {
+    const stepMs = INTERVAL_MS[interval];
+    let t = bucketStart(range.from, interval);
+    const end = range.to.getTime();
+    for (let count = 0; t <= end && count < MAX_FILL_BUCKETS; t += stepMs, count++) {
+      if (!map.has(t)) map.set(t, emptyPoint(t));
+    }
+  }
+
   return Array.from(map.entries())
     .sort((a, b) => a[0] - b[0])
-    .map(([, p]) => ({
+    .map(([, p]) => stripSeriesPoint(p));
+}
+
+function stripSeriesPoint(p: TimelinePoint & { s?: Set<string>; v?: Set<string> }): TimelinePoint {
+  return {
       bucket: p.bucket,
       date: p.date,
       views: p.views,
@@ -222,9 +291,9 @@ export function computeSeries(events: StoredEvent[], interval: Interval): Timeli
       abandons: p.abandons,
       ctaClicks: p.ctaClicks,
       fieldInteractions: p.fieldInteractions,
-      sessions: p.s!.size,
-      visitors: p.v!.size,
-    }));
+      sessions: p.s?.size ?? p.sessions,
+      visitors: p.v?.size ?? p.visitors,
+  };
 }
 
 const accessors: Record<Dimension, (e: StoredEvent) => string | null> = {

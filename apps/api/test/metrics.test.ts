@@ -81,6 +81,46 @@ describe("computeMetrics", () => {
     const m = computeMetrics([ev({ type: "form_submit", formId: "c" })]);
     expect(m.conversionRate).toBeNull();
   });
+
+  it("averages max scroll depth per session+page, not milestone volume", () => {
+    const props = (depth: number, maxDepth: number) => JSON.stringify({ depth, maxDepth });
+    const events = [
+      ev({ type: "scroll_depth", eventId: "d1", sessionId: "s1", pagePath: "/a", properties: props(25, 30) }),
+      ev({ type: "scroll_depth", eventId: "d2", sessionId: "s1", pagePath: "/a", properties: props(50, 55) }),
+      ev({ type: "scroll_depth", eventId: "d3", sessionId: "s1", pagePath: "/a", properties: props(75, 80) }),
+      ev({ type: "scroll_depth", eventId: "d4", sessionId: "s1", pagePath: "/b", properties: props(25, 40) }),
+    ];
+    const m = computeMetrics(events);
+    // max(/a) = 80, max(/b) = 40 → avg 60 (old code averaged 25,50,75,25 = 43.75)
+    expect(m.avgScrollDepth).toBeCloseTo(60);
+  });
+
+  it("ignores negative time-to-complete pairs (success before start)", () => {
+    const events = [
+      ev({ type: "form_success", eventId: "r1", sessionId: "s1", formId: "c", ts: new Date("2026-01-05T10:00:00Z") }),
+      ev({ type: "form_start", eventId: "s1", sessionId: "s1", formId: "c", ts: new Date("2026-01-05T10:00:10Z") }),
+      ev({ type: "form_start", eventId: "s2", sessionId: "s2", formId: "c", ts: new Date("2026-01-05T10:00:00Z") }),
+      ev({ type: "form_success", eventId: "r2", sessionId: "s2", formId: "c", ts: new Date("2026-01-05T10:00:20Z") }),
+    ];
+    const m = computeMetrics(events);
+    // s1 skipped (success < start), s2 counts 20s
+    expect(m.avgTimeToCompleteMs).toBeCloseTo(20_000);
+  });
+
+  it("computes bounce rate only over sessions with pageviews", () => {
+    const events = [
+      ev({ type: "pageview", eventId: "p1", sessionId: "s1" }),
+      ev({ type: "form_submit", eventId: "f1", sessionId: "s2", formId: "c" }), // no pageview
+    ];
+    const m = computeMetrics(events);
+    // s1 bounced (1 pv), s2 has no pageviews → excluded → 1/1, not 1/2
+    expect(m.bounceRate).toBeCloseTo(1);
+  });
+
+  it("returns null bounce rate when nobody viewed a page", () => {
+    const m = computeMetrics([ev({ type: "form_submit", formId: "c" })]);
+    expect(m.bounceRate).toBeNull();
+  });
 });
 
 describe("computeSeries", () => {
@@ -95,6 +135,26 @@ describe("computeSeries", () => {
     expect(series[0]!.views).toBe(2);
     expect(series[1]!.views).toBe(1);
     expect(series[0]!.date).toBe("2026-01-05T00:00:00.000Z");
+  });
+
+  it("zero-fills the requested range", () => {
+    const events = [ev({ ts: new Date("2026-01-05T10:00:00Z") })];
+    const series = computeSeries(events, "day", {
+      from: new Date("2026-01-04T00:00:00Z"),
+      to: new Date("2026-01-07T00:00:00Z"),
+    });
+    expect(series.map((p) => p.date)).toEqual([
+      "2026-01-04T00:00:00.000Z",
+      "2026-01-05T00:00:00.000Z",
+      "2026-01-06T00:00:00.000Z",
+      "2026-01-07T00:00:00.000Z",
+    ]);
+    expect(series.map((p) => p.views)).toEqual([0, 1, 0, 0]);
+  });
+
+  it("returns only event buckets when no range is given", () => {
+    const events = [ev({ ts: new Date("2026-01-05T10:00:00Z") })];
+    expect(computeSeries(events, "day")).toHaveLength(1);
   });
 });
 

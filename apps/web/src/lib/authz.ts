@@ -6,6 +6,7 @@ export interface MembershipRow {
   role: string;
   name: string;
   slug: string;
+  logoVariant: number;
 }
 
 export interface AccessibleProject {
@@ -13,6 +14,7 @@ export interface AccessibleProject {
   name: string;
   slug: string;
   role: string;
+  logoVariant: number;
 }
 
 /** Abstraction so authorization can be tested without a real database. */
@@ -27,7 +29,7 @@ export class PrismaMembershipRepo implements MembershipRepo {
   async listForUser(userId: string): Promise<MembershipRow[]> {
     const rows = await this.prisma.projectUser.findMany({
       where: { userId },
-      include: { project: { select: { id: true, name: true, slug: true } } },
+      include: { project: { select: { id: true, name: true, slug: true, logoVariant: true } } },
     });
     return rows.map((r) => ({
       projectId: r.projectId,
@@ -35,15 +37,16 @@ export class PrismaMembershipRepo implements MembershipRepo {
       role: r.role,
       name: r.project.name,
       slug: r.project.slug,
+      logoVariant: r.project.logoVariant,
     }));
   }
 
   async findForUser(projectId: string, userId: string): Promise<MembershipRow | null> {
     const r = await this.prisma.projectUser.findUnique({
       where: { projectId_userId: { projectId, userId } },
-      include: { project: { select: { id: true, name: true, slug: true } } },
+      include: { project: { select: { id: true, name: true, slug: true, logoVariant: true } } },
     });
-    return r ? { projectId: r.projectId, userId: r.userId, role: r.role, name: r.project.name, slug: r.project.slug } : null;
+    return r ? { projectId: r.projectId, userId: r.userId, role: r.role, name: r.project.name, slug: r.project.slug, logoVariant: r.project.logoVariant } : null;
   }
 }
 
@@ -66,7 +69,7 @@ export class ProjectAccessService {
 
   async listAccessibleProjects(userId: string): Promise<AccessibleProject[]> {
     const rows = await this.repo.listForUser(userId);
-    return rows.map((r) => ({ id: r.projectId, name: r.name, slug: r.slug, role: r.role }));
+    return rows.map((r) => ({ id: r.projectId, name: r.name, slug: r.slug, role: r.role, logoVariant: r.logoVariant }));
   }
 
   async canAccessProject(userId: string, projectId: string): Promise<boolean> {

@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { z } from "zod";
 import type { Repo } from "../repositories/types";
 import type { ApiConfig } from "../config";
-import { newApiKeys } from "../lib/crypto";
+import { newApiKeys, safeEqual } from "../lib/crypto";
 import { badRequest, sendError, sendOk } from "../lib/errors";
 
 const bodySchema = z.object({
@@ -26,7 +26,7 @@ export function makeProjects(repo: Repo, config: ApiConfig) {
 
       const header = c.req.header("authorization") ?? "";
       const key = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
-      if (!key || key !== config.adminKey) return sendError(c, 401, "unauthorized", "invalid admin key");
+      if (!key || !safeEqual(key, config.adminKey)) return sendError(c, 401, "unauthorized", "invalid admin key");
 
       let parsed: z.infer<typeof bodySchema>;
       try {

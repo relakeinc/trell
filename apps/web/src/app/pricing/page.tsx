@@ -48,10 +48,12 @@ const PLANS = [
 
 export default function PricingPage() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleCheckout(productId: string) {
     if (!productId) return;
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -61,9 +63,11 @@ export default function PricingPage() {
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        setError(data.error || "Failed to start checkout. Please try again.");
       }
     } catch {
-      alert("Failed to start checkout");
+      setError("Failed to start checkout. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -98,6 +102,11 @@ export default function PricingPage() {
 
       {/* Plans */}
       <div className="mx-auto max-w-4xl px-6 pb-24 lg:px-12">
+        {error && (
+          <div role="alert" className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
         <div className="grid gap-6 lg:grid-cols-2">
           {PLANS.map((plan) => (
             <div

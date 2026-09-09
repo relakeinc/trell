@@ -24,8 +24,8 @@ const SECTIONS = [
 ];
 
 export default function AppearanceSettingsPage() {
-  const { theme, accent, setTheme, setAccent } = useTheme();
-  const isDark = theme === "dark";
+  const { theme, accent, setTheme, setAccent, resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   return (
     <div className="flex flex-col gap-6">

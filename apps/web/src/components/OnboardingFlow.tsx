@@ -112,7 +112,7 @@ export function OnboardingFlow({ initialStep }: { initialStep: number }) {
               <button
                 onClick={() => void createProject()}
                 disabled={busy || !name.trim()}
-                className="trell-btn-primary w-full"
+                className="trell-btn-accent w-full"
               >
                 {busy ? "Creating…" : "Create project"}
               </button>
@@ -152,7 +152,7 @@ export function OnboardingFlow({ initialStep }: { initialStep: number }) {
                 </pre>
               </div>
 
-              <button onClick={() => void finish()} className="trell-btn-primary w-full">
+              <button onClick={() => void finish()} className="trell-btn-accent w-full">
                 Go to dashboard
               </button>
             </div>
@@ -166,7 +166,7 @@ export function OnboardingFlow({ initialStep }: { initialStep: number }) {
             <p className="mt-2 text-sm text-neutral-500">
               You&apos;re all set. Head to your dashboard to see analytics live.
             </p>
-            <button onClick={() => void finish()} className="trell-btn-primary mt-8 w-full">
+            <button onClick={() => void finish()} className="trell-btn-accent mt-8 w-full">
               Open dashboard
             </button>
           </div>

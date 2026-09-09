@@ -15,6 +15,7 @@ interface SidebarProject {
   name: string;
   slug: string;
   role: string;
+  logoVariant: number;
 }
 
 const NAV_SECTIONS: {
@@ -43,13 +44,11 @@ export function ProjectSidebar({
   projectName,
   projects,
   userEmail,
-  logoVariant = 0,
 }: {
   projectSlug: string;
   projectName: string;
   projects: SidebarProject[];
   userEmail: string;
-  logoVariant?: number;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -111,8 +110,8 @@ export function ProjectSidebar({
       {/* Scrollable content */}
       <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
         <div className="flex flex-col p-3">
-          {/* ── Project dropdown ─────────────────────────── */}
-          <div className="relative mb-5 px-1" ref={dropdownRef}>
+          {/* ── Project switcher (inline accordion, pushes nav down) ── */}
+          <div className="mb-5 px-1" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-neutral-100"
@@ -128,9 +127,14 @@ export function ProjectSidebar({
               </span>
             </button>
 
-            {/* Dropdown menu */}
-            {dropdownOpen && (
-              <div className="absolute left-0 top-full z-50 mt-1 w-[calc(100%-8px)] overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg">
+            {/* Expandable project list — always mounted, animates via grid rows */}
+            <div
+              className={`grid transition-all duration-200 ease-out ${
+                dropdownOpen ? "mt-1 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+              }`}
+            >
+              <div className="overflow-hidden">
+                <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
                 <div className="p-1.5">
                   {projects.map((p) => (
                     <Link
@@ -143,7 +147,7 @@ export function ProjectSidebar({
                           : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
                       }`}
                     >
-                    <WorkspaceIcon name={p.name} variant={logoVariant} size={24} className="rounded-md" />
+                    <WorkspaceIcon name={p.name} variant={p.logoVariant} size={24} className="rounded-md" />
                       <span className="truncate">{p.name}</span>
                       {p.slug === projectSlug && (
                         <Icon name="chart-2" size={14} className="ml-auto text-blue-400" />
@@ -163,7 +167,8 @@ export function ProjectSidebar({
                   </button>
                 </div>
               </div>
-            )}
+            </div>
+          </div>
           </div>
 
           {/* ── Nav sections ─────────────────────────────── */}

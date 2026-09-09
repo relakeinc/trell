@@ -134,7 +134,7 @@ export default function WebhooksSettingsPage() {
               Receive real-time event notifications on your own infrastructure. Webhooks are available on the Pro plan.
             </p>
           </div>
-          <Link href={`/${project?.slug}/settings/billing/plans`} className="trell-btn-primary h-9 gap-1.5 px-4 text-xs">
+          <Link href={`/${project?.slug}/settings/billing/plans`} className="trell-btn-accent h-9 gap-1.5 px-4 text-xs">
             Upgrade to Pro
           </Link>
         </div>

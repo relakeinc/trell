@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMounted } from "@/components/Transitions";
 
 export function CreateProjectModal({
   open,
@@ -16,8 +17,12 @@ export function CreateProjectModal({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [keys, setKeys] = useState<{ pk: string; sk: string } | null>(null);
+  const t = useMounted(open, 160);
 
-  if (!open) return null;
+  if (!t.mounted) return null;
+
+  const overlayCls = t.closing ? "trell-fade-out" : "trell-fade-in";
+  const cardCls = t.closing ? "trell-modal-out" : "trell-modal-in";
 
   const submit = async () => {
     setBusy(true);
@@ -38,8 +43,8 @@ export function CreateProjectModal({
 
   if (keys) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-        <div className="trell-card w-full max-w-lg p-6">
+      <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 ${overlayCls}`}>
+        <div className={`trell-card w-full max-w-lg p-6 ${cardCls}`}>
           <h2 className="text-lg font-semibold">Project created</h2>
           <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
             Copy your secret key now. It is shown <strong>only once</strong> — Trell stores only a hash of it.
@@ -52,7 +57,7 @@ export function CreateProjectModal({
             <button onClick={onClose} className="trell-btn-outline h-9">
               Close
             </button>
-            <button onClick={() => { onCreated(); onClose(); }} className="trell-btn-primary">
+            <button onClick={() => { onCreated(); onClose(); }} className="trell-btn-accent">
               Go to dashboard
             </button>
           </div>
@@ -62,8 +67,8 @@ export function CreateProjectModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="trell-card w-full max-w-md p-6">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 ${overlayCls}`}>
+      <div className={`trell-card w-full max-w-md p-6 ${cardCls}`}>
         <h2 className="text-lg font-semibold">Create your project</h2>
         <label className="mt-4 block text-xs font-medium text-trell-muted">Project name</label>
         <input value={name} onChange={(e) => setName(e.target.value)} className="trell-input mt-1" placeholder="My online store" />
@@ -74,7 +79,7 @@ export function CreateProjectModal({
           <button onClick={onClose} className="trell-btn-outline h-9">
             Cancel
           </button>
-          <button onClick={() => void submit()} disabled={busy || !name.trim()} className="trell-btn-primary">
+          <button onClick={() => void submit()} disabled={busy || !name.trim()} className="trell-btn-accent">
             {busy ? "Creating…" : "Create project"}
           </button>
         </div>

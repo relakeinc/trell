@@ -1,6 +1,10 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Icon } from "@/components/Icon";
+import { RedirectOverlay } from "@/components/RedirectOverlay";
 import { useProject } from "../_components/ProjectContext";
 
 function addMonths(date: Date, months: number): Date {
@@ -15,8 +19,46 @@ function resetDateFrom(start?: string): string {
   return reset.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
+/** Shown once right after Polar redirects back from a successful checkout. */
+function UpgradedBanner() {
+  const params = useSearchParams();
+  const [show, setShow] = useState(() => params.get("upgraded") === "1");
+
+  useEffect(() => {
+    if (params.get("upgraded") === "1") {
+      // Clean the URL so a refresh doesn't reshow the banner.
+      const url = new URL(window.location.href);
+      url.searchParams.delete("upgraded");
+      window.history.replaceState(null, "", url.toString());
+    }
+  }, [params]);
+
+  if (!show) return null;
+
+  return (
+    <div className="trell-modal-in flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+        <Icon name="check" size={18} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-semibold text-emerald-900">You&apos;re on Pro 🎉</div>
+        <p className="mt-0.5 text-sm text-emerald-800">
+          50K events/mo, 100 domains, webhooks and 3-year retention are now active on your account.
+        </p>
+      </div>
+      <button
+        onClick={() => setShow(false)}
+        className="rounded-md px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+      >
+        Dismiss
+      </button>
+    </div>
+  );
+}
+
 export default function BillingSettingsPage() {
   const { project, usage, loading } = useProject();
+  const [portalBusy, setPortalBusy] = useState(false);
 
   if (loading || !usage || !project) return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
 
@@ -27,6 +69,15 @@ export default function BillingSettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {portalBusy && (
+        <RedirectOverlay
+          title="Opening customer portal…"
+          subtitle="Do not close this window."
+        />
+      )}
+      <Suspense fallback={null}>
+        <UpgradedBanner />
+      </Suspense>
       <div className="px-1 pt-2">
         <h1 className="text-lg font-semibold text-trell-ink">Billing</h1>
       </div>
@@ -45,13 +96,13 @@ export default function BillingSettingsPage() {
             <span className="text-xs text-trell-ink-muted">{usage.events.toLocaleString()} of {usage.limit.toLocaleString()} events used</span>
           </div>
           {isFree ? (
-            <Link href={`/${project.slug}/settings/billing/plans`} className="trell-btn-primary h-8 cursor-pointer px-3 text-xs">
+            <Link href={`/${project.slug}/settings/billing/plans`} className="trell-btn-accent h-8 cursor-pointer px-3 text-xs">
               Upgrade to Pro
             </Link>
           ) : (
-            <Link href="/api/portal" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
-              Manage subscription
-            </Link>
+            <a href={`/api/portal?project=${project.id}`} onClick={() => setPortalBusy(true)} className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
+              {portalBusy ? "Opening…" : "Manage subscription"}
+            </a>
           )}
         </div>
       </div>

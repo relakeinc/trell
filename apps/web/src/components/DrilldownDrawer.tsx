@@ -40,8 +40,8 @@ export function DrilldownDrawer({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-40 flex bg-black/30">
-      <div className="ml-auto h-full w-full max-w-lg overflow-auto border-l border-trell-line bg-trell-card p-5">
+    <div className="fixed inset-0 z-40 flex bg-black/30 trell-fade-in">
+      <div className="trell-drawer-right-in ml-auto h-full w-full max-w-lg overflow-auto border-l border-trell-line bg-trell-card p-5">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold">{title}</h2>

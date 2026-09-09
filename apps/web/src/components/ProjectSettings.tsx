@@ -122,7 +122,6 @@ export function ProjectSettings({
   };
 
   const rotate = async () => {
-    if (!window.confirm("Rotating the secret key invalidates the current one everywhere. Anyone using the old key must update. Continue?")) return;
     setBusy(true);
     setError(null);
     const res = await fetch(`/api/projects/${projectId}/rotate-secret`, { method: "POST" });
@@ -354,7 +353,7 @@ function BillingSection({ usage }: { usage: Status["usage"] }) {
           </div>
           <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-600">Active</span>
         </div>
-        <button className="trell-btn-primary mt-4 flex h-9 w-full items-center justify-center text-sm">
+        <button className="trell-btn-accent mt-4 flex h-9 w-full items-center justify-center text-sm">
           Upgrade to Pro
         </button>
       </div>
@@ -391,19 +390,36 @@ function DomainsSection({ domains, newDomain, setNewDomain, onAdd, onRemove, err
           placeholder="example.com"
           onKeyDown={(e) => e.key === "Enter" && onAdd()}
         />
-        <button onClick={onAdd} className="trell-btn-primary h-9">Add</button>
+        <button onClick={onAdd} className="trell-btn-accent h-9">Add</button>
       </div>
     </div>
   );
 }
 
 function ApiSection({ pk, busy, newSk, onRotate }: { pk: string; busy: boolean; newSk: string | null; onRotate: () => void }) {
+  const [confirmRotate, setConfirmRotate] = useState(false);
+
+  function handleRotate() {
+    if (!confirmRotate) {
+      setConfirmRotate(true);
+      window.setTimeout(() => setConfirmRotate(false), 5000);
+      return;
+    }
+    setConfirmRotate(false);
+    onRotate();
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <Field label="Publishable key" hint="Safe to expose in the browser — used by the Trell SDK.">
         <CopyRow value={pk} />
       </Field>
-      <Field label="Secret key" hint="Only a hash is stored. Rotating invalidates the old key immediately." action={<button onClick={onRotate} disabled={busy} className="trell-btn-danger h-8 px-3 text-xs">{busy ? "…" : "Rotate"}</button>}>
+      <Field label="Secret key" hint="Only a hash is stored. Rotating invalidates the old key immediately." action={<button onClick={handleRotate} disabled={busy} className="trell-btn-danger h-8 px-3 text-xs">{busy ? "…" : confirmRotate ? "Click again to confirm" : "Rotate"}</button>}>
+        {confirmRotate && !newSk && (
+          <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+            The current key stops working everywhere immediately. Anyone using it must update.
+          </p>
+        )}
         {newSk ? (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
             <p className="mb-2 text-xs font-medium text-amber-800">New secret key (shown once) — copy it now:</p>

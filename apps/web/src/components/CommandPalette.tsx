@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Icon } from "./Icon";
+import { useMounted } from "./Transitions";
 
 interface Command {
   id: string;
@@ -14,6 +15,7 @@ interface Command {
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
+  const t = useMounted(open, 160);
   const [query, setQuery] = useState("");
   const [selectedIdx, setSelectedIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,15 +79,15 @@ export function CommandPalette() {
     }
   }
 
-  if (!open) return null;
+  if (!t.mounted) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh] sm:pt-[20vh]">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
+      <div className={`absolute inset-0 bg-black/40 backdrop-blur-sm ${t.closing ? "trell-fade-out" : "trell-fade-in"}`} onClick={() => setOpen(false)} />
 
       {/* Palette */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-800">
+      <div className={`relative w-full max-w-lg overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-800 ${t.closing ? "trell-modal-out" : "trell-modal-in"}`}>
         <div className="flex items-center gap-3 border-b border-neutral-200 px-4 dark:border-neutral-700">
           <Icon name="search" size={18} className="shrink-0 text-neutral-400" />
           <input

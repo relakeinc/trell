@@ -54,6 +54,11 @@ export class PrismaRepo implements Repo {
     return project ? this.toRecord(project) : null;
   }
 
+  async findApiKeyProject(keyHash: string): Promise<{ projectId: string } | null> {
+    const row = await this.prisma.apiKey.findUnique({ where: { keyHash }, select: { projectId: true } });
+    return row ? { projectId: row.projectId } : null;
+  }
+
   async insertEvents(input: InsertEventsInput): Promise<{ inserted: number; duplicates: number }> {
     if (input.events.length === 0) return { inserted: 0, duplicates: 0 };
     const res = await this.prisma.event.createMany({

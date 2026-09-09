@@ -49,11 +49,15 @@ export default function UtmTemplatesSettingsPage() {
     return parts.join("&");
   }
 
-  function copyQueryString(t: UtmTemplate) {
+  async function copyQueryString(t: UtmTemplate) {
     const qs = buildQueryString(t);
     if (!qs) return;
-    navigator.clipboard.writeText(qs);
-    toast.success("Copied to clipboard");
+    try {
+      await navigator.clipboard.writeText(qs);
+      toast.success("Copied to clipboard");
+    } catch {
+      toast.error("Could not copy — select and copy manually");
+    }
   }
 
   async function createTemplate() {
@@ -273,7 +277,7 @@ export default function UtmTemplatesSettingsPage() {
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         {activeParams(t) > 0 && (
-                          <button onClick={() => copyQueryString(t)} className="text-xs text-trell-ink-muted hover:text-trell-ink transition-colors" title="Copy query string">
+                          <button onClick={() => void copyQueryString(t)} className="text-xs text-trell-ink-muted hover:text-trell-ink transition-colors" title="Copy query string">
                             Copy UTM
                           </button>
                         )}

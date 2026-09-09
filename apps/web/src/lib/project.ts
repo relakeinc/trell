@@ -8,6 +8,7 @@ export interface ProjectData {
   name: string;
   slug: string;
   role: string;
+  logoVariant: number;
 }
 
 /**

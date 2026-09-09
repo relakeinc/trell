@@ -4,12 +4,14 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { usePathname } from "next/navigation";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { Icon } from "@/components/Icon";
+import { useMounted } from "@/components/Transitions";
 
 interface SidebarProject {
   id: string;
   name: string;
   slug: string;
   role: string;
+  logoVariant: number;
 }
 
 interface MobileShellContextValue {
@@ -50,16 +52,15 @@ export function MobileShell({
   projectName,
   projects,
   userEmail,
-  logoVariant = 0,
 }: {
   children: ReactNode;
   projectSlug: string;
   projectName: string;
   projects: SidebarProject[];
   userEmail: string;
-  logoVariant?: number;
 }) {
   const { sidebarOpen, openSidebar, closeSidebar } = useMobileShell();
+  const t = useMounted(sidebarOpen, 200);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -87,16 +88,15 @@ export function MobileShell({
       </button>
 
       {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
+      {t.mounted && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={closeSidebar} />
-          <div className="absolute inset-y-0 left-0 flex w-[280px] flex-col overflow-hidden bg-neutral-100 py-2 pr-2">
+          <div className={`absolute inset-0 bg-black/40 ${t.closing ? "trell-fade-out" : "trell-fade-in"}`} onClick={closeSidebar} />
+          <div className={`absolute inset-y-0 left-0 flex w-[280px] flex-col overflow-hidden bg-neutral-100 py-2 pr-2 ${t.closing ? "trell-drawer-left-out" : "trell-drawer-left-in"}`}>
             <ProjectSidebar
               projectSlug={projectSlug}
               projectName={projectName}
               projects={projects}
               userEmail={userEmail}
-              logoVariant={logoVariant}
             />
           </div>
         </div>

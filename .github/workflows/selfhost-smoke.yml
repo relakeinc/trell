@@ -1,0 +1,41 @@
+name: Self-host smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      API_URL: http://localhost:8787
+      WEB_URL: http://localhost:3000
+      TRELL_ADMIN_KEY: ci-admin-key
+      ORIGIN: https://example.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write CI .env for compose
+        run: |
+          cat > .env <<EOF
+          POSTGRES_USER=trell
+          POSTGRES_PASSWORD=trell
+          POSTGRES_DB=trell
+          DATABASE_URL=postgresql://trell:trell@db:5432/trell
+          PUBLIC_URL=http://localhost:3000
+          TRELL_ADMIN_KEY=ci-admin-key
+          AUTH_SECRET=ci-auth-secret-that-is-long-enough-32
+          TRELL_ENC_KEY=$(openssl rand -hex 32)
+          EOF
+
+      - name: Start stack
+        run: docker compose up -d --build
+
+      - name: Run smoke checks
+        run: bash scripts/selfhost-smoke.sh
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
