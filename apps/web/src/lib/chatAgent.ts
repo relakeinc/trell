@@ -60,8 +60,15 @@ export function toFunctionDeclarations(tools: McpToolDef[]): GeminiFunctionDecla
   });
 }
 
-export function parseChatBody(body: unknown): ChatMessage[] {
-  if (!body || typeof body !== "object" || !Array.isArray((body as { messages?: unknown }).messages)) {
+/** Human-readable tool name: tracking_checkup -> Tracking checkup. */
+export function prettyToolName(name: string): string {
+  const words = name.split("_").filter(Boolean);
+  if (words.length === 0) return name;
+  const [first, ...rest] = words as [string, ...string[]];
+  return [first.charAt(0).toUpperCase() + first.slice(1), ...rest].join(" ");
+}
+
+export function parseChatBody(body: unknown): ChatMessage[] {  if (!body || typeof body !== "object" || !Array.isArray((body as { messages?: unknown }).messages)) {
     throw new Error("messages array is required");
   }
   const messages = (body as { messages: unknown[] }).messages.map((m) => {

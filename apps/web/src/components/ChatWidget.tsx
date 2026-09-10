@@ -6,20 +6,26 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowUp,
   ChartColumn,
+  Check,
   Activity,
   ChevronDown,
+  Copy,
   FastForward,
   KeyRound,
   Filter,
   Pencil,
   Plus,
+  RotateCcw,
   Search,
   SlidersHorizontal,
+  ThumbsDown,
+  ThumbsUp,
   X,
 } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useChat } from "./ChatProvider";
+import { prettyToolName } from "@/lib/chatAgent";
 import { ChatContainerContent, ChatContainerRoot, ChatContainerScrollAnchor } from "@/components/ui/chat-container";
 import {
   PromptInput,
@@ -30,8 +36,10 @@ import { ScrollButton } from "@/components/ui/scroll-button";
 import { Tool } from "@/components/ui/tool";
 
 interface Msg {
+  id: string;
   role: "user" | "model";
   text: string;
+  status?: "sending" | "streaming" | "complete" | "error";
 }
 
 interface Convo {
@@ -60,6 +68,18 @@ const CHAT_KEY = (slug: string) => `trell:chat:${slug}`;
 const MAX_CONVOS = 20;
 const MAX_MSGS = 60;
 
+function newId(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `m_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+  }
+}
+
+function withIds(messages: Msg[]): Msg[] {
+  return messages.map((m) => (m.id ? m : { ...m, id: newId() }));
+}
+
 function loadConvos(slug: string): Convo[] {
   try {
     if (typeof localStorage === "undefined") return [];
@@ -69,6 +89,7 @@ function loadConvos(slug: string): Convo[] {
     if (!Array.isArray(parsed)) return [];
     return parsed
       .filter((c) => c && typeof c.id === "string" && Array.isArray(c.messages))
+      .map((c) => ({ ...c, messages: withIds(c.messages) }))
       .slice(0, MAX_CONVOS);
   } catch {
     return [];
@@ -90,6 +111,91 @@ function greeting(): string {
   if (h >= 6 && h < 13) return "Good morning.";
   if (h >= 13 && h < 21) return "Good afternoon.";
   return "Good evening.";
+}
+
+function ActionButton({
+  label,
+  title,
+  onClick,
+  children,
+}: {
+  label: string;
+  title: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={label}
+      className="flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-trell-ink focus-visible:outline-2 focus-visible:outline-blue-500 active:bg-neutral-200 dark:text-neutral-500 dark:hover:bg-[#2a2a29] dark:hover:text-neutral-100"
+    >
+      {children}
+    </button>
+  );
+}
+
+function MessageActions({
+  message,
+  canRegenerate,
+  onRegenerate,
+}: {
+  message: Msg;
+  canRegenerate: boolean;
+  onRegenerate: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const [vote, setVote] = useState<"up" | "down" | null>(null);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(message.text);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = message.text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  return (
+    <div className="mt-1.5 flex items-center gap-0.5 md:opacity-0 md:transition-opacity md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+      {copied ? (
+        <span className="flex h-7 items-center gap-1 px-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+          <Check size={13} /> Copied
+        </span>
+      ) : (
+        <ActionButton label="Copy response" title="Copy" onClick={() => void copy()}>
+          <Copy size={13} />
+        </ActionButton>
+      )}
+      {canRegenerate && (
+        <ActionButton label="Regenerate response" title="Regenerate" onClick={onRegenerate}>
+          <RotateCcw size={13} />
+        </ActionButton>
+      )}
+      <ActionButton
+        label="Mark as helpful"
+        title="Helpful"
+        onClick={() => setVote((v) => (v === "up" ? null : "up"))}
+      >
+        <ThumbsUp size={13} className={vote === "up" ? "fill-emerald-500 text-emerald-500" : undefined} />
+      </ActionButton>
+      <ActionButton
+        label="Mark as not helpful"
+        title="Not helpful"
+        onClick={() => setVote((v) => (v === "down" ? null : "down"))}
+      >
+        <ThumbsDown size={13} className={vote === "down" ? "fill-red-500 text-red-500" : undefined} />
+      </ActionButton>
+    </div>
+  );
 }
 
 export function ChatWidget() {
@@ -164,24 +270,53 @@ export function ChatWidget() {
   async function send(text: string) {
     const clean = text.trim();
     if (!clean || busy) return;
-    const next: Msg[] = [...messages, { role: "user" as const, text: clean }];
+    const next: Msg[] = [...messages, { id: newId(), role: "user" as const, text: clean, status: "sending" as const }];
     setMessages(next);
     setInput("");
     setToolCalls([]);
+    await runCompletion(next);
+  }
+
+  /** Regenerate: drop the trailing assistant message and run again. No backend change. */
+  async function regenerate(messageId: string) {
+    if (busy) return;
+    const idx = messages.findIndex((m) => m.id === messageId && m.role === "model");
+    if (idx <= 0) return;
+    const base = messages.slice(0, idx);
+    if (base[base.length - 1]?.role !== "user") return;
+    setMessages(base);
+    setToolCalls([]);
+    await runCompletion(base);
+  }
+
+  async function runCompletion(base: Msg[]) {
     setBusy(true);
     setStatus("Thinking…");
+    const assistantId = newId();
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, mode, messages: next }),
+        body: JSON.stringify({
+          slug,
+          mode,
+          messages: base.map(({ role, text }) => ({ role, text })),
+        }),
       });
       if (!res.ok || !res.body) throw new Error(res.status === 401 ? "Session expired" : res.status === 503 ? "Chat not configured" : "Chat error");
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";
       let modelText = "";
-      setMessages((prev) => [...prev, { role: "model", text: "" }]);
+      let started = false;
+      const appendText = (snapshot: string) => {
+        setMessages((prev) => {
+          const copy = [...prev];
+          copy[copy.length - 1] = { id: assistantId, role: "model", text: snapshot, status: "streaming" as const };
+          return copy;
+        });
+      };
+      setMessages((prev) => [...prev, { id: assistantId, role: "model", text: "", status: "streaming" as const }]);
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -199,15 +334,12 @@ export function ChatWidget() {
             | { t: "error"; d: string };
           if (evt.t === "text") {
             modelText += evt.d;
-            const snapshot = modelText;
-            setMessages((prev) => {
-              const copy = [...prev];
-              copy[copy.length - 1] = { role: "model", text: snapshot };
-              return copy;
-            });
+            started = true;
+            appendText(modelText);
           } else if (evt.t === "status") {
             setStatus(evt.d);
-          } else if (evt.t === "tool") {            setToolCalls((prev) => {
+          } else if (evt.t === "tool") {
+            setToolCalls((prev) => {
               const idx = prev.findIndex((t) => t.name === evt.name && t.state === "input-available");
               if (idx >= 0) {
                 const copy = [...prev];
@@ -222,8 +354,33 @@ export function ChatWidget() {
           }
         }
       }
+      if (!started && !modelText) {
+        setMessages((prev) => {
+          const copy = [...prev];
+          copy[copy.length - 1] = { id: assistantId, role: "model", text: "I couldn't generate a response. Try again.", status: "error" as const };
+          return copy;
+        });
+      } else {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantId ? { ...m, status: "complete" as const } : m)),
+        );
+      }
     } catch (e) {
-      setMessages((prev) => [...prev, { role: "model", text: `⚠️ ${e instanceof Error ? e.message : "Error"}` }]);    } finally {
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.id === assistantId) {
+          const copy = [...prev];
+          copy[copy.length - 1] = {
+            id: assistantId,
+            role: "model",
+            text: `⚠️ ${e instanceof Error ? e.message : "Error"}`,
+            status: "error" as const,
+          };
+          return copy;
+        }
+        return [...prev, { id: newId(), role: "model", text: `⚠️ ${e instanceof Error ? e.message : "Error"}`, status: "error" as const }];
+      });
+    } finally {
       setBusy(false);
       setStatus(null);
     }
@@ -251,7 +408,7 @@ export function ChatWidget() {
   }
 
   return (
-    <aside className="trell-drawer-right-in relative hidden h-full w-[380px] max-w-[calc(100vw-2rem)] shrink-0 flex-col gap-1 overflow-hidden rounded-xl bg-neutral-100 p-3 md:flex">
+    <aside className="yoi-chat trell-drawer-right-in relative hidden h-full w-[380px] max-w-[calc(100vw-2rem)] shrink-0 flex-col gap-1 overflow-hidden rounded-xl bg-neutral-100 p-3 md:flex">
         {/* dotted texture (Cloudflare-style) */}
         <div
           aria-hidden
@@ -344,7 +501,7 @@ export function ChatWidget() {
 
         {/* messages */}
         <ChatContainerRoot className="relative min-h-0 flex-1">
-          <ChatContainerContent className="flex min-h-full flex-col gap-4 px-1 py-2">
+          <ChatContainerContent className="flex min-h-full flex-col gap-4 px-1 py-2" aria-live="polite" aria-label="Conversation">
             {messages.length === 0 ? (
               <div className="m-auto flex w-full flex-col items-center py-6 text-center">
                 <div className="relative mb-4">
@@ -382,57 +539,94 @@ export function ChatWidget() {
               </div>
             ) : (
               <>
-                {messages.map((m, i) =>
-                  m.role === "user" ? (
-                    <div key={i} className="max-w-[90%] self-end whitespace-pre-wrap rounded-2xl rounded-br-md bg-neutral-900 px-3.5 py-2.5 text-sm leading-relaxed text-white dark:bg-[#CDCCCC] dark:text-[#111111]">
-                      {m.text}
+                {messages.map((m, i) => {
+                  const isLast = i === messages.length - 1;
+                  const streaming = busy && isLast && m.role === "model" && m.status !== "error";
+                  if (m.role === "user") {
+                    return (
+                      <div key={m.id} className="trell-msg-in max-w-[75%] self-end whitespace-pre-wrap rounded-[18px_18px_5px_18px] bg-neutral-900 px-[14px] py-[10px] text-sm leading-relaxed text-white max-md:max-w-[88%] dark:bg-[#CDCCCC] dark:text-[#111111]">
+                        {m.text}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={m.id} className="group flex max-w-full items-start gap-2.5 self-stretch">
+                      <Image
+                        src="/yoi-logo.png"
+                        alt="Yoi"
+                        width={28}
+                        height={28}
+                        className="mt-0.5 h-7 w-7 shrink-0 rounded-full"
+                      />
+                      <div className="min-w-0 flex-1 text-[15px] leading-[1.7] text-trell-ink">
+                        <Markdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            h1: ({ children }) => <div className="mb-1.5 text-[15px] font-semibold text-trell-ink">{children}</div>,
+                            h2: ({ children }) => <div className="mb-1.5 text-[15px] font-semibold text-trell-ink">{children}</div>,
+                            h3: ({ children }) => <div className="mb-1 mt-3 text-sm font-semibold text-trell-ink first:mt-0">{children}</div>,
+                            h4: ({ children }) => <div className="mb-1 mt-2 text-sm font-semibold text-trell-ink">{children}</div>,
+                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                            ul: ({ children }) => <ul className="mb-2 ml-1 flex flex-col gap-1">{children}</ul>,
+                            ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal">{children}</ol>,
+                            li: ({ children }) => <li className="list-none [&>p]:mb-0">{children}</li>,
+                            strong: ({ children }) => <strong className="font-semibold text-trell-ink">{children}</strong>,
+                            em: ({ children }) => <em>{children}</em>,
+                            a: ({ children, href }) => (
+                              <a href={href} target="_blank" rel="noreferrer" className="font-medium text-blue-600 underline decoration-blue-300 underline-offset-2 hover:text-blue-700 dark:text-blue-400">
+                                {children}
+                              </a>
+                            ),
+                            blockquote: ({ children }) => (
+                              <blockquote className="mb-2 border-l-2 border-trell-line pl-3 text-trell-ink-muted [&>p]:mb-1">
+                                {children}
+                              </blockquote>
+                            ),
+                            code: ({ children }) => (
+                              <code className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-[12px] text-trell-ink dark:bg-[#2a2a29]">
+                                {children}
+                              </code>
+                            ),
+                            pre: ({ children }) => (
+                              <pre className="mb-2 overflow-x-auto rounded-lg bg-neutral-950 p-3 font-mono text-xs leading-relaxed text-neutral-200">
+                                {children}
+                              </pre>
+                            ),
+                            hr: () => <hr className="my-3 border-trell-line" />,
+                            table: ({ children }) => (
+                              <div className="mb-2 overflow-x-auto">
+                                <table className="w-full border-collapse text-[13px]">{children}</table>
+                              </div>
+                            ),
+                            th: ({ children }) => (
+                              <th className="border-b border-trell-line px-2 py-1 text-left font-semibold text-trell-ink">{children}</th>
+                            ),
+                            td: ({ children }) => <td className="border-b border-trell-line/60 px-2 py-1">{children}</td>,
+                          }}
+                        >
+                          {m.text || "…"}
+                        </Markdown>
+                        {streaming && <span className="trell-streaming-cursor" aria-hidden="true" />}
+                        {m.status === "complete" && m.text && !streaming && (
+                          <MessageActions
+                            message={m}
+                            canRegenerate={isLast}
+                            onRegenerate={() => void regenerate(m.id)}
+                          />
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <div key={i} className="max-w-full self-start text-sm leading-relaxed text-trell-ink">
-                      <Markdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          h1: ({ children }) => <div className="mb-1.5 text-[15px] font-semibold text-trell-ink">{children}</div>,
-                          h2: ({ children }) => <div className="mb-1.5 text-[15px] font-semibold text-trell-ink">{children}</div>,
-                          h3: ({ children }) => <div className="mb-1 mt-3 text-sm font-semibold text-trell-ink first:mt-0">{children}</div>,
-                          h4: ({ children }) => <div className="mb-1 mt-2 text-sm font-semibold text-trell-ink">{children}</div>,
-                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                          ul: ({ children }) => <ul className="mb-2 ml-1 flex flex-col gap-1">{children}</ul>,
-                          ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal">{children}</ol>,
-                          li: ({ children }) => <li className="list-none [&>p]:mb-0">{children}</li>,
-                          strong: ({ children }) => <strong className="font-semibold text-trell-ink">{children}</strong>,
-                          code: ({ children }) => (
-                            <code className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-[12px] text-trell-ink dark:bg-[#2a2a29]">
-                              {children}
-                            </code>
-                          ),
-                          pre: ({ children }) => (
-                            <pre className="mb-2 overflow-x-auto rounded-lg bg-neutral-950 p-3 font-mono text-xs leading-relaxed text-neutral-200">
-                              {children}
-                            </pre>
-                          ),
-                          hr: () => <hr className="my-3 border-trell-line" />,
-                          table: ({ children }) => (
-                            <div className="mb-2 overflow-x-auto">
-                              <table className="w-full border-collapse text-[13px]">{children}</table>
-                            </div>
-                          ),
-                          th: ({ children }) => (
-                            <th className="border-b border-trell-line px-2 py-1 text-left font-semibold text-trell-ink">{children}</th>
-                          ),
-                          td: ({ children }) => <td className="border-b border-trell-line/60 px-2 py-1">{children}</td>,
-                        }}
-                      >
-                        {m.text || "…"}
-                      </Markdown>
-                    </div>
-                  ),
-                )}
+                  );
+                })}
                 {toolCalls.map((t) => (
-                  <Tool key={t.id} toolPart={{ type: t.name, state: t.state }} className="max-w-full self-stretch [&_button]:text-xs" />
+                  <Tool
+                    key={t.id}
+                    toolPart={{ type: prettyToolName(t.name), state: t.state }}
+                    className="max-w-full self-stretch [&_button]:text-xs"
+                  />
                 ))}
                 {busy && messages[messages.length - 1]?.role === "user" && (
-                  <div className="flex items-center gap-2 self-start text-xs text-trell-ink-muted">
+                  <div className="flex items-center gap-2 self-start text-xs text-trell-ink-muted" role="status">
                     <span className="flex gap-1" aria-hidden>
                       <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:0ms]" />
                       <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:150ms]" />

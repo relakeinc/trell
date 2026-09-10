@@ -682,6 +682,47 @@ body {
   will-change: transform, opacity;
 }
 
+/* Yoi chat: visible keyboard focus for all controls */
+.yoi-chat button:focus-visible,
+.yoi-chat input:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Chat streaming cursor + message entry */
+@keyframes trell-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.trell-streaming-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 17px;
+  margin-left: 3px;
+  vertical-align: -3px;
+  border-radius: 2px;
+  background: currentColor;
+  animation: trell-blink 900ms infinite;
+}
+
+@keyframes trell-msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.trell-msg-in {
+  animation: trell-msg-in 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trell-edge-flow,
+  .trell-streaming-cursor,
+  .trell-msg-in {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .trell-edge-flow {
     animation: none;

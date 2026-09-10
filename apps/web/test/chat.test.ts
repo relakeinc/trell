@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildSystemPrompt, parseChatBody, toFunctionDeclarations, toGeminiContents } from "../src/lib/chatAgent";
+import { buildSystemPrompt, parseChatBody, prettyToolName, toFunctionDeclarations, toGeminiContents } from "../src/lib/chatAgent";
 import { signIdentityJwt } from "../src/lib/chatIdentity";
 
 describe("chatAgent helpers", () => {
@@ -34,6 +34,12 @@ describe("chatAgent helpers", () => {
     expect(() => parseChatBody({ messages: [{ role: "model", text: "x" }] })).toThrow();
     const ok = parseChatBody({ slug: "s", messages: [{ role: "user", text: "hi" }] });
     expect(ok).toEqual([{ role: "user", text: "hi" }]);
+  });
+
+  it("humanizes tool names", () => {
+    expect(prettyToolName("tracking_checkup")).toBe("Tracking checkup");
+    expect(prettyToolName("list_projects")).toBe("List projects");
+    expect(prettyToolName("get_forms")).toBe("Get forms");
   });
 });
 
