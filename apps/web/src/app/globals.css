@@ -695,6 +695,26 @@ body {
   50% { opacity: 0; }
 }
 
+/* Shimmer text (thinking indicator) */
+@keyframes trell-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.trell-shimmer {
+  background: linear-gradient(
+    to right,
+    var(--trell-ink-muted, #a3a3a3) 30%,
+    var(--trell-ink, #171717) 50%,
+    var(--trell-ink-muted, #a3a3a3) 70%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: trell-shimmer 2.2s linear infinite;
+}
+
 .trell-streaming-cursor {
   display: inline-block;
   width: 7px;
@@ -716,11 +736,17 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trell-edge-flow,
+  .trell-ask-edge::before,
   .trell-streaming-cursor,
   .trell-msg-in {
-    animation: none;
+    animation: none !important;
   }
+  .trell-shimmer {
+    animation: none !important;
+    background: none !important;
+    color: var(--trell-ink-muted, #a3a3a3) !important;
+  }
+}
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildSystemPrompt, parseChatBody, prettyToolName, toFunctionDeclarations, toGeminiContents } from "../src/lib/chatAgent";
+import { buildSystemPrompt, parseChatBody, parseSSEEvent, prettyToolName, toFunctionDeclarations, toGeminiContents } from "../src/lib/chatAgent";
 import { signIdentityJwt } from "../src/lib/chatIdentity";
 
 describe("chatAgent helpers", () => {
@@ -40,6 +40,28 @@ describe("chatAgent helpers", () => {
     expect(prettyToolName("tracking_checkup")).toBe("Tracking checkup");
     expect(prettyToolName("list_projects")).toBe("List projects");
     expect(prettyToolName("get_forms")).toBe("Get forms");
+  });
+
+  it("parses SSE data lines including thought events", () => {
+    expect(parseSSEEvent(`data: {"t":"thought","d":"planning…"}`)).toEqual({ t: "thought", d: "planning…" });
+    expect(parseSSEEvent(`data: {"t":"text","d":"hi"}`)).toEqual({ t: "text", d: "hi" });
+    expect(parseSSEEvent(`data: {"t":"done"}`)).toEqual({ t: "done" });
+    expect(parseSSEEvent(`data: {"t":"status","d":"working"}`)).toEqual({ t: "status", d: "working" });
+    expect(parseSSEEvent(`data: {"t":"tool","name":"list_projects","state":"input-available"}`)).toEqual({
+      t: "tool",
+      name: "list_projects",
+      state: "input-available",
+    });
+    expect(parseSSEEvent(`data: {"t":"error","d":"boom"}`)).toEqual({ t: "error", d: "boom" });
+  });
+
+  it("rejects SSE keep-alives and garbage", () => {
+    expect(parseSSEEvent(": ping")).toBeNull();
+    expect(parseSSEEvent("")).toBeNull();
+    expect(parseSSEEvent("event: message")).toBeNull();
+    expect(parseSSEEvent("data: not-json")).toBeNull();
+    expect(parseSSEEvent(`data: {"nope":true}`)).toBeNull();
+    expect(parseSSEEvent(`data: [1,2]`)).toBeNull();
   });
 });
 

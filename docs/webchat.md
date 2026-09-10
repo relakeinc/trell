@@ -11,9 +11,17 @@ Widget flotante en los workspaces (`[slug]`), potenciado por Gemini gratis
    (15 min, `MCP_OAUTH_SECRET`) con el email de la sesión y abre cliente MCP
    contra `MCP_URL` → las tools devuelven **solo sus proyectos**.
 3. Loop agente (máx. 6 turnos, streaming SSE): Gemini 2.5 Flash llama tools,
-   el backend las ejecuta y stremea la respuesta final.
+   el backend las ejecuta y stremea la respuesta final. Eventos SSE:
+   `text` (respuesta), `thought` (razonamiento del modelo), `status`,
+   `tool` (chips), `done`, `error`.
 4. Destructivas exigen confirmación en lenguaje natural antes de llamarlas
    (la tool además pide `confirm: true`).
+5. Reasoning: el backend pide `thinkingConfig: { includeThoughts: true }`
+   y extrae partes con `thought: true` a mano (el `.text` del SDK puede
+   incluirlas o no según versión). El widget muestra un bloque colapsable
+   "Reasoning…" sobre la respuesta + shimmer "Thinking…" mientras no hay
+   texto. Si el modelo rechaza thinking, reintenta una vez sin él. El
+   razonamiento no se persiste en el historial (`localStorage`).
 
 ## Variables (servicio `web`)
 

@@ -68,6 +68,27 @@ export function prettyToolName(name: string): string {
   return [first.charAt(0).toUpperCase() + first.slice(1), ...rest].join(" ");
 }
 
+export type StreamEvent =
+  | { t: "text"; d: string }
+  | { t: "status"; d: string }
+  | { t: "thought"; d: string }
+  | { t: "tool"; name: string; state: "input-available" | "output-available" | "output-error" }
+  | { t: "done" }
+  | { t: "error"; d: string };
+
+/** Parse one SSE `data:` line. Returns null for keep-alives and garbage. */
+export function parseSSEEvent(line: string): StreamEvent | null {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("data:")) return null;
+  try {
+    const evt = JSON.parse(trimmed.slice(5)) as Partial<StreamEvent> | null;
+    if (!evt || typeof evt !== "object" || typeof evt.t !== "string") return null;
+    return evt as StreamEvent;
+  } catch {
+    return null;
+  }
+}
+
 export function parseChatBody(body: unknown): ChatMessage[] {  if (!body || typeof body !== "object" || !Array.isArray((body as { messages?: unknown }).messages)) {
     throw new Error("messages array is required");
   }

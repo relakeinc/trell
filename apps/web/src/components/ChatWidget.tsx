@@ -9,6 +9,7 @@ import {
   Check,
   Activity,
   ChevronDown,
+  Cloud,
   Copy,
   FastForward,
   KeyRound,
@@ -25,7 +26,8 @@ import {
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useChat } from "./ChatProvider";
-import { prettyToolName } from "@/lib/chatAgent";
+import { prettyToolName, parseSSEEvent } from "@/lib/chatAgent";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChatContainerContent, ChatContainerRoot, ChatContainerScrollAnchor } from "@/components/ui/chat-container";
 import {
   PromptInput,
@@ -198,6 +200,26 @@ function MessageActions({
   );
 }
 
+function ReasoningBlock({ text, streaming }: { text: string; streaming: boolean }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="mb-1">
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CollapsibleTrigger className="flex cursor-pointer items-center gap-1 text-xs font-medium text-trell-ink-muted transition-colors hover:text-trell-ink">
+          <ChevronDown size={13} className={`transition-transform duration-200 ${open ? "" : "-rotate-90"}`} />
+          {streaming ? "Reasoning…" : open ? "Hide reasoning" : "Show reasoning"}
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="mt-1.5 max-h-56 overflow-y-auto whitespace-pre-wrap break-words border-l-2 border-trell-line pl-3 text-[13px] leading-relaxed text-trell-ink-muted">
+            {text}
+            {streaming ? <span className="trell-streaming-cursor" aria-hidden="true" /> : null}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+}
+
 export function ChatWidget() {
   const { slug } = useParams<{ slug: string }>();
   const { open, setOpen, askHover } = useChat();
@@ -207,6 +229,7 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [modeOpen, setModeOpen] = useState(false);  const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
+  const [thoughts, setThoughts] = useState("");
   const [toolsOpen, setToolsOpen] = useState(false);
   const [convos, setConvos] = useState<Convo[]>(() => (slug ? loadConvos(slug) : []));
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -253,6 +276,7 @@ export function ChatWidget() {
     setActiveId(null);
     setMessages([]);
     setToolCalls([]);
+    setThoughts("");
     setHistoryOpen(false);
     setQuery("");
   }
@@ -263,6 +287,7 @@ export function ChatWidget() {
     setActiveId(found.id);
     setMessages(found.messages);
     setToolCalls([]);
+    setThoughts("");
     setHistoryOpen(false);
     setQuery("");
   }
@@ -274,6 +299,7 @@ export function ChatWidget() {
     setMessages(next);
     setInput("");
     setToolCalls([]);
+    setThoughts("");
     await runCompletion(next);
   }
 
@@ -286,6 +312,7 @@ export function ChatWidget() {
     if (base[base.length - 1]?.role !== "user") return;
     setMessages(base);
     setToolCalls([]);
+    setThoughts("");
     await runCompletion(base);
   }
 
@@ -321,18 +348,15 @@ export function ChatWidget() {
         const { done, value } = await reader.read();
         if (done) break;
         buf += decoder.decode(value, { stream: true });
-        const parts = buf.split("\n\n");
-        buf = parts.pop() ?? "";
-        for (const part of parts) {
-          const line = part.trim();
-          if (!line.startsWith("data:")) continue;
-          const evt = JSON.parse(line.slice(5)) as
-            | { t: "text"; d: string }
-            | { t: "status"; d: string }
-            | { t: "tool"; name: string; state: ToolCall["state"] }
-            | { t: "done" }
-            | { t: "error"; d: string };
-          if (evt.t === "text") {
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        for (const line of lines) {
+          const evt = parseSSEEvent(line);
+          if (!evt) continue;
+          if (evt.t === "thought") {
+            const d = evt.d;
+            setThoughts((prev) => prev + d);
+          } else if (evt.t === "text") {
             modelText += evt.d;
             started = true;
             appendText(modelText);
@@ -559,6 +583,7 @@ export function ChatWidget() {
                         className="mt-0.5 h-7 w-7 shrink-0 rounded-full"
                       />
                       <div className="min-w-0 flex-1 text-[15px] leading-[1.7] text-trell-ink">
+                        {thoughts && isLast ? <ReasoningBlock text={thoughts} streaming={streaming} /> : null}
                         <Markdown
                           remarkPlugins={[remarkGfm]}
                           components={{
@@ -626,13 +651,9 @@ export function ChatWidget() {
                   />
                 ))}
                 {busy && messages[messages.length - 1]?.role === "user" && (
-                  <div className="flex items-center gap-2 self-start text-xs text-trell-ink-muted" role="status">
-                    <span className="flex gap-1" aria-hidden>
-                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:0ms]" />
-                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:150ms]" />
-                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:300ms]" />
-                    </span>
-                    {status ?? "Thinking…"}
+                  <div className="flex items-center gap-1.5 self-start text-[13px]" role="status">
+                    <Cloud size={14} className="shrink-0 text-trell-ink-muted" aria-hidden />
+                    <span className="trell-shimmer font-medium">{status ?? "Thinking…"}</span>
                   </div>
                 )}
               </>

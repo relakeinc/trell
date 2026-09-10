@@ -14,6 +14,7 @@ const MAX_TURNS = 6;
 type SSE
   = { t: "text"; d: string }
   | { t: "status"; d: string }
+  | { t: "thought"; d: string }
   | { t: "tool"; name: string; state: "input-available" | "output-available" | "output-error" }
   | { t: "done" }
   | { t: "error"; d: string };
@@ -29,6 +30,11 @@ function statusOf(e: unknown): number | null {
   return null;
 }
 
+function isThinkingError(e: unknown): boolean {
+  const msg = e instanceof Error ? e.message : String(e);
+  return /think/i.test(msg) && statusOf(e) !== null;
+}
+
 function isCapacityError(e: unknown): boolean {
   const status = statusOf(e);
   if (status === 404 || status === 429) return true;
@@ -38,8 +44,8 @@ function isCapacityError(e: unknown): boolean {
 
 function friendlyError(e: unknown, model: string): string {
   const status = statusOf(e);
-  if (status === 429) return "Límite del modelo gratis alcanzado, intenta de nuevo en un rato.";
-  if (status === 404) return `El modelo ${model} no está disponible en tu cuenta. Prueba con GEMINI_MODEL=otro-modelo.`;
+  if (status === 429) return "Free model limit reached, try again in a bit.";
+  if (status === 404) return `Model ${model} is not available on your account. Try GEMINI_MODEL=another-model.`;
   if (e instanceof Error && e.message.length < 200) return e.message;
   return "El chat falló, intenta de nuevo.";
 }
@@ -91,6 +97,14 @@ export async function POST(req: NextRequest) {
         const contents = toGeminiContents(history).map((c) => ({ ...c })) as { role: string; parts: unknown[] }[];
         const systemInstruction = buildSystemPrompt({ workspaceSlug: slug, userEmail: email, mode });
         let fellBack = false;
+        let thinkingOff = false;
+
+        interface RawPart { text?: string; thought?: boolean }
+        interface RawChunk {
+          text?: string;
+          functionCalls?: { name: string; args: Record<string, unknown>; id?: string }[];
+          candidates?: { content?: { parts?: RawPart[] } }[];
+        }
 
         for (let turn = 0; turn < MAX_TURNS; turn++) {
           let response;
@@ -103,6 +117,7 @@ export async function POST(req: NextRequest) {
                 tools: [{ functionDeclarations: declarations as never }],
                 maxOutputTokens: 2048,
                 temperature: 0.3,
+                ...(thinkingOff ? {} : { thinkingConfig: { includeThoughts: true } }),
               },
             });
           } catch (e) {
@@ -110,7 +125,13 @@ export async function POST(req: NextRequest) {
             if (!fellBack && model !== fallbackModel && isCapacityError(e)) {
               fellBack = true;
               model = fallbackModel;
-              send(controller, { t: "status", d: "Cambiando a modelo alternativo…" });
+              send(controller, { t: "status", d: "Switching to fallback model…" });
+              turn--;
+              continue;
+            }
+            // Model rejects thinking blocks: retry once without them.
+            if (!thinkingOff && isThinkingError(e)) {
+              thinkingOff = true;
               turn--;
               continue;
             }
@@ -120,7 +141,15 @@ export async function POST(req: NextRequest) {
           let text = "";
           let calls: { name: string; args: Record<string, unknown>; id?: string }[] = [];
           for await (const chunk of response) {
-            const c = chunk as unknown as { text?: string; functionCalls?: { name: string; args: Record<string, unknown>; id?: string }[] };
+            const c = chunk as unknown as RawChunk;
+            if (!thinkingOff) {
+              const parts = c.candidates?.[0]?.content?.parts ?? [];
+              let thought = "";
+              for (const p of parts) {
+                if (typeof p?.text === "string" && p.text && p.thought === true) thought += p.text;
+              }
+              if (thought) send(controller, { t: "thought", d: thought });
+            }
             if (c.text) {
               text += c.text;
               send(controller, { t: "text", d: c.text });
@@ -151,7 +180,7 @@ export async function POST(req: NextRequest) {
           }
           contents.push({ role: "model", parts: responseParts });
           if (turn === MAX_TURNS - 1) {
-            send(controller, { t: "text", d: "\n\n(He llegado al límite de pasos; pide continuar si falta algo.)" });
+            send(controller, { t: "text", d: "\n\n(I've reached the step limit; ask to continue if anything is missing.)" });
           }
         }
         send(controller, { t: "done" });
