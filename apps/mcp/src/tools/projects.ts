@@ -2,14 +2,16 @@ import { z } from "zod";
 import type { McpStore } from "../store";
 import type { McpConfig } from "../config";
 import { runTool } from "../errors";
-import { parseDomains, resolveProject } from "../projects";
+import { identityProjectIds, parseDomains, resolveProject } from "../projects";
 
 export async function listProjects(store: McpStore, config: McpConfig) {
   return runTool(async () => {
     const all = await store.listProjects();
-    const allowed = config.allowedSlugs
+    let allowed = config.allowedSlugs
       ? all.filter((p) => config.allowedSlugs!.includes(p.slug.toLowerCase()))
       : all;
+    const ids = await identityProjectIds(store, config);
+    if (ids) allowed = allowed.filter((p) => ids.has(p.id));
     return {
       projects: allowed.map((p) => ({ id: p.id, slug: p.slug, name: p.name, plan: p.plan })),
     };

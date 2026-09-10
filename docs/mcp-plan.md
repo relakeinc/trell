@@ -117,8 +117,28 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
   Deps: `@modelcontextprotocol/sdk@1.30.0`, `zod@3`, `@trell/api` (repos),
   `@prisma/client` (reutiliza el cliente ya generado; NO correr
   `prisma generate` en `apps/mcp` — el engine DLL lo bloquea el api en dev).
-- **Fase 2 — lectura completa**: resto de tools de lectura + resources +
-  prompts + docs de cada tool.
+- **Fase 2 — lectura completa**: ✅ HECHA Y DESPLEGADA (2026-09-09, rama
+  `feat/mcp`). 14 tools (`get_series`, `get_breakdown`, `get_forms`,
+  `query_events`, `list/get_funnel`, `list_views`, `list_webhooks`,
+  `list_utm_templates`, `list_api_keys` + las 4 de Fase 1), 3 resources
+  (`trell://projects`, `trell://projects/{slug}/usage`,
+  `trell://schema/events`), 2 prompts (`weekly_report`, `tracking_setup_help`).
+  Docs: `docs/mcp/TOOLS.md`, `AUTH.md`, `DEPLOY.md`. Tests MCP 22/22.
+  Detalle: intervalo `hour|day|week`, 9 dimensiones, `conversionRate` =
+  successes/starts (dashboard), cursor `eventId` determinista (sort interno),
+  secretos/hashes jamás expuestos. `McpStore` usa los nombres del Repo
+  (`listSavedViews`) para compatibilidad estructural.
+- **OAuth + identidad por usuario**: ✅ DESPLEGADO (2026-09-10). DCR
+  (`POST /register`), `GET /authorize` → Google (mismo cliente que el
+  dashboard), `/oauth/callback`, `/token` (PKCE S256 + refresh), metadata RFC
+  9728, JWT HS256 stateless (codes 10min, access 12h, refresh 30d). Bearer =
+  service key (modo servicio) o access token (identidad → membresías reales;
+  `list_projects` solo devuelve tus workspaces). Tests MCP 42/42. Vars en
+  `/opt/trell-mcp/.env`: `GOOGLE_CLIENT_ID/SECRET` (del stack vivo),
+  `MCP_OAUTH_SECRET`, `MCP_PUBLIC_URL`, `MCP_ALLOWED_EMAILS` opcional.
+- Lección VS Code: edita `settings.json` con él cerrado (si no, pisa cambios
+  externos al guardar). Por eso la config vive en `.vscode/mcp.json` (solo se
+  reescribe al añadir/quitar servidores) y sin secretos: OAuth por discovery.
 - **Fase 3 — escritura**: tools de escritura + bandera destructiva + tests de
   acotado por proyecto (una key/slug no toca otro).
 - **Fase 4 — HTTP + deploy**: ✅ DESPLEGADO (2026-09-09) con una salvedad (TLS,
@@ -162,9 +182,10 @@ formato de respuestas (idioma, resúmenes) y hosting. El MCP no cambia por esto.
   `MCP_ALLOWED_SLUGS=*`, `MCP_ALLOW_DESTRUCTIVE=false`.
 - nginx: `/etc/nginx/sites-{available,enabled}/mcp.relake.co` → `127.0.0.1:8788`
   (HTTP por ahora). Actualizar: `cd /opt/trell-mcp && git pull && docker compose up -d --build mcp`.
-- ⏳ PENDIENTE (requiere DNS): crear registro `A mcp.relake.co → 89.117.76.234`.
-  Después: `certbot --expand -d trell.relake.co -d trepi.relake.co -d mcp.relake.co`
-  (reutiliza el cert existente) + smoke `https://mcp.relake.co`.
+- ✅ TLS ACTIVO (2026-09-09): `A mcp.relake.co` resuelve (vía proxy
+  Cloudflare); cert expandido `trell.relake.co` (+`trepi`, +`mcp`, válido 89
+  días). Smoke público OK: sin-auth→401, `get_stats` con datos reales por
+  `https://mcp.relake.co`.
 - Clave del bot: leer `MCP_API_KEY` de `/opt/trell-mcp/.env` (root). Endpoint
   para el bot: `https://mcp.relake.co` (tras TLS) con `Authorization: Bearer`.
 
