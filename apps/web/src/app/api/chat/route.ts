@@ -34,10 +34,12 @@ export async function POST(req: NextRequest) {
 
   let history;
   let slug = "dashboard";
+  let mode: "ask" | "do" = "ask";
   try {
-    const body = (await req.json()) as { messages?: unknown; slug?: unknown };
+    const body = (await req.json()) as { messages?: unknown; slug?: unknown; mode?: unknown };
     history = parseChatBody(body);
     if (typeof body.slug === "string" && body.slug.trim()) slug = body.slug.trim();
+    if (body.mode === "do") mode = "do";
   } catch (e) {
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "bad request" }), { status: 400 });
   }
@@ -58,7 +60,7 @@ export async function POST(req: NextRequest) {
 
         const ai = new GoogleGenAI({ apiKey });
         const contents = toGeminiContents(history).map((c) => ({ ...c })) as { role: string; parts: unknown[] }[];
-        const systemInstruction = buildSystemPrompt({ workspaceSlug: slug, userEmail: email });
+        const systemInstruction = buildSystemPrompt({ workspaceSlug: slug, userEmail: email, mode });
 
         for (let turn = 0; turn < MAX_TURNS; turn++) {
           const response = await ai.models.generateContentStream({

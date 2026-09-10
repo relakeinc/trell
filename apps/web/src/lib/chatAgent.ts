@@ -17,10 +17,15 @@ export interface GeminiFunctionDeclaration {
 
 const MAX_HISTORY = 20;
 
-export function buildSystemPrompt(opts: { workspaceSlug: string; userEmail: string }): string {
+export function buildSystemPrompt(opts: { workspaceSlug: string; userEmail: string; mode?: "ask" | "do" }): string {
+  const modeLine =
+    opts.mode === "do"
+      ? "Mode DO: act directly with tools (still confirm destructive actions first)."
+      : "Mode ASK: answer questions and propose actions, execute only what the user explicitly asks.";
   return [
     `You are Ask Trell, the in-dashboard assistant for the Trell workspace "${opts.workspaceSlug}".`,
     `You talk to ${opts.userEmail}. Reply in the user's language (default Spanish if unclear). Be concise.`,
+    modeLine,
     "You have read-only AND write tools (funnels, UTM, domains, webhooks, API keys).",
     "Rules:",
     "- Never invent numbers: always call a tool first when asked about data.",
