@@ -115,6 +115,35 @@ export interface CreateSavedViewInput {
   config: string; // JSON string
 }
 
+// ── Metadata lists (safe fields only) ───────────────────────────
+
+export interface WebhookMeta {
+  id: string;
+  url: string;
+  events: string[];
+  enabled: boolean;
+  createdAt: Date;
+}
+
+export interface UtmTemplateMeta {
+  id: string;
+  name: string;
+  source: string | null;
+  medium: string | null;
+  campaign: string | null;
+  term: string | null;
+  content: string | null;
+  referral: string | null;
+  createdAt: Date;
+}
+
+export interface ApiKeyMeta {
+  id: string;
+  name: string;
+  keyPrefix: string;
+  createdAt: Date;
+}
+
 // ── Repo interface ────────────────────────────────────────────
 
 export interface Repo {
@@ -128,6 +157,11 @@ export interface Repo {
   insertEvents(input: InsertEventsInput): Promise<{ inserted: number; duplicates: number }>;
   getEventsForAnalytics(projectId: string, filter: AnalyticsFilter): Promise<StoredEvent[]>;
   countEventsForAnalytics(projectId: string, filter: AnalyticsFilter): Promise<number>;
+
+  // Metadata lists (safe fields only — never hashes or secrets)
+  listWebhooks(projectId: string): Promise<WebhookMeta[]>;
+  listUtmTemplates(projectId: string): Promise<UtmTemplateMeta[]>;
+  listApiKeys(projectId: string): Promise<ApiKeyMeta[]>;
 
   // Funnel CRUD
   listFunnels(projectId: string): Promise<FunnelRecord[]>;

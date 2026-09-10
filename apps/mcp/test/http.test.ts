@@ -28,6 +28,26 @@ class FakeStore implements McpStore {
   async getEventsForAnalytics(): Promise<[]> {
     return [];
   }
+
+  async listFunnels(): Promise<[]> {
+    return [];
+  }
+
+  async listSavedViews(): Promise<[]> {
+    return [];
+  }
+
+  async listWebhooks(): Promise<[]> {
+    return [];
+  }
+
+  async listUtmTemplates(): Promise<[]> {
+    return [];
+  }
+
+  async listApiKeys(): Promise<[]> {
+    return [];
+  }
 }
 
 const KEY = "test-bearer-key-0123456789abcdef";

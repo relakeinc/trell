@@ -69,6 +69,33 @@ export class PrismaRepo implements Repo {
     return row ? { projectId: row.projectId } : null;
   }
 
+  async listWebhooks(projectId: string) {
+    return this.prisma.webhook.findMany({
+      where: { projectId },
+      select: { id: true, url: true, events: true, enabled: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async listUtmTemplates(projectId: string) {
+    return this.prisma.utmTemplate.findMany({
+      where: { projectId },
+      select: {
+        id: true, name: true, source: true, medium: true, campaign: true,
+        term: true, content: true, referral: true, createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async listApiKeys(projectId: string) {
+    return this.prisma.apiKey.findMany({
+      where: { projectId },
+      select: { id: true, name: true, keyPrefix: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
   async insertEvents(input: InsertEventsInput): Promise<{ inserted: number; duplicates: number }> {
     if (input.events.length === 0) return { inserted: 0, duplicates: 0 };
     const res = await this.prisma.event.createMany({

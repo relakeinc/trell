@@ -1,5 +1,6 @@
 import type {
   AnalyticsFilter,
+  ApiKeyMeta,
   CreateFunnelInput,
   CreateProjectInput,
   CreateSavedViewInput,
@@ -11,6 +12,8 @@ import type {
   SavedViewRecord,
   StoredEvent,
   UpdateFunnelInput,
+  UtmTemplateMeta,
+  WebhookMeta,
 } from "./types";
 
 /** In-memory repository for tests and demos (no database). */
@@ -26,6 +29,9 @@ export class MemoryRepo implements Repo {
   private savedViewsByProject = new Map<string, Set<string>>();
   /** sha256(sk) → projectId for named server keys. */
   private apiKeyHashes = new Map<string, string>();
+  private webhooks: { projectId: string; meta: WebhookMeta }[] = [];
+  private utmTemplates: { projectId: string; meta: UtmTemplateMeta }[] = [];
+  private apiKeys: { projectId: string; meta: ApiKeyMeta }[] = [];
   private seq = 0;
 
   /** Test/demo helper: register a named server key hash for a project. */
@@ -36,6 +42,31 @@ export class MemoryRepo implements Repo {
   async findApiKeyProject(keyHash: string): Promise<{ projectId: string } | null> {
     const projectId = this.apiKeyHashes.get(keyHash);
     return projectId ? { projectId } : null;
+  }
+
+  /** Test/demo helpers: metadata lists live in arrays (no DB). */
+  seedWebhook(projectId: string, meta: WebhookMeta): void {
+    this.webhooks.push({ projectId, meta });
+  }
+
+  seedUtmTemplate(projectId: string, meta: UtmTemplateMeta): void {
+    this.utmTemplates.push({ projectId, meta });
+  }
+
+  seedApiKeyMeta(projectId: string, meta: ApiKeyMeta): void {
+    this.apiKeys.push({ projectId, meta });
+  }
+
+  async listWebhooks(projectId: string): Promise<WebhookMeta[]> {
+    return this.webhooks.filter((w) => w.projectId === projectId).map((w) => w.meta);
+  }
+
+  async listUtmTemplates(projectId: string): Promise<UtmTemplateMeta[]> {
+    return this.utmTemplates.filter((t) => t.projectId === projectId).map((t) => t.meta);
+  }
+
+  async listApiKeys(projectId: string): Promise<ApiKeyMeta[]> {
+    return this.apiKeys.filter((k) => k.projectId === projectId).map((k) => k.meta);
   }
 
   async createOrganizationAndProject(input: CreateProjectInput): Promise<ProjectRecord> {

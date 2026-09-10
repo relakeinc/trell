@@ -1,19 +1,9 @@
 import { z } from "zod";
 import type { McpStore } from "../store";
 import type { McpConfig } from "../config";
-import { McpError, runTool } from "../errors";
+import { runTool } from "../errors";
 import { resolveProject } from "../projects";
-
-const DAY_MS = 86_400_000;
-const MAX_RANGE_DAYS = 366;
-const DEFAULT_RANGE_DAYS = 30;
-
-function parseDate(value: string | undefined, name: string): Date | undefined {
-  if (value === undefined) return undefined;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) throw new McpError("invalid_input", `'${name}' must be an ISO date string`);
-  return d;
-}
+import { resolveRange } from "./range";
 
 export const getStatsShape = {
   project: z.string().describe("Workspace slug or id"),
@@ -32,12 +22,7 @@ export interface GetStatsArgs {
 export async function getStats(store: McpStore, config: McpConfig, args: GetStatsArgs) {
   return runTool(async () => {
     const p = await resolveProject(store, config, args.project);
-    const to = parseDate(args.to, "to") ?? new Date();
-    const from = parseDate(args.from, "from") ?? new Date(to.getTime() - DEFAULT_RANGE_DAYS * DAY_MS);
-    if (from > to) throw new McpError("invalid_input", "'from' must be before 'to'");
-    if (to.getTime() - from.getTime() > MAX_RANGE_DAYS * DAY_MS) {
-      throw new McpError("invalid_input", `date range must be ${MAX_RANGE_DAYS} days or less`);
-    }
+    const { from, to } = resolveRange(args.from, args.to);
 
     const events = await store.getEventsForAnalytics(p.id, {
       from,

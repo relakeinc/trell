@@ -121,8 +121,21 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
   prompts + docs de cada tool.
 - **Fase 3 — escritura**: tools de escritura + bandera destructiva + tests de
   acotado por proyecto (una key/slug no toca otro).
-- **Fase 4 — HTTP + deploy**: montar `/mcp` en `apps/api`, `MCP_API_KEY`,
-  Dockerfile/compose (mismo servicio), smoke test contra prod.
+- **Fase 4 — HTTP + deploy**: ✅ DESPLEGADO (2026-09-09) con una salvedad (TLS,
+  ver abajo). Listener `createMcpHttpListener` (stateless, un transport por
+  request — el transport compartido del SDK falla en la 2ª petición),
+  Bearer `MCP_API_KEY` (fail-closed), `MCP_ONLY=1` para contenedor dedicado.
+  Stack independiente `/opt/trell-mcp` en el VPS (misma DB vía red
+  `trell_default`, contenedores vivos intactos): build OK, `GET→405`,
+  sin-auth→401, `tracking_checkup` con datos reales OK.
+  - Package graph acíclico: `apps/mcp` define `src/store.ts` (contrato
+    mínimo) y NO depende de `@trell/api`; los runners (`src/mcp-stdio.ts`,
+    listener en `src/index.ts`) viven en `apps/api` (dep `api → mcp`).
+  - Ojo Docker: el listener bindea `0.0.0.0` dentro del contenedor
+    (docker-proxy entra por la IP del contenedor; `127.0.0.1` = reset).
+    El mapping `127.0.0.1:8788` ya restringe el acceso en el host.
+  - Dockerfile compila `@trell/mcp` antes que la API (si no, `dist` ausente
+    y el contenedor rompe al arrancar).
 - **Fase 5 — bot**: con el MCP en producción, conectar el bot elegido.
 
 ## 7. Criterios de aceptación
@@ -139,6 +152,21 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
 
 Elegir plataforma (Telegram/Discord/WhatsApp/webchat), identidad del bot,
 formato de respuestas (idioma, resúmenes) y hosting. El MCP no cambia por esto.
+
+## 9. Deploy en VPS (2026-09-09)
+
+- Subdominio: **`mcp.relake.co`** (convención `trell.`/`trepi.`/`mcp.`).
+- Stack: `/opt/trell-mcp` (rama `feat/mcp`, commits `cb9bbc4`, `52549ff`),
+  compose propio, red `trell_default`, `.env` 600 con `DATABASE_URL`,
+  `MCP_ONLY=1`, `MCP_API_KEY` (generada en el servidor),
+  `MCP_ALLOWED_SLUGS=*`, `MCP_ALLOW_DESTRUCTIVE=false`.
+- nginx: `/etc/nginx/sites-{available,enabled}/mcp.relake.co` → `127.0.0.1:8788`
+  (HTTP por ahora). Actualizar: `cd /opt/trell-mcp && git pull && docker compose up -d --build mcp`.
+- ⏳ PENDIENTE (requiere DNS): crear registro `A mcp.relake.co → 89.117.76.234`.
+  Después: `certbot --expand -d trell.relake.co -d trepi.relake.co -d mcp.relake.co`
+  (reutiliza el cert existente) + smoke `https://mcp.relake.co`.
+- Clave del bot: leer `MCP_API_KEY` de `/opt/trell-mcp/.env` (root). Endpoint
+  para el bot: `https://mcp.relake.co` (tras TLS) con `Authorization: Bearer`.
 
 ## 9. Notas de implementación (Fase 1)
 
