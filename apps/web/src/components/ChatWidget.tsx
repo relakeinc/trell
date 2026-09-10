@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowUp,
@@ -15,7 +16,6 @@ import {
   Plus,
   Search,
   SlidersHorizontal,
-  Sparkles,
   X,
 } from "lucide-react";
 import Markdown from "react-markdown";
@@ -50,10 +50,10 @@ interface ToolCall {
 type Mode = "ask" | "do";
 
 const SUGGESTIONS: { icon: typeof Activity; title: string; subtitle: string; prompt: string }[] = [
-  { icon: ChartColumn, title: "Resumen semanal", subtitle: "Conversión últimos 7 días", prompt: "Dame un resumen semanal de conversión" },
-  { icon: Activity, title: "Estado del tracking", subtitle: "¿Está llegando data?", prompt: "¿Está llegando data a este workspace?" },
-  { icon: KeyRound, title: "Mis API keys", subtitle: "Ver claves activas", prompt: "Lista mis API keys activas" },
-  { icon: Filter, title: "Mis funnels", subtitle: "Ver definiciones", prompt: "Lista mis funnels" },
+  { icon: ChartColumn, title: "Weekly summary", subtitle: "Last 7 days conversion", prompt: "Give me a weekly conversion summary" },
+  { icon: Activity, title: "Tracking status", subtitle: "Is data coming in?", prompt: "Is data coming into this workspace?" },
+  { icon: KeyRound, title: "My API keys", subtitle: "View active keys", prompt: "List my active API keys" },
+  { icon: Filter, title: "My funnels", subtitle: "View definitions", prompt: "List my funnels" },
 ];
 
 const CHAT_KEY = (slug: string) => `trell:chat:${slug}`;
@@ -77,7 +77,7 @@ function loadConvos(slug: string): Convo[] {
 
 function ago(ts: number): string {
   const s = Math.max(1, Math.floor((Date.now() - ts) / 1000));
-  if (s < 60) return "ahora";
+  if (s < 60) return "now";
   const m = Math.floor(s / 60);
   if (m < 60) return `${m}m`;
   const h = Math.floor(m / 60);
@@ -87,9 +87,9 @@ function ago(ts: number): string {
 
 function greeting(): string {
   const h = new Date().getHours();
-  if (h >= 6 && h < 13) return "Buenos días";
-  if (h >= 13 && h < 21) return "Buenas tardes";
-  return "Buenas noches";
+  if (h >= 6 && h < 13) return "Good morning.";
+  if (h >= 13 && h < 21) return "Good afternoon.";
+  return "Good evening.";
 }
 
 export function ChatWidget() {
@@ -130,7 +130,7 @@ export function ChatWidget() {
       const title =
         prev.find((c) => c.id === activeId)?.title ??
         [...messages].find((m) => m.role === "user")?.text.slice(0, 42) ??
-        "Conversación";
+        "Conversation";
       const rest = prev.filter((c) => c.id !== activeId);
       const next: Convo = { id: activeId, title, updatedAt: Date.now(), messages: messages.slice(-MAX_MSGS) };
       const merged = [next, ...rest].slice(0, MAX_CONVOS);
@@ -169,14 +169,14 @@ export function ChatWidget() {
     setInput("");
     setToolCalls([]);
     setBusy(true);
-    setStatus("Pensando…");
+    setStatus("Thinking…");
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slug, mode, messages: next }),
       });
-      if (!res.ok || !res.body) throw new Error(res.status === 401 ? "Sesión expirada" : res.status === 503 ? "Chat no configurado" : "Error del chat");
+      if (!res.ok || !res.body) throw new Error(res.status === 401 ? "Session expired" : res.status === 503 ? "Chat not configured" : "Chat error");
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";
@@ -223,8 +223,7 @@ export function ChatWidget() {
         }
       }
     } catch (e) {
-      setMessages((prev) => [...prev, { role: "model", text: `⚠️ ${e instanceof Error ? e.message : "Error"}` }]);
-    } finally {
+      setMessages((prev) => [...prev, { role: "model", text: `⚠️ ${e instanceof Error ? e.message : "Error"}` }]);    } finally {
       setBusy(false);
       setStatus(null);
     }
@@ -235,32 +234,37 @@ export function ChatWidget() {
       <div className="fixed bottom-4 right-4 z-50">
         <button
           onClick={() => setOpen(true)}
-          className="trell-btn-accent !h-12 !w-12 !rounded-full !p-0 shadow-lg"
-          aria-label="Abrir Ask Trell"
+          className="overflow-hidden rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
+          aria-label="Open Yoi"
         >
-          <MessageCircle size={18} />
+          <Image src="/yoi-logo.png" alt="Yoi" width={48} height={48} className="h-12 w-12" />
         </button>
       </div>
     );
   }
 
   return (
-    <aside className="trell-drawer-right-in hidden h-full w-[360px] max-w-[calc(100vw-2rem)] shrink-0 flex-col gap-1 overflow-hidden rounded-xl bg-neutral-100 p-3 md:flex">
+    <aside className="trell-drawer-right-in relative hidden h-full w-[360px] max-w-[calc(100vw-2rem)] shrink-0 flex-col gap-1 overflow-hidden rounded-xl bg-neutral-100 p-3 md:flex">
+        {/* dotted texture (Cloudflare-style) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(0_0_0/0.05)_1px,transparent_0)] bg-[size:22px_22px] dark:bg-[radial-gradient(circle_at_1px_1px,rgb(255_255_255/0.06)_1px,transparent_0)]"
+        />
         {/* header */}
         <div className="relative flex items-center justify-between px-1 py-1">
           <button
             onClick={() => setHistoryOpen((v) => !v)}
             className="flex items-center gap-1 text-base font-semibold text-trell-ink"
-            title="Ver conversaciones"
+            title="View conversations"
             aria-expanded={historyOpen}
           >
-            Nueva conversación <ChevronDown size={14} className={`text-neutral-400 transition-transform ${historyOpen ? "rotate-180" : ""}`} />
+            New conversation <ChevronDown size={14} className={`text-neutral-400 transition-transform ${historyOpen ? "rotate-180" : ""}`} />
           </button>
           <div className="flex items-center gap-1">
-            <button onClick={newChat} className="trell-btn-outline h-9 w-9 !px-0" title="Nueva conversación" aria-label="Nueva conversación">
+            <button onClick={newChat} className="trell-btn-outline h-9 w-9 !px-0" title="New conversation" aria-label="New conversation">
               <Plus size={14} />
             </button>
-            <button onClick={() => { setOpen(false); setHistoryOpen(false); }} className="trell-btn-outline h-9 w-9 !px-0" title="Cerrar" aria-label="Cerrar">
+            <button onClick={() => { setOpen(false); setHistoryOpen(false); }} className="trell-btn-outline h-9 w-9 !px-0" title="Close" aria-label="Close">
               <X size={14} />
             </button>
           </div>
@@ -273,7 +277,7 @@ export function ChatWidget() {
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Buscar…"
+                    placeholder="Search…"
                     className="w-full bg-transparent text-[13px] text-trell-ink placeholder:text-neutral-400 focus:outline-none"
                   />
                 </div>
@@ -283,7 +287,7 @@ export function ChatWidget() {
                   const q = query.trim().toLowerCase();
                   const filtered = convos.filter((c) => !q || c.title.toLowerCase().includes(q));
                   if (filtered.length === 0) {
-                    return <p className="px-3 py-4 text-center text-xs text-trell-ink-muted">Sin conversaciones todavía.</p>;
+                    return <p className="px-3 py-4 text-center text-xs text-trell-ink-muted">No conversations yet.</p>;
                   }
                   const week = 7 * 24 * 3600 * 1000;
                   const now = Date.now();
@@ -306,7 +310,7 @@ export function ChatWidget() {
                       {recent.map(row)}
                       {recent.length > 0 && older.length > 0 && (
                         <div className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-                          Anteriores
+                          Older
                         </div>
                       )}
                       {older.map(row)}
@@ -319,7 +323,7 @@ export function ChatWidget() {
                   onClick={newChat}
                   className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-trell-line px-3 py-2 text-[13px] font-medium text-trell-ink transition-colors hover:bg-neutral-50 dark:hover:bg-[#262625]"
                 >
-                  <Plus size={14} /> Nueva conversación
+                  <Plus size={14} /> New conversation
                 </button>
               </div>
             </div>
@@ -332,14 +336,19 @@ export function ChatWidget() {
             {messages.length === 0 ? (
               <div className="m-auto flex w-full flex-col items-center py-6 text-center">
                 <div className="relative mb-4">
-                  <div className="absolute inset-0 scale-125 rounded-2xl bg-blue-600/20 blur-xl" aria-hidden />
-                  <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-b from-[#4d88f5] to-[#2563eb] text-white shadow-[0_8px_20px_-6px_rgb(37_99_235/0.5)]">
-                    <Sparkles size={22} />
-                  </div>
+                  <div className="absolute inset-0 scale-110 rounded-full bg-violet-500/25 blur-xl" aria-hidden />
+                  <Image
+                    src="/yoi-logo.png"
+                    alt="Yoi"
+                    width={88}
+                    height={88}
+                    className="relative h-[88px] w-[88px] rounded-full shadow-[0_12px_28px_-10px_rgb(139_92_246/0.55)]"
+                    priority
+                  />
                 </div>
-                <div className="text-[17px] font-semibold tracking-tight text-trell-ink">{greet}, ¿en qué te ayudo?</div>
+                <div className="text-[17px] font-semibold tracking-tight text-trell-ink">{greet} What are we doing today?</div>
                 <p className="mt-1 max-w-[250px] text-xs leading-relaxed text-trell-ink-muted">
-                  Pregunta por tus métricas, funnels o tracking.
+                  Ask about your metrics, funnels or tracking.
                 </p>
               <div className="mt-5 flex w-full flex-col gap-2">
                 {SUGGESTIONS.map((s) => (
@@ -417,7 +426,7 @@ export function ChatWidget() {
                       <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:150ms]" />
                       <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:300ms]" />
                     </span>
-                    {status ?? "Pensando…"}
+                    {status ?? "Thinking…"}
                   </div>
                 )}
               </>
@@ -438,7 +447,7 @@ export function ChatWidget() {
             className="rounded-2xl border-trell-line bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-100 dark:border-[#2a2a29] dark:bg-[#1e1e1d] dark:focus-within:border-blue-600 dark:focus-within:ring-blue-950"
           >
             <PromptInputTextarea
-              placeholder="Escribe @ para mencionar o ? para atajos"
+              placeholder="Type @ to tag a resource or ? for shortcuts"
               maxLength={2000}
               className="text-sm leading-relaxed text-trell-ink placeholder:text-neutral-400"
             />
@@ -447,8 +456,8 @@ export function ChatWidget() {
                 <button
                   onClick={() => setModeOpen((v) => !v)}
                   className="flex h-7 shrink-0 items-center gap-1 rounded-full border border-trell-line px-2.5 text-xs font-medium text-neutral-500 transition-colors hover:text-trell-ink dark:text-neutral-400 dark:hover:text-neutral-100"
-                  title="Cambiar modo"
-                  aria-label="Cambiar modo"
+                  title="Change mode"
+                  aria-label="Change mode"
                   aria-expanded={modeOpen}
                 >
                   ✎ {mode === "ask" ? "Ask" : "Do"}
@@ -488,8 +497,8 @@ export function ChatWidget() {
                 <button
                   onClick={() => setToolsOpen((v) => !v)}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-trell-ink dark:text-neutral-500 dark:hover:bg-[#2a2a29] dark:hover:text-neutral-100"
-                  title="Opciones"
-                  aria-label="Opciones"
+                  title="Options"
+                  aria-label="Options"
                   aria-expanded={toolsOpen}
                 >
                   <SlidersHorizontal size={15} />
@@ -498,7 +507,7 @@ export function ChatWidget() {
                   onClick={() => send(input)}
                   disabled={busy || !input.trim()}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#4d88f5] to-[#2563eb] text-white shadow-[inset_0_1px_0_0_#4d88f5,0_1px_2px_rgb(37_99_235/0.4)] transition-all hover:opacity-95 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="Enviar"
+                  aria-label="Send"
                 >
                   <ArrowUp size={15} strokeWidth={2.5} />
                 </button>
@@ -518,7 +527,7 @@ export function ChatWidget() {
                           }}
                           className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13px] text-trell-ink transition-colors hover:bg-neutral-100 dark:hover:bg-[#262625]"
                         >
-                          <Plus size={13} /> Nueva conversación
+                          <Plus size={13} /> New conversation
                         </button>
                       </div>
                     </div>
@@ -527,11 +536,6 @@ export function ChatWidget() {
               </div>
             </PromptInputActions>
           </PromptInput>
-          <div className="mt-2 flex items-center justify-between px-1">
-            <span className="text-[11px] text-trell-ink-muted">
-              {mode === "ask" ? "Responde preguntas" : "Ejecuta acciones"}
-            </span>
-          </div>
         </div>
     </aside>
   );
