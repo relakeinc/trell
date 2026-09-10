@@ -747,7 +747,6 @@ body {
     color: var(--trell-ink-muted, #a3a3a3) !important;
   }
 }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .trell-edge-flow {
