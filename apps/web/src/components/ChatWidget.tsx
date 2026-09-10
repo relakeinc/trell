@@ -7,10 +7,11 @@ import {
   ChartColumn,
   Activity,
   ChevronDown,
-  ChevronRight,
+  FastForward,
   KeyRound,
   Filter,
   MessageCircle,
+  Pencil,
   Plus,
   Search,
   SlidersHorizontal,
@@ -99,7 +100,7 @@ export function ChatWidget() {
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [status, setStatus] = useState<string | null>(null);
-  const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
+  const [modeOpen, setModeOpen] = useState(false);  const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [convos, setConvos] = useState<Convo[]>(() => (slug ? loadConvos(slug) : []));
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -340,24 +341,23 @@ export function ChatWidget() {
                 <p className="mt-1 max-w-[250px] text-xs leading-relaxed text-trell-ink-muted">
                   Pregunta por tus métricas, funnels o tracking.
                 </p>
-                <div className="mt-5 flex w-full flex-col gap-2">
-                  {SUGGESTIONS.map((s) => (
-                    <button
-                      key={s.title}
-                      onClick={() => void send(s.prompt)}
-                      className="group flex items-center gap-3 rounded-xl border border-trell-line bg-white px-3 py-2.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-all hover:-translate-y-px hover:border-blue-200 hover:shadow-[0_6px_16px_-8px_rgb(37_99_235/0.35)] dark:bg-[#1e1e1d] dark:hover:border-blue-900 dark:hover:bg-[#242424]"
-                    >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                        <s.icon size={15} />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13px] font-medium text-trell-ink">{s.title}</span>
-                        <span className="block truncate text-xs text-trell-ink-muted">{s.subtitle}</span>
-                      </span>
-                      <ChevronRight size={14} className="shrink-0 text-neutral-300 opacity-0 transition-opacity group-hover:opacity-100 dark:text-neutral-600" />
-                    </button>
-                  ))}
-                </div>
+              <div className="mt-5 flex w-full flex-col gap-2">
+                {SUGGESTIONS.map((s) => (
+                  <button
+                    key={s.title}
+                    onClick={() => void send(s.prompt)}
+                    className="flex items-center gap-3 rounded-xl border border-neutral-200/80 bg-white px-4 py-3 text-left shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all hover:-translate-y-px hover:border-neutral-300 hover:shadow-[0_8px_20px_-12px_rgb(16_24_40/0.25)] dark:border-[#2a2a29] dark:bg-[#1e1e1d] dark:hover:border-[#3a3a39]"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-500 dark:bg-[#2a2a29] dark:text-[#9a9a99]">
+                      <s.icon size={16} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium text-trell-ink">{s.title}</span>
+                      <span className="block truncate text-[13px] text-neutral-500 dark:text-neutral-400">{s.subtitle}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
               </div>
             ) : (
               <>
@@ -443,13 +443,47 @@ export function ChatWidget() {
               className="text-sm leading-relaxed text-trell-ink placeholder:text-neutral-400"
             />
             <PromptInputActions className="justify-between pt-0">
-              <button
-                onClick={() => setMode((m) => (m === "ask" ? "do" : "ask"))}
-                className="flex h-7 shrink-0 items-center gap-1 rounded-full border border-trell-line px-2.5 text-xs font-medium text-neutral-500 transition-colors hover:text-trell-ink dark:text-neutral-400 dark:hover:text-neutral-100"
-                title={mode === "ask" ? "Responde preguntas (no ejecuta acciones)" : "Ejecuta acciones con tu confirmación"}
-              >
-                ✎ {mode === "ask" ? "Ask" : "Do"}
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setModeOpen((v) => !v)}
+                  className="flex h-7 shrink-0 items-center gap-1 rounded-full border border-trell-line px-2.5 text-xs font-medium text-neutral-500 transition-colors hover:text-trell-ink dark:text-neutral-400 dark:hover:text-neutral-100"
+                  title="Cambiar modo"
+                  aria-label="Cambiar modo"
+                  aria-expanded={modeOpen}
+                >
+                  ✎ {mode === "ask" ? "Ask" : "Do"}
+                </button>
+                {modeOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setModeOpen(false)} aria-hidden />
+                    <div className="absolute bottom-full left-0 z-20 mb-2 w-64 overflow-hidden rounded-2xl border border-trell-line bg-white p-1.5 shadow-[0_20px_50px_-16px_rgb(24_24_27/0.25)] dark:border-[#2a2a29] dark:bg-[#1e1e1d]">
+                      {(
+                        [
+                          { id: "ask", icon: Pencil, title: "Ask before editing", subtitle: "Review and approve each change" },
+                          { id: "do", icon: FastForward, title: "Automatically edit", subtitle: "Always allow edits for this conversation" },
+                        ] as const
+                      ).map((o) => (
+                        <button
+                          key={o.id}
+                          onClick={() => {
+                            setMode(o.id);
+                            setModeOpen(false);
+                          }}
+                          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-neutral-100 dark:hover:bg-[#262625] ${
+                            mode === o.id ? "bg-neutral-100 dark:bg-[#262625]" : ""
+                          }`}
+                        >
+                          <o.icon size={16} className="shrink-0 text-neutral-500 dark:text-neutral-400" />
+                          <span className="min-w-0">
+                            <span className="block truncate text-[13px] font-medium text-trell-ink">{o.title}</span>
+                            <span className="block truncate text-xs text-neutral-500 dark:text-neutral-400">{o.subtitle}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               <div className="relative flex shrink-0 items-center gap-1">
                 <button
                   onClick={() => setToolsOpen((v) => !v)}
