@@ -670,6 +670,23 @@ body {
 /* ── Icon animations ──────────────────────────────────────────── */
 /* Animated icons: vertices/corners animate on hover of parent */
 
+@keyframes trell-edge-flow {
+  0% { transform: translateY(-6rem); opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.trell-edge-flow {
+  animation: trell-edge-flow 3.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trell-edge-flow {
+    animation: none;
+  }
+}
+
 @keyframes icon-pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.15); }

@@ -230,22 +230,23 @@ export function ChatWidget() {
   }
 
   if (!open) {
-    // Siri-style edge light: glows where the panel slides out from.
+    // Siri-style edge light: animations run perpetually underneath and only
+    // the wrapper opacity toggles, so it fades in/out cleanly — never pops.
     return (
-      <>
-        <div
-          aria-hidden
-          className={`pointer-events-none fixed inset-y-0 right-0 z-40 w-16 bg-gradient-to-l from-violet-500/25 via-blue-500/10 to-transparent blur-xl transition-opacity duration-500 ${
-            askHover ? "opacity-100" : "opacity-0"
-          }`}
-        />
-        <div
-          aria-hidden
-          className={`pointer-events-none fixed inset-y-3 right-0 z-40 w-[3px] rounded-full bg-gradient-to-b from-transparent via-violet-500 to-blue-500 blur-[1px] transition-opacity duration-500 ${
-            askHover ? "animate-pulse opacity-100" : "opacity-0"
-          }`}
-        />
-      </>
+      <div
+        aria-hidden
+        className={`pointer-events-none fixed inset-y-0 right-0 z-40 transition-opacity duration-700 ease-out ${
+          askHover ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        {/* soft wash */}
+        <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-violet-500/15 via-blue-500/[0.06] to-transparent blur-2xl" />
+        {/* core line with a slow highlight drifting down it */}
+        <div className="absolute inset-y-6 right-0 w-[2px] overflow-hidden rounded-full bg-white/5">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-400/70 to-blue-500/70" />
+          <div className="trell-edge-flow absolute left-0 right-0 h-24 bg-gradient-to-b from-transparent via-white/90 to-transparent" />
+        </div>
+      </div>
     );
   }
 
