@@ -17,6 +17,28 @@ function send(controller: ReadableStreamDefaultController<string>, msg: SSE): vo
   controller.enqueue(`data: ${JSON.stringify(msg)}\n\n`);
 }
 
+function statusOf(e: unknown): number | null {
+  if (e && typeof e === "object" && "status" in e && typeof (e as { status: unknown }).status === "number") {
+    return (e as { status: number }).status;
+  }
+  return null;
+}
+
+function isCapacityError(e: unknown): boolean {
+  const status = statusOf(e);
+  if (status === 404 || status === 429) return true;
+  const msg = e instanceof Error ? e.message : String(e);
+  return /NOT_FOUND|RESOURCE_EXHAUSTED|quota|rate limit/i.test(msg);
+}
+
+function friendlyError(e: unknown, model: string): string {
+  const status = statusOf(e);
+  if (status === 429) return "Límite del modelo gratis alcanzado, intenta de nuevo en un rato.";
+  if (status === 404) return `El modelo ${model} no está disponible en tu cuenta. Prueba con GEMINI_MODEL=otro-modelo.`;
+  if (e instanceof Error && e.message.length < 200) return e.message;
+  return "El chat falló, intenta de nuevo.";
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   const email = session?.user?.email ?? null;
@@ -27,7 +49,8 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY ?? "";
   const oauthSecret = process.env.MCP_OAUTH_SECRET ?? "";
   const mcpUrl = process.env.MCP_URL ?? "http://api:8788";
-  const model = process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite";
+  const primaryModel = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
+  const fallbackModel = process.env.GEMINI_FALLBACK_MODEL ?? "gemini-3.5-flash-lite";
   if (!apiKey || !oauthSecret) {
     return new Response(JSON.stringify({ error: "chat_not_configured" }), { status: 503 });
   }
@@ -46,6 +69,7 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream<string>({
     async start(controller) {
       const mcp = new Client({ name: "trell-webchat", version: "0.0.0" });
+      let model = primaryModel;
       try {
         const jwt = signIdentityJwt(email, oauthSecret);
         await mcp.connect(
@@ -61,18 +85,32 @@ export async function POST(req: NextRequest) {
         const ai = new GoogleGenAI({ apiKey });
         const contents = toGeminiContents(history).map((c) => ({ ...c })) as { role: string; parts: unknown[] }[];
         const systemInstruction = buildSystemPrompt({ workspaceSlug: slug, userEmail: email, mode });
+        let fellBack = false;
 
         for (let turn = 0; turn < MAX_TURNS; turn++) {
-          const response = await ai.models.generateContentStream({
-            model,
-            contents: contents as never,
-            config: {
-              systemInstruction,
-              tools: [{ functionDeclarations: declarations as never }],
-              maxOutputTokens: 2048,
-              temperature: 0.3,
-            },
-          });
+          let response;
+          try {
+            response = await ai.models.generateContentStream({
+              model,
+              contents: contents as never,
+              config: {
+                systemInstruction,
+                tools: [{ functionDeclarations: declarations as never }],
+                maxOutputTokens: 2048,
+                temperature: 0.3,
+              },
+            });
+          } catch (e) {
+            // Free-tier models come and go: retry once with the fallback.
+            if (!fellBack && model !== fallbackModel && isCapacityError(e)) {
+              fellBack = true;
+              model = fallbackModel;
+              send(controller, { t: "status", d: "Cambiando a modelo alternativo…" });
+              turn--;
+              continue;
+            }
+            throw e;
+          }
 
           let text = "";
           let calls: { name: string; args: Record<string, unknown>; id?: string }[] = [];
@@ -109,7 +147,7 @@ export async function POST(req: NextRequest) {
         }
         send(controller, { t: "done" });
       } catch (e) {
-        send(controller, { t: "error", d: e instanceof Error ? e.message : "chat failed" });
+        send(controller, { t: "error", d: friendlyError(e, model) });
       } finally {
         controller.close();
         await mcp.close().catch(() => {});

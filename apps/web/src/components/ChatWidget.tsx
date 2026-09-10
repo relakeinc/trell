@@ -368,12 +368,12 @@ export function ChatWidget() {
               className="trell-input h-9 min-w-0 flex-1"
             />
             <button
-              onClick={() => void send(input)}
+              type="submit"
               disabled={busy || !input.trim()}
-              className="trell-btn-accent h-9 w-9 shrink-0 !px-0 !rounded-full disabled:opacity-40"
+              className="trell-btn-accent h-9 shrink-0 gap-1.5 px-4 text-xs disabled:opacity-40"
               aria-label="Enviar"
             >
-              <Send size={14} />
+              <Send size={14} /> Enviar
             </button>
           </div>
           <div className="mt-2 flex items-center justify-between">
