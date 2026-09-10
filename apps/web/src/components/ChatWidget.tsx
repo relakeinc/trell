@@ -17,6 +17,8 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Msg {
   role: "user" | "model";
@@ -82,6 +84,7 @@ export function ChatWidget() {
   const [mode, setMode] = useState<Mode>("ask");
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [status, setStatus] = useState<string | null>(null);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [convos, setConvos] = useState<Convo[]>(() => (slug ? loadConvos(slug) : []));
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -163,6 +166,7 @@ export function ChatWidget() {
       if (taRef.current) taRef.current.style.height = "auto";
     });
     setBusy(true);
+    setStatus("Pensando…");
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -198,12 +202,7 @@ export function ChatWidget() {
               return copy;
             });
           } else if (evt.t === "status") {
-            const snapshot = `${modelText}\n\n_${evt.d}_`;
-            setMessages((prev) => {
-              const copy = [...prev];
-              copy[copy.length - 1] = { role: "model", text: snapshot };
-              return copy;
-            });
+            setStatus(evt.d);
           } else if (evt.t === "error") {
             throw new Error(evt.d);
           }
@@ -213,6 +212,7 @@ export function ChatWidget() {
       setMessages((prev) => [...prev, { role: "model", text: `⚠️ ${e instanceof Error ? e.message : "Error"}` }]);
     } finally {
       setBusy(false);
+      setStatus(null);
     }
   }
 
@@ -347,18 +347,63 @@ export function ChatWidget() {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {messages.map((m, i) => (
+            <div className="flex flex-col gap-4">
+              {messages.map((m, i) =>
                 m.role === "user" ? (
                   <div key={i} className="max-w-[90%] self-end whitespace-pre-wrap rounded-2xl rounded-br-md bg-neutral-900 px-3.5 py-2.5 text-sm leading-relaxed text-white dark:bg-[#CDCCCC] dark:text-[#111111]">
                     {m.text}
                   </div>
                 ) : (
-                  <div key={i} className="max-w-full self-start whitespace-pre-wrap text-sm leading-relaxed text-trell-ink">
-                    {m.text || "…"}
+                  <div key={i} className="max-w-full self-start text-sm leading-relaxed text-trell-ink">
+                    <Markdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        h1: ({ children }) => <div className="mb-1.5 text-[15px] font-semibold text-trell-ink">{children}</div>,
+                        h2: ({ children }) => <div className="mb-1.5 text-[15px] font-semibold text-trell-ink">{children}</div>,
+                        h3: ({ children }) => <div className="mb-1 mt-3 text-sm font-semibold text-trell-ink first:mt-0">{children}</div>,
+                        h4: ({ children }) => <div className="mb-1 mt-2 text-sm font-semibold text-trell-ink">{children}</div>,
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        ul: ({ children }) => <ul className="mb-2 ml-1 flex flex-col gap-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal">{children}</ol>,
+                        li: ({ children }) => <li className="list-none [&>p]:mb-0">{children}</li>,
+                        strong: ({ children }) => <strong className="font-semibold text-trell-ink">{children}</strong>,
+                        code: ({ children }) => (
+                          <code className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-[12px] text-trell-ink dark:bg-[#2a2a29]">
+                            {children}
+                          </code>
+                        ),
+                        pre: ({ children }) => (
+                          <pre className="mb-2 overflow-x-auto rounded-lg bg-neutral-950 p-3 font-mono text-xs leading-relaxed text-neutral-200">
+                            {children}
+                          </pre>
+                        ),
+                        hr: () => <hr className="my-3 border-trell-line" />,
+                        table: ({ children }) => (
+                          <div className="mb-2 overflow-x-auto">
+                            <table className="w-full border-collapse text-[13px]">{children}</table>
+                          </div>
+                        ),
+                        th: ({ children }) => (
+                          <th className="border-b border-trell-line px-2 py-1 text-left font-semibold text-trell-ink">{children}</th>
+                        ),
+                        td: ({ children }) => <td className="border-b border-trell-line/60 px-2 py-1">{children}</td>,
+                      }}
+                    >
+                      {m.text || "…"}
+                    </Markdown>
                   </div>
-                )
-              ))}
+                ),
+              )}
+              {busy && status && (
+                <div className="flex items-center gap-2 self-start text-xs text-trell-ink-muted">
+                  <span className="flex gap-1" aria-hidden>
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:0ms]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:150ms]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:300ms]" />
+                  </span>
+                  {status}
+                </div>
+              )}
               <div ref={bottomRef} />
             </div>
           )}
