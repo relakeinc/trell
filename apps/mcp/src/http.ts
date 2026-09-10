@@ -22,9 +22,19 @@ function notConfigured(res: ServerResponse): void {
  * reverse proxy (no session affinity). A fresh transport+server is created
  * per request: SDK transports are single-use once a request completes.
  * Fail-closed: without MCP_API_KEY every request is rejected.
+ *
+ * Only POST / is served. Unknown paths are 404 — notably the OAuth
+ * discovery docs under /.well-known/*: this server uses a static Bearer
+ * key and editors must not mistake it for an OAuth server.
  */
 export function createMcpHttpListener(deps: McpServerDeps): (req: IncomingMessage, res: ServerResponse) => Promise<void> {
   return async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
+    const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
+    if (pathname !== "/") {
+      res.writeHead(404, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: "not_found" }));
+      return;
+    }
     if (req.method !== "POST") {
       res.writeHead(405, { "content-type": "application/json" });
       res.end(JSON.stringify({ error: "method_not_allowed" }));

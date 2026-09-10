@@ -64,13 +64,13 @@ async function startServer(): Promise<{ url: string; close: () => Promise<void> 
   };
 }
 
-async function post(url: string, id: number, method: string, params: unknown, key = KEY) {
+async function post(url: string, id: number, method: string, params: unknown, key = KEY, path = "/") {
   const headers: Record<string, string> = {
     "content-type": "application/json",
     accept: "application/json, text/event-stream",
   };
   if (key) headers.authorization = `Bearer ${key}`;
-  const res = await fetch(url, {
+  const res = await fetch(`${url}${path}`, {
     method: "POST",
     headers,
     body: JSON.stringify({ jsonrpc: "2.0", id, method, params }),
@@ -96,6 +96,18 @@ describe("MCP HTTP listener", () => {
     }
   });
 
+  it("returns 404 for unknown paths (incl. OAuth discovery docs)", async () => {
+    const { url, close } = await startServer();
+    try {
+      const wellKnown = await post(url, 9, "tools/list", {}, KEY, "/.well-known/oauth-protected-resource");
+      expect(wellKnown.status).toBe(404);
+      const get = await fetch(`${url}/.well-known/oauth-authorization-server`);
+      expect(get.status).toBe(404);
+      await get.arrayBuffer();
+    } finally {
+      await close();
+    }
+  });
   it("rejects missing bearer with 403 (never 401: editors auto-start OAuth on 401) and GET with 405", async () => {
     const { url, close } = await startServer();
     try {
