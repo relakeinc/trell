@@ -136,6 +136,12 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
   `list_projects` solo devuelve tus workspaces). Tests MCP 42/42. Vars en
   `/opt/trell-mcp/.env`: `GOOGLE_CLIENT_ID/SECRET` (del stack vivo),
   `MCP_OAUTH_SECRET`, `MCP_PUBLIC_URL`, `MCP_ALLOWED_EMAILS` opcional.
+- **Fase 3 — escrituras**: ✅ HECHA Y DESPLEGADA (2026-09-10). 28 tools:
+  funnels CRUD, UTM CRUD, add/remove domain (normalizados), webhooks
+  create/delete (URL validada), `create_api_key` (secreto una vez),
+  destructivas `revoke_api_key`/`delete_project`/`rotate_project_secret`
+  (owner + `MCP_ALLOW_DESTRUCTIVE` + `confirm`). Smoke en prod con cleanup
+  (create→delete→verificado, 0 restos). Docs en `docs/mcp/TOOLS.md`.
 - Lección VS Code: edita `settings.json` con él cerrado (si no, pisa cambios
   externos al guardar). Por eso la config vive en `.vscode/mcp.json` (solo se
   reescribe al añadir/quitar servidores) y sin secretos: OAuth por discovery.
