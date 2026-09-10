@@ -359,7 +359,7 @@ export function ChatWidget() {
               }}
               placeholder="Pregunta algo…"
               maxLength={1000}
-              className="trell-input h-9 flex-1"
+              className="trell-input h-9 min-w-0 flex-1"
             />
             <button
               onClick={() => void send(input)}
