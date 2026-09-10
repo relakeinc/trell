@@ -163,6 +163,9 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
   - Dockerfile compila `@trell/mcp` antes que la API (si no, `dist` ausente
     y el contenedor rompe al arrancar).
 - **Fase 5 — bot**: con el MCP en producción, conectar el bot elegido.
+  → Hecho como **webchat embebido** (2026-09-10, ver `docs/webchat.md`):
+  widget "Ask Trell" en el dashboard, Gemini gratis, backend que firma JWT
+  de identidad por sesión. Sin infra nueva.
 
 ## 7. Criterios de aceptación
 
