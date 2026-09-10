@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PrismaMembershipRepo, ProjectAccessService } from "@/lib/authz";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
+import { ChatWidget } from "@/components/ChatWidget";
 import { KeyboardShortcutsProvider } from "@/components/KeyboardShortcutsProvider";
 import { CommandPalette } from "@/components/CommandPalette";
 import { MobileShell, MobileShellProvider } from "./MobileShell";
@@ -50,6 +51,7 @@ export default async function ProjectLayout({
               <div className="trell-main">{children}</div>
             </div>
           </div>
+          <ChatWidget />
         </MobileShell>
       </MobileShellProvider>
     </KeyboardShortcutsProvider>
