@@ -20,3 +20,18 @@ export { getStats } from "./tools/stats";
 export { trackingCheckup } from "./tools/tracking";
 export { getSeries, getBreakdown, getForms, queryEvents } from "./tools/analytics";
 export { listFunnels, getFunnel, listViews, listWebhooks, listUtmTemplates, listApiKeys } from "./tools/entities";
+export {
+  signJwt,
+  verifyJwt,
+  pkceChallenge,
+  isAllowedRedirectUri,
+  handleRegister,
+  beginAuthorize,
+  handleCallback,
+  handleToken,
+  verifyAccessToken,
+  AUTH_CODE_TTL_SEC,
+  ACCESS_TOKEN_TTL_SEC,
+  REFRESH_TOKEN_TTL_SEC,
+} from "./oauth";
+export { googleAuthUrl, exchangeCode, fetchGoogleUser } from "./google";

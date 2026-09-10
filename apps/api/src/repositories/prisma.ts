@@ -96,6 +96,25 @@ export class PrismaRepo implements Repo {
     });
   }
 
+  async findUserByEmail(email: string) {
+    const norm = email.trim().toLowerCase();
+    if (!norm) return null;
+    const user = await this.prisma.user.findFirst({
+      where: { email: { equals: norm, mode: "insensitive" } },
+      select: { id: true, email: true },
+    });
+    if (!user?.email) return null;
+    return { id: user.id, email: user.email };
+  }
+
+  async listMemberships(userId: string) {
+    const rows = await this.prisma.projectUser.findMany({
+      where: { userId },
+      select: { projectId: true, role: true },
+    });
+    return rows.map((r) => ({ projectId: r.projectId, role: r.role }));
+  }
+
   async insertEvents(input: InsertEventsInput): Promise<{ inserted: number; duplicates: number }> {
     if (input.events.length === 0) return { inserted: 0, duplicates: 0 };
     const res = await this.prisma.event.createMany({

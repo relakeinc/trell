@@ -5,7 +5,8 @@ Todas las tools reciben `project` (slug o id del workspace) salvo
 Errores: `{ error: { code, message } }` con `isError: true`.
 
 Códigos: `project_not_found` · `project_forbidden` (fuera de
-`MCP_ALLOWED_SLUGS`) · `invalid_input` · `destructive_disabled` ·
+`MCP_ALLOWED_SLUGS`, fuera de tus membresías, login no permitido o sin cuenta
+Trell) · `invalid_input` · `destructive_disabled` ·
 `confirm_required` · `internal_error`.
 
 Convenciones: fechas ISO, rangos por defecto últimos 30 días (forms: 90),
@@ -56,6 +57,9 @@ rango máximo 366 días, `limit` con tope 100.
 
 ## Notas
 
+- **Identidad**: con Bearer OAuth, `list_projects` devuelve solo tus
+  workspaces (membresías) y el resto de tools rechaza lo ajeno. Con la
+  service key (`MCP_API_KEY`) no hay scoping por usuario (ver `AUTH.md`).
 - `query_events` ordena por `ts` ascendente internamente para que el cursor sea
   determinista aunque el store no garantice orden.
 - Escrituras y destructivas: Fase 3 (ver `docs/mcp-plan.md`).

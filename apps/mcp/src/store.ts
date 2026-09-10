@@ -90,6 +90,16 @@ export interface McpApiKey {
   createdAt: Date;
 }
 
+export interface McpUser {
+  id: string;
+  email: string;
+}
+
+export interface McpMembership {
+  projectId: string;
+  role: string;
+}
+
 export interface McpStore {
   listProjects(): Promise<McpProject[]>;
   findProjectById(id: string): Promise<McpProject | null>;
@@ -100,4 +110,7 @@ export interface McpStore {
   listWebhooks(projectId: string): Promise<McpWebhook[]>;
   listUtmTemplates(projectId: string): Promise<McpUtmTemplate[]>;
   listApiKeys(projectId: string): Promise<McpApiKey[]>;
+  /** Identity: resolve a Trell user by email (lowercased match). */
+  findUserByEmail(email: string): Promise<McpUser | null>;
+  listMemberships(userId: string): Promise<McpMembership[]>;
 }

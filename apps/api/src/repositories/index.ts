@@ -14,6 +14,8 @@ export type {
   SavedViewRecord,
   StoredEvent,
   UpdateFunnelInput,
+  UserRef,
+  MembershipRef,
   UtmTemplateMeta,
   WebhookMeta,
 } from "./types";

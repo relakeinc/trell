@@ -144,6 +144,18 @@ export interface ApiKeyMeta {
   createdAt: Date;
 }
 
+// ── Identity (per-user MCP access) ──────────────────────────────
+
+export interface UserRef {
+  id: string;
+  email: string;
+}
+
+export interface MembershipRef {
+  projectId: string;
+  role: string;
+}
+
 // ── Repo interface ────────────────────────────────────────────
 
 export interface Repo {
@@ -162,6 +174,10 @@ export interface Repo {
   listWebhooks(projectId: string): Promise<WebhookMeta[]>;
   listUtmTemplates(projectId: string): Promise<UtmTemplateMeta[]>;
   listApiKeys(projectId: string): Promise<ApiKeyMeta[]>;
+
+  // Identity
+  findUserByEmail(email: string): Promise<UserRef | null>;
+  listMemberships(userId: string): Promise<MembershipRef[]>;
 
   // Funnel CRUD
   listFunnels(projectId: string): Promise<FunnelRecord[]>;

@@ -69,6 +69,31 @@ export class MemoryRepo implements Repo {
     return this.apiKeys.filter((k) => k.projectId === projectId).map((k) => k.meta);
   }
 
+  // ── Identity ─────────────────────────────────────────────────
+
+  private users = new Map<string, { id: string; email: string }>();
+  private memberships: { userId: string; projectId: string; role: string }[] = [];
+
+  /** Test/demo helper. */
+  seedUser(id: string, email: string): void {
+    this.users.set(email.toLowerCase(), { id, email });
+  }
+
+  /** Test/demo helper. */
+  seedMembership(userId: string, projectId: string, role = "member"): void {
+    this.memberships.push({ userId, projectId, role });
+  }
+
+  async findUserByEmail(email: string): Promise<{ id: string; email: string } | null> {
+    return this.users.get(email.trim().toLowerCase()) ?? null;
+  }
+
+  async listMemberships(userId: string): Promise<{ projectId: string; role: string }[]> {
+    return this.memberships
+      .filter((m) => m.userId === userId)
+      .map((m) => ({ projectId: m.projectId, role: m.role }));
+  }
+
   async createOrganizationAndProject(input: CreateProjectInput): Promise<ProjectRecord> {
     const project: ProjectRecord = {
       id: `proj_${++this.seq}`,

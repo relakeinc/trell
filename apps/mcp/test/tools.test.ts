@@ -96,6 +96,19 @@ class FakeStore implements McpStore {
   async listApiKeys(projectId: string): Promise<McpApiKey[]> {
     return this.keys.get(projectId) ?? [];
   }
+
+  users = new Map<string, { id: string; email: string }>();
+  memberships: { userId: string; projectId: string; role: string }[] = [];
+
+  async findUserByEmail(email: string): Promise<{ id: string; email: string } | null> {
+    return this.users.get(email.trim().toLowerCase()) ?? null;
+  }
+
+  async listMemberships(userId: string): Promise<{ projectId: string; role: string }[]> {
+    return this.memberships
+      .filter((m) => m.userId === userId)
+      .map((m) => ({ projectId: m.projectId, role: m.role }));
+  }
 }
 
 function seedStore(): { store: FakeStore; siteId: string } {
@@ -150,7 +163,13 @@ function seedStore(): { store: FakeStore; siteId: string } {
   store.keys.set(site.id, [
     { id: "k1", name: "prod", keyPrefix: "sk_abc", createdAt: new Date("2026-07-01T00:00:00Z") },
   ]);
+  store.users.set("me@x.test", { id: "u1", email: "me@x.test" });
+  store.memberships.push({ userId: "u1", projectId: site.id, role: "owner" });
   return { store, siteId: site.id };
+}
+
+function identityConfig(email: string) {
+  return { ...OPEN_CONFIG, identity: { email } };
 }
 
 function readJson(result: { content: { type: string; text?: string }[]; isError?: boolean }): unknown {
@@ -197,6 +216,40 @@ describe("list_projects / get_project", () => {
     const { store } = seedStore();
     const config = mcpConfigFromEnv({ MCP_ALLOWED_SLUGS: "site" } as NodeJS.ProcessEnv);
     const res = await getProject(store, config, { project: "other" });
+    expect(res.isError).toBe(true);
+    expect((readJson(res) as { error: { code: string } }).error.code).toBe("project_forbidden");
+  });
+});
+
+describe("per-user identity", () => {
+  it("list_projects returns only member workspaces", async () => {
+    const { store } = seedStore();
+    const res = await listProjects(store, identityConfig("me@x.test"));
+    const body = readJson(res) as { projects: { slug: string }[] };
+    expect(body.projects.map((p) => p.slug)).toEqual(["site"]);
+  });
+
+  it("denies workspaces outside the caller's account", async () => {
+    const { store } = seedStore();
+    const res = await getProject(store, identityConfig("me@x.test"), { project: "other" });
+    expect(res.isError).toBe(true);
+    expect((readJson(res) as { error: { code: string } }).error.code).toBe("project_forbidden");
+  });
+
+  it("denies logins without a Trell account", async () => {
+    const { store } = seedStore();
+    const res = await getProject(store, identityConfig("ghost@x.test"), { project: "site" });
+    expect(res.isError).toBe(true);
+    expect((readJson(res) as { error: { code: string } }).error.code).toBe("project_forbidden");
+  });
+
+  it("honors MCP_ALLOWED_EMAILS", async () => {
+    const { store } = seedStore();
+    const config = {
+      ...mcpConfigFromEnv({ MCP_ALLOWED_EMAILS: "boss@x.test" } as NodeJS.ProcessEnv),
+      identity: { email: "me@x.test" },
+    };
+    const res = await listProjects(store, config);
     expect(res.isError).toBe(true);
     expect((readJson(res) as { error: { code: string } }).error.code).toBe("project_forbidden");
   });

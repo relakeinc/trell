@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { createMcpHttpListener } from "../src/http";
 import { mcpConfigFromEnv } from "../src/config";
+import { signJwt } from "../src/oauth";
 import type { McpProject, McpStore } from "../src/store";
 
 class FakeStore implements McpStore {
@@ -46,6 +47,14 @@ class FakeStore implements McpStore {
   }
 
   async listApiKeys(): Promise<[]> {
+    return [];
+  }
+
+  async findUserByEmail(): Promise<null> {
+    return null;
+  }
+
+  async listMemberships(): Promise<[]> {
     return [];
   }
 }
@@ -96,12 +105,12 @@ describe("MCP HTTP listener", () => {
     }
   });
 
-  it("explains no-OAuth on GET /authorize, 404 elsewhere", async () => {
+  it("503s /authorize without Google configured, 404 elsewhere", async () => {
     const { url, close } = await startServer();
     try {
       const page = await fetch(`${url}/authorize?client_id=x`);
-      expect(page.status).toBe(200);
-      expect(await page.text()).toContain("not OAuth");
+      expect(page.status).toBe(503);
+      await page.arrayBuffer();
       const other = await fetch(`${url}/nope`);
       expect(other.status).toBe(404);
       await other.arrayBuffer();
@@ -109,18 +118,19 @@ describe("MCP HTTP listener", () => {
       await close();
     }
   });
-  it("returns 404 for unknown paths (incl. OAuth discovery docs)", async () => {
+  it("accepts an OAuth access token as Bearer (identity has no account here)", async () => {
     const { url, close } = await startServer();
     try {
-      const wellKnown = await post(url, 9, "tools/list", {}, KEY, "/.well-known/oauth-protected-resource");
-      expect(wellKnown.status).toBe(404);
-      const get = await fetch(`${url}/.well-known/oauth-authorization-server`);
-      expect(get.status).toBe(404);
-      await get.arrayBuffer();
+      // oauthSecret falls back to MCP_API_KEY in test config.
+      const token = signJwt({ type: "access", email: "nobody@x.test" }, KEY, 3600);
+      const res = await post(url, 4, "tools/call", { name: "list_projects", arguments: {} }, token);
+      expect(res.status).toBe(200);
+      expect(res.body).toContain("project_forbidden");
     } finally {
       await close();
     }
   });
+
   it("rejects missing bearer with 403 (never 401: editors auto-start OAuth on 401) and GET with 405", async () => {
     const { url, close } = await startServer();
     try {
@@ -129,6 +139,20 @@ describe("MCP HTTP listener", () => {
       const get = await fetch(url);
       expect(get.status).toBe(405);
       await get.arrayBuffer();
+    } finally {
+      await close();
+    }
+  });
+
+  it("serves OAuth discovery metadata", async () => {
+    const { url, close } = await startServer();
+    try {
+      const meta = await (await fetch(`${url}/.well-known/oauth-protected-resource`)).json();
+      expect((meta as { authorization_servers: string[] }).authorization_servers).toEqual([
+        "https://mcp.relake.co",
+      ]);
+      const as = await (await fetch(`${url}/.well-known/oauth-authorization-server`)).json();
+      expect((as as { registration_endpoint: string }).registration_endpoint).toContain("/register");
     } finally {
       await close();
     }
