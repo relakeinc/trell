@@ -19,6 +19,14 @@ for (const file of ["apps/api/.env", ".env"]) {
 
 async function main(): Promise<void> {
   const config = mcpConfigFromEnv();
+  // Optional per-user scoping for personal use: only this account's
+  // workspaces are visible (service mode without it). NOT a security
+  // boundary here — a local process already has full DB access.
+  const identityEmail = process.env.MCP_IDENTITY_EMAIL?.trim();
+  if (identityEmail) {
+    config.identity = { email: identityEmail };
+    console.error(`[trell:mcp] identity scoping: ${identityEmail}`);
+  }
 
   let repo;
   if (process.env.DATABASE_URL) {
