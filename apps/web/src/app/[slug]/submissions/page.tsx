@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/Icon";
+import { AskYoiButton } from "@/components/AskYoiButton";
 import { useProjectId, useProjectSubmissions } from "@/lib/hooks";
 
 function ago(iso: string): string {
@@ -54,6 +55,9 @@ export default function SubmissionsPage() {
     <div className="trell-content">
       <header className="trell-header -mx-6 -mt-3 mb-6 px-6 pt-6">
         <h1 className="text-base font-semibold text-trell-ink">Form Submissions</h1>
+        <div className="flex items-center gap-2">
+          <AskYoiButton />
+        </div>
       </header>
 
       {isLoading ? (

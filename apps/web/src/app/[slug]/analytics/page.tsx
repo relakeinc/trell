@@ -11,6 +11,7 @@ import { SelectField } from "@/components/SelectField";
 import { useMounted } from "@/components/Transitions";
 import { DimIcon } from "@/components/DimIcon";
 import { AreaChart } from "@/components/AreaChart";
+import { AskYoiButton } from "@/components/AskYoiButton";
 import { EventsFeed } from "@/components/analytics/EventsFeed";
 import { FormsRanking } from "@/components/analytics/FormsRanking";
 import { useProjectId, useProjectStats, useProjectSeries, useProjectBreakdown, useProjectForms, useProjectEvents, fetchBreakdown } from "@/lib/hooks";
@@ -107,6 +108,7 @@ export default function AnalyticsPage() {
       {/* Header */}
       <header className="trell-header -mx-6 -mt-3 mb-6 px-6 pt-6">
         <h1 className="text-base font-semibold text-trell-ink">Analytics</h1>
+        <div className="flex items-center gap-2">
         <div ref={filtersRef} className="relative">
           <button
             onClick={() => setFiltersOpen((o) => !o)}
@@ -168,6 +170,8 @@ export default function AnalyticsPage() {
               </button>
             </div>
           )}
+        </div>
+        <AskYoiButton />
         </div>
       </header>
 

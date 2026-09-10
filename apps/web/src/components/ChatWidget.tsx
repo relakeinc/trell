@@ -11,7 +11,6 @@ import {
   FastForward,
   KeyRound,
   Filter,
-  MessageCircle,
   Pencil,
   Plus,
   Search,
@@ -20,6 +19,7 @@ import {
 } from "lucide-react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useChat } from "./ChatProvider";
 import { ChatContainerContent, ChatContainerRoot, ChatContainerScrollAnchor } from "@/components/ui/chat-container";
 import {
   PromptInput,
@@ -94,7 +94,7 @@ function greeting(): string {
 
 export function ChatWidget() {
   const { slug } = useParams<{ slug: string }>();
-  const [open, setOpen] = useState(false);
+  const { open, setOpen } = useChat();
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<Mode>("ask");
   const [busy, setBusy] = useState(false);
@@ -230,17 +230,7 @@ export function ChatWidget() {
   }
 
   if (!open) {
-    return (
-      <div className="fixed bottom-4 right-4 z-50">
-        <button
-          onClick={() => setOpen(true)}
-          className="overflow-hidden rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
-          aria-label="Open Yoi"
-        >
-          <Image src="/yoi-logo.png" alt="Yoi" width={48} height={48} className="h-12 w-12" />
-        </button>
-      </div>
-    );
+    return null;
   }
 
   return (

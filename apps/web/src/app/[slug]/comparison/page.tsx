@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { AskYoiButton } from "@/components/AskYoiButton";
 import { ComparisonPanel } from "@/components/ComparisonPanel";
 import { AreaChart } from "@/components/AreaChart";
 import { useProjectId, useProjectStats, useProjectSeries } from "@/lib/hooks";
@@ -80,6 +81,7 @@ export default function ComparisonPage() {
         <div>
           <h1 className="text-base font-semibold text-trell-ink">Comparison</h1>
         </div>
+        <div className="flex items-center gap-2">
         <button
           onClick={() => comparison && exportComparisonCSV(comparison)}
           disabled={!comparison}
@@ -88,6 +90,8 @@ export default function ComparisonPage() {
           <Icon name="download" size={16} />
           Export CSV
         </button>
+        <AskYoiButton />
+        </div>
       </header>
 
       <div className="mb-6 rounded-2xl border border-trell-line bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { AskYoiButton } from "@/components/AskYoiButton";
 import { FunnelBuilder } from "@/components/FunnelBuilder";
 import { FunnelView } from "@/components/FunnelView";
 import { useProjectId, useProjectFunnels, useFunnelLive, useFunnelMutations } from "@/lib/hooks";
@@ -87,12 +88,15 @@ export default function FunnelsPage() {
         <div>
           <h1 className="text-base font-semibold text-trell-ink">Funnels</h1>
         </div>
+        <div className="flex items-center gap-2">
         <button
           onClick={() => { setEditingFunnel(null); setBuilderOpen(true); }}
           className="trell-btn-accent h-10 px-4"
         >
           + New funnel
         </button>
+        <AskYoiButton />
+        </div>
       </header>
 
       {builderOpen && (
