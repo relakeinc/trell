@@ -31,8 +31,8 @@ alcance = `MCP_ALLOWED_SLUGS`. Para backends sin navegador.
 - `GET /.well-known/oauth-protected-resource` y
   `/.well-known/oauth-authorization-server` (RFC 9728): para que los editores
   hagan el flujo correcto en vez de adivinar.
-- Sin Bearer (o malo) en `POST /` → `403` (nunca `401`: los editores
-  auto-inician OAuth ante un 401 y aquí el Bearer fijo es legítimo).
+- Sin Bearer (o malo) en `POST /` → `401` + header `WWW-Authenticate`
+  con el discovery (RFC 9728) para que los editores completen el OAuth.
 - Sin `MCP_API_KEY` y sin token → `503` en modo discovery; `POST /` con JWT
   válido funciona incluso sin `MCP_API_KEY` (OAuth puro).
 

@@ -1,22 +1,11 @@
 {
-  // Trell MCP en producción: sin procesos locales, sin .env, sin builds.
-  // Al arrancar, VS Code te pide la key UNA vez (no se guarda en el repo).
-  // Verla con:  ssh trell-vps "grep '^MCP_API_KEY=' /opt/trell-mcp/.env"
+  // Trell MCP en producción por HTTPS. Sin credenciales aquí: VS Code
+  // descubre OAuth (RFC 9728) y abre el login con Google solo.
+  // No guardar keys en este archivo.
   "servers": {
-    "trell-prod": {
+    "trell": {
       "type": "http",
-      "url": "https://mcp.relake.co",
-      "headers": {
-        "Authorization": "Bearer ${input:mcp-key}"
-      }
+      "url": "https://mcp.relake.co"
     }
-  },
-  "inputs": [
-    {
-      "id": "mcp-key",
-      "type": "promptString",
-      "description": "Trell MCP API key (ssh trell-vps \"grep '^MCP_API_KEY=' /opt/trell-mcp/.env\")",
-      "password": true
-    }
-  ]
+  }
 }

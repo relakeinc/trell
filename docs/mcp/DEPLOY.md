@@ -25,8 +25,7 @@ cd /opt/trell-mcp && git pull && docker compose up -d --build mcp
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8788/  # 405 = vivo
 ```
 
-Sin Bearer → `403` a propósito (nunca `401`: los editores auto-inician
-flujo OAuth ante un 401 y aquí no hay servidor OAuth, solo Bearer fijo).
+Sin Bearer → `401` + `WWW-Authenticate` (discovery OAuth, RFC 9728).
 
 ## Detalles que morderían si se olvidan
 

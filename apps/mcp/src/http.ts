@@ -5,12 +5,14 @@ import type { McpServerDeps } from "./server";
 import { createMcpServer } from "./server";
 import { beginAuthorize, handleCallback, handleRegister, handleToken, verifyAccessToken } from "./oauth";
 
-function unauthorized(res: ServerResponse): void {
-  // NOTE: 403 on purpose, not 401. Editors (VS Code) auto-start an OAuth
-  // flow on any 401 from a remote MCP server; with a static Bearer key and
-  // no completed login, a 401 traps users in a registration dialog.
-  res.writeHead(403, { "content-type": "application/json" });
-  res.end(JSON.stringify({ error: "forbidden", message: "invalid or missing credentials" }));
+function unauthorized(res: ServerResponse, issuer: string): void {
+  // Spec-compliant 401: editors discover OAuth via metadata and complete
+  // the browser flow (this server implements it — no trap).
+  res.writeHead(401, {
+    "content-type": "application/json",
+    "WWW-Authenticate": `Bearer resource_metadata="${issuer}/.well-known/oauth-protected-resource", error="invalid_token"`,
+  });
+  res.end(JSON.stringify({ error: "unauthorized", message: "login required" }));
 }
 
 function notConfigured(res: ServerResponse): void {
@@ -182,7 +184,7 @@ export function createMcpHttpListener(deps: McpServerDeps): (req: IncomingMessag
       } else {
         const email = verifyAccessToken(deps.config, token);
         if (!email) {
-          unauthorized(res);
+          unauthorized(res, issuer);
           return;
         }
         identity = { email };
@@ -190,7 +192,7 @@ export function createMcpHttpListener(deps: McpServerDeps): (req: IncomingMessag
     } else if (token) {
       const email = verifyAccessToken(deps.config, token);
       if (!email) {
-        unauthorized(res);
+        unauthorized(res, issuer);
         return;
       }
       identity = { email };
@@ -199,7 +201,7 @@ export function createMcpHttpListener(deps: McpServerDeps): (req: IncomingMessag
         notConfigured(res);
         return;
       }
-      unauthorized(res);
+      unauthorized(res, issuer);
       return;
     }
 

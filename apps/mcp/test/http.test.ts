@@ -131,14 +131,30 @@ describe("MCP HTTP listener", () => {
     }
   });
 
-  it("rejects missing bearer with 403 (never 401: editors auto-start OAuth on 401) and GET with 405", async () => {
+  it("rejects missing bearer with spec-compliant 401 + discovery hint and GET with 405", async () => {
     const { url, close } = await startServer();
     try {
       const noAuth = await post(url, 3, "tools/call", { name: "list_projects", arguments: {} }, "");
-      expect(noAuth.status).toBe(403);
+      expect(noAuth.status).toBe(401);
       const get = await fetch(url);
       expect(get.status).toBe(405);
       await get.arrayBuffer();
+    } finally {
+      await close();
+    }
+  });
+
+  it("advertises OAuth discovery on 401", async () => {
+    const { url, close } = await startServer();
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} }),
+      });
+      expect(res.status).toBe(401);
+      expect(res.headers.get("www-authenticate")).toContain("oauth-protected-resource");
+      await res.arrayBuffer();
     } finally {
       await close();
     }
