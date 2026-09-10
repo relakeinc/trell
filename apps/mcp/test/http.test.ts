@@ -96,6 +96,19 @@ describe("MCP HTTP listener", () => {
     }
   });
 
+  it("explains no-OAuth on GET /authorize, 404 elsewhere", async () => {
+    const { url, close } = await startServer();
+    try {
+      const page = await fetch(`${url}/authorize?client_id=x`);
+      expect(page.status).toBe(200);
+      expect(await page.text()).toContain("not OAuth");
+      const other = await fetch(`${url}/nope`);
+      expect(other.status).toBe(404);
+      await other.arrayBuffer();
+    } finally {
+      await close();
+    }
+  });
   it("returns 404 for unknown paths (incl. OAuth discovery docs)", async () => {
     const { url, close } = await startServer();
     try {

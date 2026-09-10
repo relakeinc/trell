@@ -1,17 +1,22 @@
 {
-  // Trell MCP (prueba local): stdio contra Postgres real vía apps/api.
-  // El runner autocarga apps/api/.env solo; DATABASE_URL aquí es opcional
-  // (si la defines, manda sobre el .env). No hay secretos en este archivo.
-  // Requiere: pnpm --filter @trell/api build
+  // Trell MCP en producción: sin procesos locales, sin .env, sin builds.
+  // Al arrancar, VS Code te pide la key UNA vez (no se guarda en el repo).
+  // Verla con:  ssh trell-vps "grep '^MCP_API_KEY=' /opt/trell-mcp/.env"
   "servers": {
-    "trell": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["${workspaceFolder}/apps/api/dist/mcp-stdio.js"],
-      "env": {
-        "DATABASE_URL": "${env:DATABASE_URL}",
-        "MCP_ALLOWED_SLUGS": "*"
+    "trell-prod": {
+      "type": "http",
+      "url": "https://mcp.relake.co",
+      "headers": {
+        "Authorization": "Bearer ${input:mcp-key}"
       }
     }
-  }
+  },
+  "inputs": [
+    {
+      "id": "mcp-key",
+      "type": "promptString",
+      "description": "Trell MCP API key (ssh trell-vps \"grep '^MCP_API_KEY=' /opt/trell-mcp/.env\")",
+      "password": true
+    }
+  ]
 }
