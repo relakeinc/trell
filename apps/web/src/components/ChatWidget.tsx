@@ -13,6 +13,7 @@ import {
   MessageCircle,
   Plus,
   Search,
+  SlidersHorizontal,
   Sparkles,
   X,
 } from "lucide-react";
@@ -81,6 +82,7 @@ export function ChatWidget() {
   const [mode, setMode] = useState<Mode>("ask");
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [convos, setConvos] = useState<Convo[]>(() => (slug ? loadConvos(slug) : []));
   const [activeId, setActiveId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -391,14 +393,47 @@ export function ChatWidget() {
               >
                 ✎ {mode === "ask" ? "Ask" : "Do"}
               </button>
-              <button
-                onClick={() => void send(input)}
-                disabled={busy || !input.trim()}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#4d88f5] to-[#2563eb] text-white shadow-[inset_0_1px_0_0_#4d88f5,0_1px_2px_rgb(37_99_235/0.4)] transition-all hover:opacity-95 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-                aria-label="Enviar"
-              >
-                <ArrowUp size={15} strokeWidth={2.5} />
-              </button>
+              <div className="relative flex shrink-0 items-center gap-1">
+                <button
+                  onClick={() => setToolsOpen((v) => !v)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-trell-ink dark:text-neutral-500 dark:hover:bg-[#2a2a29] dark:hover:text-neutral-100"
+                  title="Opciones"
+                  aria-label="Opciones"
+                  aria-expanded={toolsOpen}
+                >
+                  <SlidersHorizontal size={15} />
+                </button>
+                <button
+                  onClick={() => void send(input)}
+                  disabled={busy || !input.trim()}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#4d88f5] to-[#2563eb] text-white shadow-[inset_0_1px_0_0_#4d88f5,0_1px_2px_rgb(37_99_235/0.4)] transition-all hover:opacity-95 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Enviar"
+                >
+                  <ArrowUp size={15} strokeWidth={2.5} />
+                </button>
+                {toolsOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setToolsOpen(false)} aria-hidden />
+                    <div className="absolute bottom-full right-0 z-20 mb-2 w-56 overflow-hidden rounded-xl border border-trell-line bg-white shadow-[0_20px_50px_-16px_rgb(24_24_27/0.25)] dark:border-[#2a2a29] dark:bg-[#1e1e1d]">
+                      <div className="px-3 pb-1 pt-2.5 text-[11px] font-medium uppercase tracking-wider text-neutral-400">
+                        Workspace
+                      </div>
+                      <div className="truncate px-3 pb-2 font-mono text-xs text-trell-ink">{slug}</div>
+                      <div className="border-t border-trell-line p-1.5 dark:border-[#2a2a29]">
+                        <button
+                          onClick={() => {
+                            newChat();
+                            setToolsOpen(false);
+                          }}
+                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13px] text-trell-ink transition-colors hover:bg-neutral-100 dark:hover:bg-[#262625]"
+                        >
+                          <Plus size={13} /> Nueva conversación
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
           <div className="mt-2 flex items-center justify-between px-1">
