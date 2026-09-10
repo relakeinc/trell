@@ -94,7 +94,7 @@ function greeting(): string {
 
 export function ChatWidget() {
   const { slug } = useParams<{ slug: string }>();
-  const { open, setOpen } = useChat();
+  const { open, setOpen, askHover } = useChat();
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<Mode>("ask");
   const [busy, setBusy] = useState(false);
@@ -230,7 +230,23 @@ export function ChatWidget() {
   }
 
   if (!open) {
-    return null;
+    // Siri-style edge light: glows where the panel slides out from.
+    return (
+      <>
+        <div
+          aria-hidden
+          className={`pointer-events-none fixed inset-y-0 right-0 z-40 w-16 bg-gradient-to-l from-violet-500/25 via-blue-500/10 to-transparent blur-xl transition-opacity duration-500 ${
+            askHover ? "opacity-100" : "opacity-0"
+          }`}
+        />
+        <div
+          aria-hidden
+          className={`pointer-events-none fixed inset-y-3 right-0 z-40 w-[3px] rounded-full bg-gradient-to-b from-transparent via-violet-500 to-blue-500 blur-[1px] transition-opacity duration-500 ${
+            askHover ? "animate-pulse opacity-100" : "opacity-0"
+          }`}
+        />
+      </>
+    );
   }
 
   return (

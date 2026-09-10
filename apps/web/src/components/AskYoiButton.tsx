@@ -23,9 +23,18 @@ function SparkleMark({ size = 16 }: { size?: number }) {
  * rightmost — matching sibling `trell-btn-outline h-9` controls.
  */
 export function AskYoiButton() {
-  const { openChat } = useChat();
+  const { openChat, setAskHover } = useChat();
   return (
-    <button type="button" onClick={openChat} className="trell-btn-outline h-9 gap-1.5" title="Ask Yoi">
+    <button
+      type="button"
+      onClick={openChat}
+      onMouseEnter={() => setAskHover(true)}
+      onMouseLeave={() => setAskHover(false)}
+      onFocus={() => setAskHover(true)}
+      onBlur={() => setAskHover(false)}
+      className="trell-btn-outline h-9 gap-1.5"
+      title="Ask Yoi"
+    >
       <SparkleMark />
       <span className="hidden sm:inline">Ask Yoi</span>
     </button>
