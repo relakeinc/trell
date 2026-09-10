@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY ?? "";
   const oauthSecret = process.env.MCP_OAUTH_SECRET ?? "";
   const mcpUrl = process.env.MCP_URL ?? "http://api:8788";
-  const model = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+  const model = process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite";
   if (!apiKey || !oauthSecret) {
     return new Response(JSON.stringify({ error: "chat_not_configured" }), { status: 503 });
   }

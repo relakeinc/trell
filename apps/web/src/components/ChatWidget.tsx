@@ -6,12 +6,14 @@ import {
   ChartColumn,
   Activity,
   ChevronDown,
+  ChevronRight,
   KeyRound,
   Filter,
   MessageCircle,
   Plus,
   Search,
   Send,
+  Sparkles,
   X,
 } from "lucide-react";
 
@@ -302,11 +304,14 @@ export function ChatWidget() {
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
           {messages.length === 0 ? (
             <div className="m-auto flex w-full flex-col items-center py-6 text-center">
-              <div className="trell-empty-state-icon !mb-3">
-                <MessageCircle size={20} />
+              <div className="relative mb-4">
+                <div className="absolute inset-0 scale-125 rounded-2xl bg-blue-600/20 blur-xl" aria-hidden />
+                <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-b from-[#4d88f5] to-[#2563eb] text-white shadow-[0_8px_20px_-6px_rgb(37_99_235/0.5)]">
+                  <Sparkles size={22} />
+                </div>
               </div>
-              <div className="text-[15px] font-semibold text-trell-ink">{greet}, ¿en qué te ayudo?</div>
-              <p className="mt-1 max-w-[240px] text-xs leading-relaxed text-trell-ink-muted">
+              <div className="text-[17px] font-semibold tracking-tight text-trell-ink">{greet}, ¿en qué te ayudo?</div>
+              <p className="mt-1 max-w-[250px] text-xs leading-relaxed text-trell-ink-muted">
                 Pregunta por tus métricas, funnels o tracking.
               </p>
               <div className="mt-5 flex w-full flex-col gap-2">
@@ -314,15 +319,16 @@ export function ChatWidget() {
                   <button
                     key={s.title}
                     onClick={() => void send(s.prompt)}
-                    className="flex items-center gap-3 rounded-xl border border-trell-line bg-white px-3 py-2.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:bg-neutral-50 dark:bg-[#1e1e1d] dark:hover:bg-[#242424]"
+                    className="group flex items-center gap-3 rounded-xl border border-trell-line bg-white px-3 py-2.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-all hover:-translate-y-px hover:border-blue-200 hover:shadow-[0_6px_16px_-8px_rgb(37_99_235/0.35)] dark:bg-[#1e1e1d] dark:hover:border-blue-900 dark:hover:bg-[#242424]"
                   >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-500 dark:bg-[#2a2a29] dark:text-[#9a9a99]">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
                       <s.icon size={15} />
                     </span>
-                    <span className="min-w-0">
+                    <span className="min-w-0 flex-1">
                       <span className="block truncate text-[13px] font-medium text-trell-ink">{s.title}</span>
                       <span className="block truncate text-xs text-trell-ink-muted">{s.subtitle}</span>
                     </span>
+                    <ChevronRight size={14} className="shrink-0 text-neutral-300 opacity-0 transition-opacity group-hover:opacity-100 dark:text-neutral-600" />
                   </button>
                 ))}
               </div>

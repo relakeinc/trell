@@ -20,7 +20,7 @@ Widget flotante en los workspaces (`[slug]`), potenciado por Gemini gratis
 | Var | Uso |
 |-----|-----|
 | `GEMINI_API_KEY` | AI Studio (gratis). Sin ella `/api/chat` da `503` |
-| `GEMINI_MODEL` | def. `gemini-2.5-flash` |
+| `GEMINI_MODEL` | def. `gemini-3.5-flash-lite` (free tier, ~500 req/día) |
 | `MCP_OAUTH_SECRET` | mismo valor que el stack MCP (firma JWT identidad) |
 | `MCP_URL` | def. `http://api:8788`; en prod apunta al stack MCP (`http://trell-mcp-mcp-1:8788`) |
 
