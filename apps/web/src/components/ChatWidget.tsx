@@ -234,7 +234,7 @@ export function ChatWidget() {
   }
 
   return (
-    <aside className="trell-drawer-right-in relative hidden h-full w-[360px] max-w-[calc(100vw-2rem)] shrink-0 flex-col gap-1 overflow-hidden rounded-xl bg-neutral-100 p-3 md:flex">
+    <aside className="trell-drawer-right-in relative hidden h-full w-[380px] max-w-[calc(100vw-2rem)] shrink-0 flex-col gap-1 overflow-hidden rounded-xl bg-neutral-100 p-3 md:flex">
         {/* dotted texture (Cloudflare-style) */}
         <div
           aria-hidden
@@ -244,11 +244,16 @@ export function ChatWidget() {
         <div className="relative flex items-center justify-between px-1 py-1">
           <button
             onClick={() => setHistoryOpen((v) => !v)}
-            className="flex items-center gap-1 text-base font-semibold text-trell-ink"
+            className="flex items-center gap-1.5 text-base font-semibold text-trell-ink"
             title="View conversations"
             aria-expanded={historyOpen}
           >
-            New conversation <ChevronDown size={14} className={`text-neutral-400 transition-transform ${historyOpen ? "rotate-180" : ""}`} />
+            New conversation
+            <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-neutral-200 transition-all duration-200 dark:bg-neutral-800">
+              <span className="trell-icon-arrow" style={{ display: "inline-flex" }}>
+                <ChevronDown size={12} className={`text-neutral-500 transition-transform ${historyOpen ? "rotate-180" : ""}`} />
+              </span>
+            </span>
           </button>
           <div className="flex items-center gap-1">
             <button onClick={newChat} className="trell-btn-outline h-9 w-9 !px-0" title="New conversation" aria-label="New conversation">
@@ -340,16 +345,16 @@ export function ChatWidget() {
                 <p className="mt-1 max-w-[250px] text-xs leading-relaxed text-trell-ink-muted">
                   Ask about your metrics, funnels or tracking.
                 </p>
-              <div className="mt-5 flex w-full flex-col gap-2">
-                {SUGGESTIONS.map((s) => (
+              <div className="mt-5 flex w-full flex-col">
+                {SUGGESTIONS.map((s, i) => (
                   <button
                     key={s.title}
                     onClick={() => void send(s.prompt)}
-                    className="flex items-center gap-3 rounded-xl border border-neutral-200/80 bg-white px-4 py-3 text-left shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all hover:-translate-y-px hover:border-neutral-300 hover:shadow-[0_8px_20px_-12px_rgb(16_24_40/0.25)] dark:border-[#2a2a29] dark:bg-[#1e1e1d] dark:hover:border-[#3a3a39]"
+                    className={`flex items-center gap-3 px-2 py-3 text-left transition-colors hover:bg-neutral-100 dark:hover:bg-white/5 ${
+                      i > 0 ? "border-t border-trell-line/70 dark:border-white/10" : ""
+                    }`}
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-500 dark:bg-[#2a2a29] dark:text-[#9a9a99]">
-                      <s.icon size={16} />
-                    </span>
+                    <s.icon size={16} className="shrink-0 text-neutral-400 dark:text-neutral-500" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-trell-ink">{s.title}</span>
                       <span className="block truncate text-[13px] text-neutral-500 dark:text-neutral-400">{s.subtitle}</span>
@@ -434,7 +439,7 @@ export function ChatWidget() {
             onSubmit={() => send(input)}
             maxHeight={160}
             disabled={busy}
-            className="rounded-2xl border-trell-line bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-100 dark:border-[#2a2a29] dark:bg-[#1e1e1d] dark:focus-within:border-blue-600 dark:focus-within:ring-blue-950"
+            className="min-h-[104px] rounded-2xl border-trell-line bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-100 dark:border-[#2a2a29] dark:bg-[#1e1e1d] dark:focus-within:border-blue-600 dark:focus-within:ring-blue-950"
           >
             <PromptInputTextarea
               placeholder="Type @ to tag a resource or ? for shortcuts"
