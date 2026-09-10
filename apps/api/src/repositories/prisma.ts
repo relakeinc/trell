@@ -54,6 +54,16 @@ export class PrismaRepo implements Repo {
     return project ? this.toRecord(project) : null;
   }
 
+  async findProjectBySlug(slug: string): Promise<ProjectRecord | null> {
+    const project = await this.prisma.project.findUnique({ where: { slug } });
+    return project ? this.toRecord(project) : null;
+  }
+
+  async listProjects(): Promise<ProjectRecord[]> {
+    const rows = await this.prisma.project.findMany({ orderBy: { createdAt: "desc" } });
+    return rows.map((p) => this.toRecord(p));
+  }
+
   async findApiKeyProject(keyHash: string): Promise<{ projectId: string } | null> {
     const row = await this.prisma.apiKey.findUnique({ where: { keyHash }, select: { projectId: true } });
     return row ? { projectId: row.projectId } : null;

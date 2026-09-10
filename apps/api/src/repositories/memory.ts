@@ -17,6 +17,7 @@ import type {
 export class MemoryRepo implements Repo {
   private projectsByPk = new Map<string, ProjectRecord>();
   private projectsById = new Map<string, ProjectRecord>();
+  private projectsBySlug = new Map<string, ProjectRecord>();
   private events = new Map<string, StoredEvent[]>();
   private eventIds = new Map<string, Set<string>>();
   private funnels = new Map<string, FunnelRecord>();
@@ -51,6 +52,7 @@ export class MemoryRepo implements Repo {
     };
     this.projectsByPk.set(input.pk, project);
     this.projectsById.set(project.id, project);
+    this.projectsBySlug.set(project.slug, project);
     this.events.set(project.id, []);
     this.eventIds.set(project.id, new Set());
     this.funnelsByProject.set(project.id, new Set());
@@ -64,6 +66,14 @@ export class MemoryRepo implements Repo {
 
   async findProjectById(id: string): Promise<ProjectRecord | null> {
     return this.projectsById.get(id) ?? null;
+  }
+
+  async findProjectBySlug(slug: string): Promise<ProjectRecord | null> {
+    return this.projectsBySlug.get(slug) ?? null;
+  }
+
+  async listProjects(): Promise<ProjectRecord[]> {
+    return [...this.projectsById.values()].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   async insertEvents(input: InsertEventsInput): Promise<{ inserted: number; duplicates: number }> {

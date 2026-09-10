@@ -1,0 +1,17 @@
+{
+  // Trell MCP (prueba local): stdio contra Postgres real vía apps/api.
+  // El runner autocarga apps/api/.env solo; DATABASE_URL aquí es opcional
+  // (si la defines, manda sobre el .env). No hay secretos en este archivo.
+  // Requiere: pnpm --filter @trell/api build
+  "servers": {
+    "trell": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/apps/api/dist/mcp-stdio.js"],
+      "env": {
+        "DATABASE_URL": "${env:DATABASE_URL}",
+        "MCP_ALLOWED_SLUGS": "*"
+      }
+    }
+  }
+}

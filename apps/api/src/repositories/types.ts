@@ -121,6 +121,8 @@ export interface Repo {
   createOrganizationAndProject(input: CreateProjectInput): Promise<ProjectRecord>;
   findProjectByPublishableKey(pk: string): Promise<ProjectRecord | null>;
   findProjectById(id: string): Promise<ProjectRecord | null>;
+  findProjectBySlug(slug: string): Promise<ProjectRecord | null>;
+  listProjects(): Promise<ProjectRecord[]>;
   /** Named server keys (dashboard API Keys): resolve an sk sha256 → project. */
   findApiKeyProject(keyHash: string): Promise<{ projectId: string } | null>;
   insertEvents(input: InsertEventsInput): Promise<{ inserted: number; duplicates: number }>;

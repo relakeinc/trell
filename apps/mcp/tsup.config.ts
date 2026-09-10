@@ -3,8 +3,6 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   entry: {
     index: "src/index.ts",
-    "mcp-stdio": "src/mcp-stdio.ts",
-    repositories: "src/repositories/index.ts",
   },
   format: ["esm"],
   dts: true,

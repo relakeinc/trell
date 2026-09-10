@@ -44,12 +44,18 @@ services:
       TRELL_SK_PREFIX: ${TRELL_SK_PREFIX:-sk}
       TRELL_RATE_LIMIT_MAX: ${TRELL_RATE_LIMIT_MAX:-300}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://trell.relake.co}
+      # MCP over Streamable HTTP (https://mcp.relake.co via nginx). Empty = disabled.
+      MCP_API_KEY: ${MCP_API_KEY:-}
+      MCP_HTTP_PORT: "8788"
+      MCP_ALLOWED_SLUGS: ${MCP_ALLOWED_SLUGS:-*}
+      MCP_ALLOW_DESTRUCTIVE: ${MCP_ALLOW_DESTRUCTIVE:-false}
     command: ["sh", "-c", "cd apps/api && pnpm start"]
     depends_on:
       migrate:
         condition: service_completed_successfully
     ports:
       - "127.0.0.1:8787:8787"
+      - "127.0.0.1:8788:8788"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:8787/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 10s

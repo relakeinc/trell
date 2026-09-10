@@ -11,8 +11,10 @@ COPY packages ./packages
 COPY apps ./apps
 RUN pnpm install --frozen-lockfile
 
-# Build shared (types/constants), generate the Prisma client, build the API.
+# Build shared (types/constants), the MCP server (imported by the API),
+# generate the Prisma client, build the API.
 RUN pnpm --filter @trell/shared build
+RUN pnpm --filter @trell/mcp build
 RUN pnpm --filter @trell/api db:generate
 RUN pnpm --filter @trell/api build
 
@@ -23,5 +25,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -
   && corepack enable && corepack prepare pnpm@10.33.0 --activate
 WORKDIR /repo
 COPY --from=builder /repo ./
-EXPOSE 8787
+EXPOSE 8787 8788
 CMD ["sh", "-c", "cd apps/api && pnpm start"]
