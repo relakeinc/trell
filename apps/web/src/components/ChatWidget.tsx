@@ -244,10 +244,9 @@ export function ChatWidget() {
   }
 
   return (
-    <aside className="trell-drawer-right-in hidden h-full w-[360px] max-w-[calc(100vw-2rem)] shrink-0 flex-col overflow-hidden rounded-xl bg-neutral-100 py-2 pl-2 md:flex dark:bg-[#111111]">
-      <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)] dark:bg-[#191918] dark:shadow-none dark:ring-1 dark:ring-white/10">
+    <aside className="trell-drawer-right-in hidden h-full w-[360px] max-w-[calc(100vw-2rem)] shrink-0 flex-col gap-1 overflow-hidden rounded-xl bg-neutral-100 p-3 md:flex">
         {/* header */}
-        <div className="relative flex items-center justify-between border-b border-trell-line px-4 py-3">
+        <div className="relative flex items-center justify-between px-1 py-1">
           <button
             onClick={() => setHistoryOpen((v) => !v)}
             className="flex items-center gap-1 text-base font-semibold text-trell-ink"
@@ -328,7 +327,7 @@ export function ChatWidget() {
 
         {/* messages */}
         <ChatContainerRoot className="relative min-h-0 flex-1">
-          <ChatContainerContent className="flex min-h-full flex-col gap-4 p-4">
+          <ChatContainerContent className="flex min-h-full flex-col gap-4 px-1 py-2">
             {messages.length === 0 ? (
               <div className="m-auto flex w-full flex-col items-center py-6 text-center">
                 <div className="relative mb-4">
@@ -429,7 +428,7 @@ export function ChatWidget() {
         </ChatContainerRoot>
 
         {/* composer */}
-        <div className="border-t border-trell-line p-3">
+        <div className="px-1 pb-1 pt-2">
           <PromptInput
             value={input}
             onValueChange={setInput}
@@ -500,7 +499,6 @@ export function ChatWidget() {
             </span>
           </div>
         </div>
-      </div>
     </aside>
   );
 }
