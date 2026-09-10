@@ -11,7 +11,12 @@ export const maxDuration = 60;
 
 const MAX_TURNS = 6;
 
-type SSE = { t: "text"; d: string } | { t: "status"; d: string } | { t: "done" } | { t: "error"; d: string };
+type SSE
+  = { t: "text"; d: string }
+  | { t: "status"; d: string }
+  | { t: "tool"; name: string; state: "input-available" | "output-available" | "output-error" }
+  | { t: "done" }
+  | { t: "error"; d: string };
 
 function send(controller: ReadableStreamDefaultController<string>, msg: SSE): void {
   controller.enqueue(`data: ${JSON.stringify(msg)}\n\n`);
@@ -128,16 +133,20 @@ export async function POST(req: NextRequest) {
           const responseParts: unknown[] = [];
           if (text) responseParts.push({ text });
           for (const call of calls) {
-            send(controller, { t: "status", d: `Consultando ${call.name}…` });
+            const callArgs = (call.args ?? {}) as Record<string, unknown>;
+            send(controller, { t: "tool", name: call.name, state: "input-available" });
             let result: unknown;
+            let toolOk = true;
             try {
-              const out = await mcp.callTool({ name: call.name, arguments: (call.args ?? {}) as Record<string, unknown> });
+              const out = await mcp.callTool({ name: call.name, arguments: callArgs });
               const content = (out.content ?? []) as { type?: string; text?: string }[];
               const first = content.find((p) => p.type === "text" && p.text);
               result = first?.text ? (JSON.parse(first.text) as unknown) : { ok: true };
             } catch (e) {
+              toolOk = false;
               result = { error: e instanceof Error ? e.message : "tool failed" };
             }
+            send(controller, { t: "tool", name: call.name, state: toolOk ? "output-available" : "output-error" });
             responseParts.push({ functionResponse: { name: call.name, response: { result } } });
           }
           contents.push({ role: "model", parts: responseParts });
