@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { AskYoiButton } from "@/components/AskYoiButton";
+import { EventBadge } from "@/components/EventBadge";
 import { DateTimeField } from "@/components/DateTimeField";
-import { typeMeta, displayName } from "@/components/analytics/EventsFeed";
 import { useProjectId, useProjectEvents } from "@/lib/hooks";
 import { localInput, fmtTime } from "@/lib/format";
 import { eventLabel } from "@/lib/labels";
@@ -117,36 +117,27 @@ export default function EventsPage() {
         </div>
       </div>
 
-      <div className="trell-card max-h-[70vh] overflow-auto p-4">
-        <table className="trell-table w-full border-separate border-spacing-0 text-sm">
-          <thead className="sticky top-0 z-10 bg-white dark:bg-neutral-900">
-            <tr className="border-b border-trell-line text-left text-xs text-trell-ink-muted dark:border-white/10">
-              <th className="bg-white pb-2 font-medium dark:bg-neutral-900">Type</th>
-              <th className="bg-white pb-2 font-medium dark:bg-neutral-900">Form</th>
-              <th className="bg-white pb-2 font-medium dark:bg-neutral-900">Page</th>
-              <th className="bg-white pb-2 font-medium dark:bg-neutral-900">Visitor</th>
-              <th className="bg-white pb-2 text-right font-medium dark:bg-neutral-900">Time</th>
+      <div className="trell-card max-h-[600px] overflow-auto p-4">
+        <table className="trell-table w-full text-sm">
+          <thead className="sticky top-0 bg-white">
+            <tr className="border-b border-trell-line text-left text-xs text-trell-ink-muted">
+              <th className="bg-white pb-2 font-medium">Type</th>
+              <th className="bg-white pb-2 font-medium">Form</th>
+              <th className="bg-white pb-2 font-medium">Page</th>
+              <th className="bg-white pb-2 font-medium">Visitor</th>
+              <th className="bg-white pb-2 text-right font-medium">Time</th>
             </tr>
           </thead>
           <tbody>
-            {events.map((e, i) => {
-              const meta = typeMeta(e.type);
-              const name = displayName(e);
-              return (
-                <tr key={i} className="border-b border-trell-line transition-colors last:border-0 hover:bg-neutral-50">
-                  <td className="whitespace-nowrap py-3.5">
-                    <span className="flex items-center gap-1.5 text-[13px] text-trell-ink-muted">
-                      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${meta.dot}`} />
-                      {meta.label}
-                    </span>
-                  </td>
-                  <td className="max-w-40 truncate py-3.5 text-[13px] font-medium text-trell-ink" title={e.formId ?? undefined}>{name ?? <span className="font-normal text-neutral-300">–</span>}</td>
-                  <td className="max-w-48 truncate py-3.5 tabular-nums text-neutral-600" title={e.pagePath}>{e.pagePath}</td>
-                  <td className="py-3.5 font-mono text-xs text-neutral-400" title={e.visitorId}>{e.visitorId.slice(0, 8)}</td>
-                  <td className="whitespace-nowrap py-3.5 text-right tabular-nums text-neutral-500" title={fmtTime(e.ts)}>{ago(e.ts)}</td>
-                </tr>
-              );
-            })}
+            {events.map((e, i) => (
+              <tr key={i} className="border-b border-trell-line transition-colors last:border-0 hover:bg-neutral-50">
+                <td className="py-2"><EventBadge type={e.type} /></td>
+                <td className="max-w-32 truncate py-2 font-medium text-trell-ink" title={e.formId ?? undefined}>{e.formId ?? <span className="font-normal text-neutral-300">–</span>}</td>
+                <td className="max-w-48 truncate py-2 tabular-nums text-neutral-600" title={e.pagePath}>{e.pagePath}</td>
+                <td className="py-2 font-mono text-xs text-neutral-400" title={e.visitorId}>{e.visitorId.slice(0, 8)}</td>
+                <td className="whitespace-nowrap py-2 text-right tabular-nums text-neutral-500" title={fmtTime(e.ts)}>{ago(e.ts)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
         {isLoading && events.length === 0 && (
