@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowUp,
   ChartColumn,
   Activity,
   ChevronDown,
@@ -12,7 +13,6 @@ import {
   MessageCircle,
   Plus,
   Search,
-  Send,
   Sparkles,
   X,
 } from "lucide-react";
@@ -86,7 +86,15 @@ export function ChatWidget() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [query, setQuery] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
   const greet = useMemo(greeting, []);
+
+  function autoresize() {
+    const el = taRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+  }
 
   // Reload history when switching workspaces.
   useEffect(() => {
@@ -149,6 +157,9 @@ export function ChatWidget() {
     const next: Msg[] = [...messages, { role: "user" as const, text: clean }];
     setMessages(next);
     setInput("");
+    requestAnimationFrame(() => {
+      if (taRef.current) taRef.current.style.height = "auto";
+    });
     setBusy(true);
     try {
       const res = await fetch("/api/chat", {
@@ -353,40 +364,47 @@ export function ChatWidget() {
 
         {/* composer */}
         <div className="border-t border-trell-line p-3">
-          <div className="flex items-center gap-2">
-            <input
+          <div className="flex flex-col gap-2 rounded-2xl border border-trell-line bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-100 dark:border-[#2a2a29] dark:bg-[#1e1e1d] dark:focus-within:border-blue-600 dark:focus-within:ring-blue-950">
+            <textarea
+              ref={taRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              rows={2}
+              onChange={(e) => {
+                setInput(e.target.value);
+                autoresize();
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   void send(input);
                 }
               }}
-              placeholder="Pregunta algo…"
-              maxLength={1000}
-              className="trell-input h-9 min-w-0 flex-1"
+              placeholder="Escribe @ para mencionar o ? para atajos"
+              maxLength={2000}
+              className="max-h-40 w-full resize-none bg-transparent text-sm leading-relaxed text-trell-ink placeholder:text-neutral-400 focus:outline-none"
             />
-            <button
-              type="submit"
-              disabled={busy || !input.trim()}
-              className="trell-btn-accent h-9 shrink-0 gap-1.5 px-4 text-xs disabled:opacity-40"
-              aria-label="Enviar"
-            >
-              <Send size={14} /> Enviar
-            </button>
+            <div className="flex items-center justify-between gap-1 pt-0">
+              <button
+                onClick={() => setMode((m) => (m === "ask" ? "do" : "ask"))}
+                className="flex h-7 shrink-0 items-center gap-1 rounded-full border border-trell-line px-2.5 text-xs font-medium text-neutral-500 transition-colors hover:text-trell-ink dark:text-neutral-400 dark:hover:text-neutral-100"
+                title={mode === "ask" ? "Responde preguntas (no ejecuta acciones)" : "Ejecuta acciones con tu confirmación"}
+              >
+                ✎ {mode === "ask" ? "Ask" : "Do"}
+              </button>
+              <button
+                onClick={() => void send(input)}
+                disabled={busy || !input.trim()}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#4d88f5] to-[#2563eb] text-white shadow-[inset_0_1px_0_0_#4d88f5,0_1px_2px_rgb(37_99_235/0.4)] transition-all hover:opacity-95 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Enviar"
+              >
+                <ArrowUp size={15} strokeWidth={2.5} />
+              </button>
+            </div>
           </div>
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-2 flex items-center justify-between px-1">
             <span className="text-[11px] text-trell-ink-muted">
               {mode === "ask" ? "Responde preguntas" : "Ejecuta acciones"}
             </span>
-            <button
-              onClick={() => setMode((m) => (m === "ask" ? "do" : "ask"))}
-              className="trell-btn-outline h-7 gap-1 px-2.5 text-[11px]"
-              title={mode === "ask" ? "Cambiar a modo Do (ejecuta acciones)" : "Cambiar a modo Ask (solo responde)"}
-            >
-              ✎ {mode === "ask" ? "Ask" : "Do"}
-            </button>
           </div>
         </div>
       </div>
