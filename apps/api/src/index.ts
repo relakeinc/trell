@@ -39,8 +39,10 @@ function startMcp(): void {
   if (mcpConfig.apiKey) {
     const mcpPort = Number(process.env.MCP_HTTP_PORT ?? 8788);
     const listener = createMcpHttpListener({ store: repo, config: mcpConfig });
-    createServer((req, res) => void listener(req, res)).listen(mcpPort, "127.0.0.1", () => {
-      console.log(`[trell:api] mcp http on http://127.0.0.1:${mcpPort}`);
+    // 0.0.0.0 inside the container: docker-proxy reaches us via the
+    // container IP, and the published port mapping restricts host access.
+    createServer((req, res) => void listener(req, res)).listen(mcpPort, "0.0.0.0", () => {
+      console.log(`[trell:api] mcp http on :${mcpPort}`);
     });
   } else {
     console.warn("[trell:api] MCP_API_KEY not set — mcp http endpoint disabled");
