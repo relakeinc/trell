@@ -25,6 +25,11 @@ cd /opt/trell-mcp && git pull && docker compose up -d --build mcp
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8788/  # 405 = vivo
 ```
 
+Checklist pre-deploy (lección 2026-09-10: un filtro quedó sin commitear):
+
+1. `git status --short -- apps/mcp apps/api` sin `M` pendientes de la rama.
+2. Post-deploy: probe de identidad (tokens para 2 emails → solo sus slugs).
+
 Sin Bearer → `401` + `WWW-Authenticate` (discovery OAuth, RFC 9728).
 
 ## Detalles que morderían si se olvidan
