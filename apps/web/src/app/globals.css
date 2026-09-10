@@ -678,7 +678,8 @@ body {
 }
 
 .trell-edge-flow {
-  animation: trell-edge-flow 3.4s ease-in-out infinite;
+  animation: trell-edge-flow 4.5s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 @media (prefers-reduced-motion: reduce) {

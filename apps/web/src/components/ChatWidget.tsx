@@ -230,8 +230,9 @@ export function ChatWidget() {
   }
 
   if (!open) {
-    // Siri-style edge light: animations run perpetually underneath and only
-    // the wrapper opacity toggles, so it fades in/out cleanly — never pops.
+    // Siri-style edge light: symmetric fades (both ends transparent, color
+    // handoff at the center) + perpetual motion underneath; only the wrapper
+    // opacity toggles, so it fades in/out cleanly — never pops.
     return (
       <div
         aria-hidden
@@ -241,11 +242,10 @@ export function ChatWidget() {
       >
         {/* soft wash */}
         <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-violet-500/15 via-blue-500/[0.06] to-transparent blur-2xl" />
-        {/* core line with a slow highlight drifting down it */}
-        <div className="absolute inset-y-6 right-0 w-[2px] overflow-hidden rounded-full bg-white/5">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-400/70 to-blue-500/70" />
-          <div className="trell-edge-flow absolute left-0 right-0 h-24 bg-gradient-to-b from-transparent via-white/90 to-transparent" />
-        </div>
+        {/* core line: transparent ends, violet→blue handoff at center */}
+        <div className="absolute inset-y-0 right-0 w-[2px] bg-[linear-gradient(to_bottom,transparent_0%,rgba(139,92,246,0)_12%,rgba(139,92,246,0.65)_42%,rgba(96,165,250,0.65)_58%,rgba(96,165,250,0)_88%,transparent_100%)]" />
+        {/* traveling highlight, also symmetric */}
+        <div className="trell-edge-flow absolute right-0 top-0 h-32 w-[2px] bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.9)_50%,transparent)]" />
       </div>
     );
   }
