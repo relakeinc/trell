@@ -113,4 +113,49 @@ export interface McpStore {
   /** Identity: resolve a Trell user by email (lowercased match). */
   findUserByEmail(email: string): Promise<McpUser | null>;
   listMemberships(userId: string): Promise<McpMembership[]>;
+
+  // ── Writes ─────────────────────────────────────────────────
+  // Contract: callers (tools) verify project access FIRST via resolveProject;
+  // unscoped-by-id methods below assume that check happened.
+  getFunnel(id: string): Promise<McpFunnel | null>;
+  createFunnel(input: {
+    projectId: string;
+    name: string;
+    steps: { eventType: string; formId?: string; label?: string; position: number }[];
+  }): Promise<McpFunnel>;
+  updateFunnel(
+    id: string,
+    input: { name?: string; steps?: { eventType: string; formId?: string; label?: string; position: number }[] },
+  ): Promise<McpFunnel>;
+  deleteFunnel(id: string): Promise<void>;
+  createUtmTemplate(input: {
+    projectId: string;
+    name: string;
+    source?: string | null;
+    medium?: string | null;
+    campaign?: string | null;
+    term?: string | null;
+    content?: string | null;
+    referral?: string | null;
+  }): Promise<McpUtmTemplate>;
+  updateUtmTemplate(
+    id: string,
+    input: {
+      name?: string;
+      source?: string | null;
+      medium?: string | null;
+      campaign?: string | null;
+      term?: string | null;
+      content?: string | null;
+      referral?: string | null;
+    },
+  ): Promise<McpUtmTemplate>;
+  deleteUtmTemplate(id: string): Promise<void>;
+  setProjectDomains(projectId: string, domains: string[]): Promise<string[]>;
+  createWebhook(input: { projectId: string; url: string; events: string[] }): Promise<McpWebhook>;
+  deleteWebhook(id: string): Promise<void>;
+  createApiKey(input: { projectId: string; name: string; keyHash: string; keyPrefix: string }): Promise<McpApiKey>;
+  deleteApiKey(id: string): Promise<void>;
+  deleteProject(id: string): Promise<void>;
+  rotateProjectSecret(id: string, skHash: string): Promise<void>;
 }

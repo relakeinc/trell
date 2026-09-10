@@ -179,6 +179,38 @@ export interface Repo {
   findUserByEmail(email: string): Promise<UserRef | null>;
   listMemberships(userId: string): Promise<MembershipRef[]>;
 
+  // MCP writes (tools verify project access first — same contract as routes)
+  createUtmTemplate(input: {
+    projectId: string;
+    name: string;
+    source?: string | null;
+    medium?: string | null;
+    campaign?: string | null;
+    term?: string | null;
+    content?: string | null;
+    referral?: string | null;
+  }): Promise<UtmTemplateMeta>;
+  updateUtmTemplate(
+    id: string,
+    input: {
+      name?: string;
+      source?: string | null;
+      medium?: string | null;
+      campaign?: string | null;
+      term?: string | null;
+      content?: string | null;
+      referral?: string | null;
+    },
+  ): Promise<UtmTemplateMeta>;
+  deleteUtmTemplate(id: string): Promise<void>;
+  createWebhook(input: { projectId: string; url: string; events: string[] }): Promise<WebhookMeta>;
+  deleteWebhook(id: string): Promise<void>;
+  createApiKey(input: { projectId: string; name: string; keyHash: string; keyPrefix: string }): Promise<ApiKeyMeta>;
+  deleteApiKey(id: string): Promise<void>;
+  setProjectDomains(projectId: string, domains: string[]): Promise<string[]>;
+  deleteProject(id: string): Promise<void>;
+  rotateProjectSecret(id: string, skHash: string): Promise<void>;
+
   // Funnel CRUD
   listFunnels(projectId: string): Promise<FunnelRecord[]>;
   getFunnel(id: string): Promise<FunnelRecord | null>;

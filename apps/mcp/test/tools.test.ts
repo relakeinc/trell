@@ -19,97 +19,23 @@ import { getStats } from "../src/tools/stats";
 import { trackingCheckup } from "../src/tools/tracking";
 import { getBreakdown, getForms, getSeries, queryEvents } from "../src/tools/analytics";
 import { getFunnel, listApiKeys, listFunnels, listUtmTemplates, listViews, listWebhooks } from "../src/tools/entities";
+import {
+  addDomain,
+  createApiKey,
+  createFunnel,
+  createUtmTemplate,
+  createWebhook,
+  deleteFunnel,
+  deleteUtmTemplate,
+  deleteWebhook,
+  removeDomain,
+  updateFunnel,
+  updateUtmTemplate,
+} from "../src/tools/writes";
+import { deleteProject, revokeApiKey, rotateProjectSecret } from "../src/tools/destructive";
+import { FakeStore, makeEvent } from "./fake";
 
 const OPEN_CONFIG = mcpConfigFromEnv({ MCP_ALLOWED_SLUGS: "*" } as NodeJS.ProcessEnv);
-
-function makeEvent(overrides: Partial<McpEvent> & { eventId: string; type: string; ts: Date }): McpEvent {
-  return {
-    sessionId: "sid",
-    visitorId: "vid",
-    url: "https://example.com/a",
-    pagePath: "/a",
-    pageTitle: "A",
-    utmSource: null,
-    utmMedium: null,
-    utmCampaign: null,
-    deviceType: "desktop",
-    os: null,
-    browser: null,
-    formId: null,
-    formName: null,
-    ...overrides,
-  };
-}
-
-class FakeStore implements McpStore {
-  projects: McpProject[] = [];
-  events = new Map<string, McpEvent[]>();
-  funnels = new Map<string, McpFunnel[]>();
-  views = new Map<string, McpView[]>();
-  webhooks = new Map<string, McpWebhook[]>();
-  utm = new Map<string, McpUtmTemplate[]>();
-  keys = new Map<string, McpApiKey[]>();
-
-  seedProject(p: McpProject): void {
-    this.projects.push(p);
-    this.events.set(p.id, []);
-  }
-
-  async listProjects(): Promise<McpProject[]> {
-    return [...this.projects].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }
-
-  async findProjectById(id: string): Promise<McpProject | null> {
-    return this.projects.find((p) => p.id === id) ?? null;
-  }
-
-  async findProjectBySlug(slug: string): Promise<McpProject | null> {
-    return this.projects.find((p) => p.slug === slug) ?? null;
-  }
-
-  async getEventsForAnalytics(projectId: string, filter: McpEventFilter): Promise<McpEvent[]> {
-    return (this.events.get(projectId) ?? []).filter((e) => {
-      if (filter.from && e.ts < filter.from) return false;
-      if (filter.to && e.ts > filter.to) return false;
-      if (filter.type && filter.type.length > 0 && !filter.type.includes(e.type)) return false;
-      if (filter.form && e.formId !== filter.form) return false;
-      return true;
-    });
-  }
-
-  async listFunnels(projectId: string): Promise<McpFunnel[]> {
-    return this.funnels.get(projectId) ?? [];
-  }
-
-  async listSavedViews(projectId: string): Promise<McpView[]> {
-    return this.views.get(projectId) ?? [];
-  }
-
-  async listWebhooks(projectId: string): Promise<McpWebhook[]> {
-    return this.webhooks.get(projectId) ?? [];
-  }
-
-  async listUtmTemplates(projectId: string): Promise<McpUtmTemplate[]> {
-    return this.utm.get(projectId) ?? [];
-  }
-
-  async listApiKeys(projectId: string): Promise<McpApiKey[]> {
-    return this.keys.get(projectId) ?? [];
-  }
-
-  users = new Map<string, { id: string; email: string }>();
-  memberships: { userId: string; projectId: string; role: string }[] = [];
-
-  async findUserByEmail(email: string): Promise<{ id: string; email: string } | null> {
-    return this.users.get(email.trim().toLowerCase()) ?? null;
-  }
-
-  async listMemberships(userId: string): Promise<{ projectId: string; role: string }[]> {
-    return this.memberships
-      .filter((m) => m.userId === userId)
-      .map((m) => ({ projectId: m.projectId, role: m.role }));
-  }
-}
 
 function seedStore(): { store: FakeStore; siteId: string } {
   const store = new FakeStore();
@@ -165,6 +91,8 @@ function seedStore(): { store: FakeStore; siteId: string } {
   ]);
   store.users.set("me@x.test", { id: "u1", email: "me@x.test" });
   store.memberships.push({ userId: "u1", projectId: site.id, role: "owner" });
+  store.users.set("member@x.test", { id: "u2", email: "member@x.test" });
+  store.memberships.push({ userId: "u2", projectId: site.id, role: "member" });
   return { store, siteId: site.id };
 }
 
@@ -381,6 +309,146 @@ describe("analytics tools", () => {
   });
 });
 
+describe("write tools", () => {
+  it("creates, updates and deletes a funnel", async () => {
+    const { store } = seedStore();
+    const created = readJson(
+      await createFunnel(store, OPEN_CONFIG, {
+        project: "site",
+        name: " Checkout ",
+        steps: [{ eventType: "form_view", formId: "c" }, { eventType: "form_submit", formId: "c", label: "Pay" }],
+      }),
+    ) as { funnel: { id: string; name: string } };
+    expect(created.funnel.name).toBe("Checkout");
+    const renamed = readJson(
+      await updateFunnel(store, OPEN_CONFIG, { project: "site", funnel: created.funnel.id, name: "Pay" }),
+    ) as { funnel: { name: string } };
+    expect(renamed.funnel.name).toBe("Pay");
+    await deleteFunnel(store, OPEN_CONFIG, { project: "site", funnel: created.funnel.id });
+    const list = readJson(await listFunnels(store, OPEN_CONFIG, { project: "site" })) as {
+      funnels: { id: string }[];
+    };
+    expect(list.funnels.map((f) => f.id)).not.toContain(created.funnel.id);
+  });
+
+  it("rejects funnel writes outside the caller's account", async () => {
+    const { store } = seedStore();
+    const res = await createFunnel(store, identityConfig("me@x.test"), {
+      project: "other",
+      name: "X",
+      steps: [{ eventType: "pageview" }],
+    });
+    expect(res.isError).toBe(true);
+  });
+
+  it("creates, updates and deletes a UTM template", async () => {
+    const { store } = seedStore();
+    const created = readJson(
+      await createUtmTemplate(store, OPEN_CONFIG, { project: "site", name: " Fall ", source: "google " }),
+    ) as { template: { id: string; name: string } };
+    expect(created.template.name).toBe("Fall");
+    const updated = readJson(
+      await updateUtmTemplate(store, OPEN_CONFIG, { project: "site", template: created.template.id, medium: "cpc" }),
+    ) as { template: { id: string } };
+    expect(updated.template.id).toBe(created.template.id);
+    await deleteUtmTemplate(store, OPEN_CONFIG, { project: "site", template: created.template.id });
+    const missing = await updateUtmTemplate(store, OPEN_CONFIG, { project: "site", template: created.template.id });
+    expect(missing.isError).toBe(true);
+  });
+
+  it("adds and removes domains normalized", async () => {
+    const { store } = seedStore();
+    const added = readJson(
+      await addDomain(store, OPEN_CONFIG, { project: "other", domain: "HTTPS://Shop.Example.com/path/" }),
+    ) as { domains: string[] };
+    expect(added.domains).toEqual(["shop.example.com"]);
+    const idempotent = readJson(await addDomain(store, OPEN_CONFIG, { project: "other", domain: "shop.example.com" })) as {
+      domains: string[];
+    };
+    expect(idempotent.domains).toEqual(["shop.example.com"]);
+    const bad = await addDomain(store, OPEN_CONFIG, { project: "other", domain: "not a domain!!" });
+    expect(bad.isError).toBe(true);
+    const removed = readJson(await removeDomain(store, OPEN_CONFIG, { project: "other", domain: "SHOP.example.com" })) as {
+      domains: string[];
+    };
+    expect(removed.domains).toEqual([]);
+  });
+
+  it("creates and deletes webhooks with URL validation", async () => {
+    const { store } = seedStore();
+    const bad = await createWebhook(store, OPEN_CONFIG, { project: "site", url: "ftp://x", events: ["form_submit"] });
+    expect(bad.isError).toBe(true);
+    const empty = await createWebhook(store, OPEN_CONFIG, { project: "site", url: "https://h.example.com/w", events: [] });
+    expect(empty.isError).toBe(true);
+    const created = readJson(
+      await createWebhook(store, OPEN_CONFIG, { project: "site", url: "https://h.example.com/w", events: ["form_submit", "form_submit"] }),
+    ) as { webhook: { id: string; events: string[] } };
+    expect(created.webhook.events).toEqual(["form_submit"]);
+    await deleteWebhook(store, OPEN_CONFIG, { project: "site", webhook: created.webhook.id });
+    const gone = await deleteWebhook(store, OPEN_CONFIG, { project: "site", webhook: created.webhook.id });
+    expect(gone.isError).toBe(true);
+  });
+
+  it("creates server keys showing the secret once", async () => {
+    const { store } = seedStore();
+    const created = readJson(await createApiKey(store, OPEN_CONFIG, { project: "site", name: "ci" })) as {
+      key: { id: string };
+      secret: string;
+      warning: string;
+    };
+    expect(created.secret).toMatch(/^sk_[0-9a-f]{64}$/);
+    expect(created.warning).toContain(".env");
+    const list = readJson(await listApiKeys(store, OPEN_CONFIG, { project: "site" })) as {
+      keys: { id: string; secret?: string }[];
+    };
+    expect(list.keys.map((k) => k.id)).toContain(created.key.id);
+    expect(list.keys.every((k) => !("secret" in k))).toBe(true);
+  });
+});
+
+describe("destructive tools", () => {
+  const FLAGGED = mcpConfigFromEnv({ MCP_ALLOWED_SLUGS: "*", MCP_ALLOW_DESTRUCTIVE: "true" } as NodeJS.ProcessEnv);
+
+  it("revoke_api_key needs flag + confirm + owner", async () => {
+    const { store } = seedStore();
+    const noFlag = await revokeApiKey(store, OPEN_CONFIG, { project: "site", key: "k1", confirm: true });
+    expect((readJson(noFlag) as { error: { code: string } }).error.code).toBe("destructive_disabled");
+    const noConfirm = await revokeApiKey(store, FLAGGED, { project: "site", key: "k1" });
+    expect((readJson(noConfirm) as { error: { code: string } }).error.code).toBe("confirm_required");
+    const memberCfg = { ...FLAGGED, identity: { email: "member@x.test" } };
+    const member = await revokeApiKey(store, memberCfg, { project: "site", key: "k1", confirm: true });
+    expect((readJson(member) as { error: { code: string } }).error.code).toBe("project_forbidden");
+    const ownerCfg = { ...FLAGGED, identity: { email: "me@x.test" } };
+    const ok = readJson(await revokeApiKey(store, ownerCfg, { project: "site", key: "k1", confirm: true })) as {
+      revoked: string;
+    };
+    expect(ok.revoked).toBe("k1");
+  });
+
+  it("delete_project removes the workspace for owners with confirm", async () => {
+    const { store } = seedStore();
+    const memberCfg = { ...FLAGGED, identity: { email: "member@x.test" } };
+    const denied = await deleteProject(store, memberCfg, { project: "site", confirm: true });
+    expect((readJson(denied) as { error: { code: string } }).error.code).toBe("project_forbidden");
+    const ownerCfg = { ...FLAGGED, identity: { email: "me@x.test" } };
+    const ok = readJson(await deleteProject(store, ownerCfg, { project: "site", confirm: true })) as {
+      deleted: string;
+    };
+    expect(ok.deleted).toBe("site");
+    const gone = await getProject(store, OPEN_CONFIG, { project: "site" });
+    expect((readJson(gone) as { error: { code: string } }).error.code).toBe("project_not_found");
+  });
+
+  it("rotate_project_secret returns a new sk once", async () => {
+    const { store } = seedStore();
+    const ownerCfg = { ...FLAGGED, identity: { email: "me@x.test" } };
+    const out = readJson(await rotateProjectSecret(store, ownerCfg, { project: "site", confirm: true })) as {
+      secret: string;
+    };
+    expect(out.secret).toMatch(/^sk_[0-9a-f]{64}$/);
+  });
+});
+
 describe("entity tools", () => {
   it("list_funnels / get_funnel by id and name", async () => {
     const { store } = seedStore();
@@ -445,6 +513,15 @@ describe("MCP protocol smoke test", () => {
 
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
+      "add_domain",
+      "create_api_key",
+      "create_funnel",
+      "create_utm_template",
+      "create_webhook",
+      "delete_funnel",
+      "delete_project",
+      "delete_utm_template",
+      "delete_webhook",
       "get_breakdown",
       "get_forms",
       "get_funnel",
@@ -458,7 +535,12 @@ describe("MCP protocol smoke test", () => {
       "list_views",
       "list_webhooks",
       "query_events",
+      "remove_domain",
+      "revoke_api_key",
+      "rotate_project_secret",
       "tracking_checkup",
+      "update_funnel",
+      "update_utm_template",
     ]);
 
     const res = await client.callTool({ name: "tracking_checkup", arguments: { project: "site" } });

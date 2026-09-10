@@ -4,66 +4,23 @@ import type { AddressInfo } from "node:net";
 import { createMcpHttpListener } from "../src/http";
 import { mcpConfigFromEnv } from "../src/config";
 import { signJwt } from "../src/oauth";
-import type { McpProject, McpStore } from "../src/store";
-
-class FakeStore implements McpStore {
-  async listProjects(): Promise<McpProject[]> {
-    return [
-      {
-        id: "p1",
-        slug: "site",
-        name: "Site",
-        plan: "free",
-        publishableKey: "pk_x",
-        domains: "",
-        createdAt: new Date(),
-      },
-    ];
-  }
-  async findProjectById(): Promise<McpProject | null> {
-    return null;
-  }
-  async findProjectBySlug(): Promise<McpProject | null> {
-    return null;
-  }
-  async getEventsForAnalytics(): Promise<[]> {
-    return [];
-  }
-
-  async listFunnels(): Promise<[]> {
-    return [];
-  }
-
-  async listSavedViews(): Promise<[]> {
-    return [];
-  }
-
-  async listWebhooks(): Promise<[]> {
-    return [];
-  }
-
-  async listUtmTemplates(): Promise<[]> {
-    return [];
-  }
-
-  async listApiKeys(): Promise<[]> {
-    return [];
-  }
-
-  async findUserByEmail(): Promise<null> {
-    return null;
-  }
-
-  async listMemberships(): Promise<[]> {
-    return [];
-  }
-}
+import { FakeStore } from "./fake";
 
 const KEY = "test-bearer-key-0123456789abcdef";
 
 async function startServer(): Promise<{ url: string; close: () => Promise<void> }> {
   const config = mcpConfigFromEnv({ MCP_API_KEY: KEY } as NodeJS.ProcessEnv);
-  const listener = createMcpHttpListener({ store: new FakeStore(), config });
+  const store = new FakeStore();
+  store.seedProject({
+    id: "p1",
+    slug: "site",
+    name: "Site",
+    plan: "free",
+    publishableKey: "pk_x",
+    domains: "",
+    createdAt: new Date(),
+  });
+  const listener = createMcpHttpListener({ store, config });
   const srv = createServer((req, res) => void listener(req, res));
   await new Promise<void>((r) => srv.listen(0, "127.0.0.1", r));
   const { port } = srv.address() as AddressInfo;

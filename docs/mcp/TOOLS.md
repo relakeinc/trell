@@ -55,6 +55,35 @@ rango máximo 366 días, `limit` con tope 100.
 | `weekly_report` | `project` | guía al asistente: checkup → stats 7d vs 7d previos → forms → breakdown pages |
 | `tracking_setup_help` | — | checklist de verificación de instalación |
 
+## Escrituras (miembro del workspace)
+
+Requieren membresía (cualquier rol; modo servicio = operador). Dominios se
+normalizan (`HTTPS://X.com/path/` → `x.com`, se valida hostname).
+
+| Tool | Args | Devuelve |
+|------|------|----------|
+| `create_funnel` | `project`, `name`, `steps[{eventType, formId?, label?}]` (1–10) | `{ id, name }` |
+| `update_funnel` | `project`, `funnel` (id), `name?`, `steps?` (reemplazo total) | `{ id, name }` |
+| `delete_funnel` | `project`, `funnel` (id) | `{ deleted }` |
+| `create_utm_template` | `project`, `name`, campos UTM opcionales | `{ id, name }` |
+| `update_utm_template` | `project`, `template` (id), campos | `{ id, name }` |
+| `delete_utm_template` | `project`, `template` (id) | `{ deleted }` |
+| `add_domain` | `project`, `domain` (idempotente) | `{ domains[] }` |
+| `remove_domain` | `project`, `domain` | `{ domains[] }` |
+| `create_webhook` | `project`, `url` (http/https, sin credenciales ni IPs privadas), `events[]` | `{ id, url, events }` |
+| `delete_webhook` | `project`, `webhook` (id) | `{ deleted }` |
+| `create_api_key` | `project`, `name` | `{ id, name }` + `secret` **una sola vez** (guardar en `.env`, jamás en el navegador) |
+
+## Destructivas (owner + `MCP_ALLOW_DESTRUCTIVE=true` + `confirm: true`)
+
+Sin los tres requisitos responden `destructive_disabled` o `confirm_required`.
+
+| Tool | Efecto |
+|------|--------|
+| `revoke_api_key` | revoca una server key al instante (rompe integraciones que la usen) |
+| `delete_project` | borra el workspace y todo (eventos, keys, webhooks…) en cascada |
+| `rotate_project_secret` | nueva `sk` (muestra el secreto una vez); la anterior muere al instante; las named keys no se tocan |
+
 ## Notas
 
 - **Identidad**: con Bearer OAuth, `list_projects` devuelve solo tus

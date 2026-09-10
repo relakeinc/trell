@@ -1,4 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import { randomBytes } from "node:crypto";
 import type {
   AnalyticsFilter,
   CreateFunnelInput,
@@ -94,6 +95,98 @@ export class PrismaRepo implements Repo {
       select: { id: true, name: true, keyPrefix: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     });
+  }
+
+  async createUtmTemplate(input: {
+    projectId: string;
+    name: string;
+    source?: string | null;
+    medium?: string | null;
+    campaign?: string | null;
+    term?: string | null;
+    content?: string | null;
+    referral?: string | null;
+  }) {
+    return this.prisma.utmTemplate.create({
+      data: {
+        projectId: input.projectId,
+        name: input.name,
+        source: input.source ?? null,
+        medium: input.medium ?? null,
+        campaign: input.campaign ?? null,
+        term: input.term ?? null,
+        content: input.content ?? null,
+        referral: input.referral ?? null,
+      },
+    });
+  }
+
+  async updateUtmTemplate(
+    id: string,
+    input: {
+      name?: string;
+      source?: string | null;
+      medium?: string | null;
+      campaign?: string | null;
+      term?: string | null;
+      content?: string | null;
+      referral?: string | null;
+    },
+  ) {
+    const data: Record<string, string | null> = {};
+    if (input.name !== undefined) data.name = input.name;
+    for (const k of ["source", "medium", "campaign", "term", "content", "referral"] as const) {
+      if (input[k] !== undefined) data[k] = input[k];
+    }
+    return this.prisma.utmTemplate.update({ where: { id }, data });
+  }
+
+  async deleteUtmTemplate(id: string): Promise<void> {
+    await this.prisma.utmTemplate.deleteMany({ where: { id } });
+  }
+
+  async createWebhook(input: { projectId: string; url: string; events: string[] }) {
+    const created = await this.prisma.webhook.create({
+      data: { projectId: input.projectId, url: input.url, events: input.events, secret: randomBytes(32).toString("hex") },
+      select: { id: true, url: true, events: true, enabled: true, createdAt: true },
+    });
+    return created;
+  }
+
+  async deleteWebhook(id: string): Promise<void> {
+    await this.prisma.webhook.deleteMany({ where: { id } });
+  }
+
+  async createApiKey(input: { projectId: string; name: string; keyHash: string; keyPrefix: string }) {
+    const created = await this.prisma.apiKey.create({
+      data: { projectId: input.projectId, name: input.name, keyHash: input.keyHash, keyPrefix: input.keyPrefix },
+      select: { id: true, name: true, keyPrefix: true, createdAt: true },
+    });
+    return created;
+  }
+
+  async deleteApiKey(id: string): Promise<void> {
+    await this.prisma.apiKey.deleteMany({ where: { id } });
+  }
+
+  async setProjectDomains(projectId: string, domains: string[]): Promise<string[]> {
+    const updated = await this.prisma.project.update({
+      where: { id: projectId },
+      data: { domains: domains.join(",") },
+      select: { domains: true },
+    });
+    return updated.domains
+      .split(",")
+      .map((d) => d.trim())
+      .filter(Boolean);
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    await this.prisma.project.delete({ where: { id } });
+  }
+
+  async rotateProjectSecret(id: string, skHash: string): Promise<void> {
+    await this.prisma.project.update({ where: { id }, data: { apiKeyHash: skHash } });
   }
 
   async findUserByEmail(email: string) {

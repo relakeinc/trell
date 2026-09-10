@@ -31,7 +31,7 @@ export class MemoryRepo implements Repo {
   private apiKeyHashes = new Map<string, string>();
   private webhooks: { projectId: string; meta: WebhookMeta }[] = [];
   private utmTemplates: { projectId: string; meta: UtmTemplateMeta }[] = [];
-  private apiKeys: { projectId: string; meta: ApiKeyMeta }[] = [];
+  private apiKeys: { projectId: string; meta: ApiKeyMeta; keyHash?: string }[] = [];
   private seq = 0;
 
   /** Test/demo helper: register a named server key hash for a project. */
@@ -67,6 +67,129 @@ export class MemoryRepo implements Repo {
 
   async listApiKeys(projectId: string): Promise<ApiKeyMeta[]> {
     return this.apiKeys.filter((k) => k.projectId === projectId).map((k) => k.meta);
+  }
+
+  // ── MCP writes ─────────────────────────────────────────────
+
+  async createUtmTemplate(input: {
+    projectId: string;
+    name: string;
+    source?: string | null;
+    medium?: string | null;
+    campaign?: string | null;
+    term?: string | null;
+    content?: string | null;
+    referral?: string | null;
+  }): Promise<UtmTemplateMeta> {
+    const meta: UtmTemplateMeta = {
+      id: `ut_${++this.seq}`,
+      name: input.name,
+      source: input.source ?? null,
+      medium: input.medium ?? null,
+      campaign: input.campaign ?? null,
+      term: input.term ?? null,
+      content: input.content ?? null,
+      referral: input.referral ?? null,
+      createdAt: new Date(),
+    };
+    this.utmTemplates.push({ projectId: input.projectId, meta });
+    return meta;
+  }
+
+  async updateUtmTemplate(
+    id: string,
+    input: {
+      name?: string;
+      source?: string | null;
+      medium?: string | null;
+      campaign?: string | null;
+      term?: string | null;
+      content?: string | null;
+      referral?: string | null;
+    },
+  ): Promise<UtmTemplateMeta> {
+    const row = this.utmTemplates.find((t) => t.meta.id === id);
+    if (!row) throw new Error(`UTM template ${id} not found`);
+    if (input.name !== undefined) row.meta.name = input.name;
+    for (const k of ["source", "medium", "campaign", "term", "content", "referral"] as const) {
+      if (input[k] !== undefined) row.meta[k] = input[k];
+    }
+    return row.meta;
+  }
+
+  async deleteUtmTemplate(id: string): Promise<void> {
+    this.utmTemplates = this.utmTemplates.filter((t) => t.meta.id !== id);
+  }
+
+  async createWebhook(input: { projectId: string; url: string; events: string[] }): Promise<WebhookMeta> {
+    const meta: WebhookMeta = {
+      id: `wh_${++this.seq}`,
+      url: input.url,
+      events: input.events,
+      enabled: true,
+      createdAt: new Date(),
+    };
+    this.webhooks.push({ projectId: input.projectId, meta });
+    return meta;
+  }
+
+  async deleteWebhook(id: string): Promise<void> {
+    this.webhooks = this.webhooks.filter((w) => w.meta.id !== id);
+  }
+
+  async createApiKey(input: { projectId: string; name: string; keyHash: string; keyPrefix: string }): Promise<ApiKeyMeta> {
+    const meta: ApiKeyMeta = {
+      id: `ak_${++this.seq}`,
+      name: input.name,
+      keyPrefix: input.keyPrefix,
+      createdAt: new Date(),
+    };
+    this.apiKeys.push({ projectId: input.projectId, meta, keyHash: input.keyHash });
+    this.apiKeyHashes.set(input.keyHash, input.projectId);
+    return meta;
+  }
+
+  async deleteApiKey(id: string): Promise<void> {
+    const row = this.apiKeys.find((k) => k.meta.id === id);
+    if (row?.keyHash) this.apiKeyHashes.delete(row.keyHash);
+    this.apiKeys = this.apiKeys.filter((k) => k.meta.id !== id);
+  }
+
+  async setProjectDomains(projectId: string, domains: string[]): Promise<string[]> {
+    const project = this.projectsById.get(projectId);
+    if (!project) throw new Error(`Project ${projectId} not found`);
+    project.domains = domains.join(",");
+    return [...domains];
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    const project = this.projectsById.get(id);
+    if (project) {
+      this.projectsById.delete(id);
+      this.projectsByPk.delete(project.publishableKey);
+      this.projectsBySlug.delete(project.slug);
+    }
+    this.events.delete(id);
+    this.eventIds.delete(id);
+    const funnelIds = this.funnelsByProject.get(id) ?? new Set();
+    for (const fid of funnelIds) this.funnels.delete(fid);
+    this.funnelsByProject.delete(id);
+    const viewIds = this.savedViewsByProject.get(id) ?? new Set();
+    for (const vid of viewIds) this.savedViews.delete(vid);
+    this.savedViewsByProject.delete(id);
+    this.webhooks = this.webhooks.filter((w) => w.projectId !== id);
+    this.utmTemplates = this.utmTemplates.filter((t) => t.projectId !== id);
+    this.apiKeys = this.apiKeys.filter((k) => {
+      if (k.projectId === id && k.keyHash) this.apiKeyHashes.delete(k.keyHash);
+      return k.projectId !== id;
+    });
+    this.memberships = this.memberships.filter((m) => m.projectId !== id);
+  }
+
+  async rotateProjectSecret(id: string, skHash: string): Promise<void> {
+    const project = this.projectsById.get(id);
+    if (!project) throw new Error(`Project ${id} not found`);
+    project.apiKeyHash = skHash;
   }
 
   // ── Identity ─────────────────────────────────────────────────

@@ -21,6 +21,20 @@ export { trackingCheckup } from "./tools/tracking";
 export { getSeries, getBreakdown, getForms, queryEvents } from "./tools/analytics";
 export { listFunnels, getFunnel, listViews, listWebhooks, listUtmTemplates, listApiKeys } from "./tools/entities";
 export {
+  createFunnel,
+  updateFunnel,
+  deleteFunnel,
+  createUtmTemplate,
+  updateUtmTemplate,
+  deleteUtmTemplate,
+  addDomain,
+  removeDomain,
+  createWebhook,
+  deleteWebhook,
+  createApiKey,
+} from "./tools/writes";
+export { revokeApiKey, deleteProject, rotateProjectSecret } from "./tools/destructive";
+export {
   signJwt,
   verifyJwt,
   pkceChallenge,

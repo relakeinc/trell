@@ -26,6 +26,40 @@ import {
   listWebhooks,
   projectShape,
 } from "./tools/entities";
+import {
+  addDomain,
+  addDomainShape,
+  createApiKey,
+  createApiKeyShape,
+  createFunnel,
+  createFunnelShape,
+  createUtmTemplate,
+  createUtmTemplateShape,
+  createWebhook,
+  createWebhookShape,
+  deleteFunnel,
+  deleteFunnelShape,
+  deleteUtmTemplate,
+  deleteUtmTemplateShape,
+  deleteWebhook,
+  deleteWebhookShape,
+  removeDomain,
+  removeDomainShape,
+  updateFunnel,
+  updateFunnelShape,
+  updateUtmTemplate,
+  updateUtmTemplateShape,
+  WRITE_ANNOTATIONS,
+} from "./tools/writes";
+import {
+  deleteProject,
+  deleteProjectShape,
+  DESTRUCTIVE_ANNOTATIONS,
+  revokeApiKey,
+  revokeApiKeyShape,
+  rotateProjectSecret,
+  rotateProjectSecretShape,
+} from "./tools/destructive";
 
 export interface McpServerDeps {
   store: McpStore;
@@ -145,6 +179,64 @@ export function createMcpServer(deps: McpServerDeps): McpServer {
     projectShape,
     READ_ONLY,
     async (args) => listApiKeys(store, config, args),
+  );
+
+  // ── Writes (member+) ───────────────────────────────────────
+  server.tool("create_funnel", "Create a funnel", createFunnelShape, WRITE_ANNOTATIONS, async (args) =>
+    createFunnel(store, config, args),
+  );
+
+  server.tool("update_funnel", "Rename a funnel or replace its steps", updateFunnelShape, WRITE_ANNOTATIONS, async (args) =>
+    updateFunnel(store, config, args),
+  );
+
+  server.tool("delete_funnel", "Delete a funnel", deleteFunnelShape, WRITE_ANNOTATIONS, async (args) =>
+    deleteFunnel(store, config, args),
+  );
+
+  server.tool("create_utm_template", "Create a UTM template", createUtmTemplateShape, WRITE_ANNOTATIONS, async (args) =>
+    createUtmTemplate(store, config, args),
+  );
+
+  server.tool("update_utm_template", "Update a UTM template", updateUtmTemplateShape, WRITE_ANNOTATIONS, async (args) =>
+    updateUtmTemplate(store, config, args),
+  );
+
+  server.tool("delete_utm_template", "Delete a UTM template", deleteUtmTemplateShape, WRITE_ANNOTATIONS, async (args) =>
+    deleteUtmTemplate(store, config, args),
+  );
+
+  server.tool("add_domain", "Add a hostname to the tracking allowlist", addDomainShape, WRITE_ANNOTATIONS, async (args) =>
+    addDomain(store, config, args),
+  );
+
+  server.tool("remove_domain", "Remove a hostname from the tracking allowlist", removeDomainShape, WRITE_ANNOTATIONS, async (args) =>
+    removeDomain(store, config, args),
+  );
+
+  server.tool("create_webhook", "Create a webhook (URL + subscribed events)", createWebhookShape, WRITE_ANNOTATIONS, async (args) =>
+    createWebhook(store, config, args),
+  );
+
+  server.tool("delete_webhook", "Delete a webhook", deleteWebhookShape, WRITE_ANNOTATIONS, async (args) =>
+    deleteWebhook(store, config, args),
+  );
+
+  server.tool("create_api_key", "Create a server key (secret shown ONCE — store it in .env, never in the browser)", createApiKeyShape, WRITE_ANNOTATIONS, async (args) =>
+    createApiKey(store, config, args),
+  );
+
+  // ── Destructive (owner + MCP_ALLOW_DESTRUCTIVE + confirm) ──
+  server.tool("revoke_api_key", "Revoke a server key immediately", revokeApiKeyShape, DESTRUCTIVE_ANNOTATIONS, async (args) =>
+    revokeApiKey(store, config, args),
+  );
+
+  server.tool("delete_project", "PERMANENTLY delete a workspace and everything in it", deleteProjectShape, DESTRUCTIVE_ANNOTATIONS, async (args) =>
+    deleteProject(store, config, args),
+  );
+
+  server.tool("rotate_project_secret", "Rotate the project-level secret (invalidates the old sk)", rotateProjectSecretShape, DESTRUCTIVE_ANNOTATIONS, async (args) =>
+    rotateProjectSecret(store, config, args),
   );
 
   // ── Resources ──────────────────────────────────────────────
