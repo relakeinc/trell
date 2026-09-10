@@ -11,6 +11,9 @@
   `MCP_ALLOW_DESTRUCTIVE=false`.
 - nginx `mcp.relake.co` → `127.0.0.1:8788` (fichero en
   `/etc/nginx/sites-{available,enabled}/`, timeouts 300s por streams largos).
+- TLS: cert `trell.relake.co` expandido (`trell` + `trepi` + `mcp`).
+  Renovar/expandir: `certbot --expand -d trell.relake.co -d trepi.relake.co -d mcp.relake.co`.
+  Nota: el dominio va tras proxy Cloudflare — el smoke público pasa igual.
 - TLS: expandir el cert existente
   `certbot --expand -d trell.relake.co -d trepi.relake.co -d mcp.relake.co`
   (requiere `A mcp.relake.co → 89.117.76.234`).

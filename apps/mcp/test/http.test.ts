@@ -96,11 +96,11 @@ describe("MCP HTTP listener", () => {
     }
   });
 
-  it("rejects missing bearer with 401 and GET with 405", async () => {
+  it("rejects missing bearer with 403 (never 401: editors auto-start OAuth on 401) and GET with 405", async () => {
     const { url, close } = await startServer();
     try {
       const noAuth = await post(url, 3, "tools/call", { name: "list_projects", arguments: {} }, "");
-      expect(noAuth.status).toBe(401);
+      expect(noAuth.status).toBe(403);
       const get = await fetch(url);
       expect(get.status).toBe(405);
       await get.arrayBuffer();

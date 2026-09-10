@@ -5,8 +5,11 @@ import type { McpServerDeps } from "./server";
 import { createMcpServer } from "./server";
 
 function unauthorized(res: ServerResponse): void {
-  res.writeHead(401, { "content-type": "application/json" });
-  res.end(JSON.stringify({ error: "unauthorized" }));
+  // NOTE: 403 on purpose, not 401. Editors (VS Code) auto-start an OAuth
+  // flow on any 401 from a remote MCP server; we use a static Bearer key
+  // (no OAuth server), so 401 would trap users in a registration dialog.
+  res.writeHead(403, { "content-type": "application/json" });
+  res.end(JSON.stringify({ error: "forbidden", message: "invalid or missing MCP_API_KEY" }));
 }
 
 function notConfigured(res: ServerResponse): void {
