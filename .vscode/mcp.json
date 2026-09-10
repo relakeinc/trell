@@ -1,11 +1,18 @@
 {
-  // Trell MCP en producción por HTTPS. Sin credenciales aquí: VS Code
-  // descubre OAuth (RFC 9728) y abre el login con Google solo.
-  // No guardar keys en este archivo.
+  // Trell MCP vía mcp-remote (stdio): el proxy abre solo el navegador para el
+  // login con Google, guarda los tokens y los refresca. Sin keys a mano.
+  // Si pide login de nuevo o algo se atasca: borra %USERPROFILE%\.mcp-auth
+  // y reinicia el servidor.
   "servers": {
     "trell": {
-      "type": "http",
-      "url": "https://mcp.relake.co"
+      "command": "npx",
+      "args": [
+        "-y",
+        "@automattic/mcp-remote",
+        "https://mcp.relake.co",
+        "--transport",
+        "http-only"
+      ]
     }
   }
 }
