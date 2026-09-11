@@ -83,6 +83,15 @@ services:
       POLAR_WEBHOOK_SECRET: ${POLAR_WEBHOOK_SECRET:?Set POLAR_WEBHOOK_SECRET}
       POLAR_SERVER: ${POLAR_SERVER:-production}
       NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-https://trell.relake.co}
+      # Ask Trell webchat (empty keys = chat answers 503, site unaffected)
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-openrouter/free}
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
+      ORCAROUTER_API_KEY: ${ORCAROUTER_API_KEY:-}
+      ORCAROUTER_FALLBACK_MODEL: ${ORCAROUTER_FALLBACK_MODEL:-orcarouter/free}
+      ORCAROUTER_BASE_URL: ${ORCAROUTER_BASE_URL:-https://api.orcarouter.ai/v1}
+      MCP_OAUTH_SECRET: ${MCP_OAUTH_SECRET:-}
+      MCP_URL: ${MCP_URL:-http://trell-mcp-mcp-1:8788}
       POLAR_PRO_MONTHLY_ID: ${POLAR_PRO_MONTHLY_ID:?Set POLAR_PRO_MONTHLY_ID}
       POLAR_PRO_YEARLY_ID: ${POLAR_PRO_YEARLY_ID:?Set POLAR_PRO_YEARLY_ID}
     command: ["sh", "-c", "cd apps/web && pnpm start"]
