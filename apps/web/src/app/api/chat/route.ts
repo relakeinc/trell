@@ -340,6 +340,11 @@ export async function POST(req: NextRequest) {
   });
 
   return new Response(stream, {
-    headers: { "content-type": "text/event-stream", "cache-control": "no-cache", connection: "keep-alive" },
+    headers: {
+      "content-type": "text/event-stream",
+      "cache-control": "no-cache, no-transform",
+      connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
   });
 }
