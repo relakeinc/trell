@@ -410,6 +410,10 @@ export function ChatWidget() {
     }
   }
 
+  const lastMsg = messages[messages.length - 1];
+  const awaitingResponse =
+    busy && lastMsg && (lastMsg.role === "user" || (lastMsg.role === "model" && !lastMsg.text));
+
   if (!open) {
     // Siri-style edge light: symmetric fades (both ends transparent, color
     // handoff at the center) + perpetual motion underneath; only the wrapper
@@ -584,6 +588,8 @@ export function ChatWidget() {
                       />
                       <div className="min-w-0 flex-1 text-[15px] leading-[1.7] text-trell-ink">
                         {thoughts && isLast ? <ReasoningBlock text={thoughts} streaming={streaming} /> : null}
+                        {m.text ? (
+                          <>
                         <Markdown
                           remarkPlugins={[remarkGfm]}
                           components={{
@@ -629,9 +635,11 @@ export function ChatWidget() {
                             td: ({ children }) => <td className="border-b border-trell-line/60 px-2 py-1">{children}</td>,
                           }}
                         >
-                          {m.text || "…"}
+                          {m.text}
                         </Markdown>
-                        {streaming && <span className="trell-streaming-cursor" aria-hidden="true" />}
+                            {streaming && <span className="trell-streaming-cursor" aria-hidden="true" />}
+                          </>
+                        ) : null}
                         {m.status === "complete" && m.text && !streaming && (
                           <MessageActions
                             message={m}
@@ -647,15 +655,15 @@ export function ChatWidget() {
                   <Tool
                     key={t.id}
                     toolPart={{ type: prettyToolName(t.name), state: t.state }}
-                    className="max-w-full self-stretch [&_button]:text-xs"
+                    className="max-w-full self-start [&_button]:text-xs"
                   />
                 ))}
-                {busy && messages[messages.length - 1]?.role === "user" && (
+                {awaitingResponse ? (
                   <div className="flex items-center gap-1.5 self-start text-[13px]" role="status">
                     <Cloud size={14} className="shrink-0 text-trell-ink-muted" aria-hidden />
                     <span className="trell-shimmer font-medium">{status ?? "Thinking…"}</span>
                   </div>
-                )}
+                ) : null}
               </>
             )}
             <ChatContainerScrollAnchor />

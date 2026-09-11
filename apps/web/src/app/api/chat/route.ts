@@ -11,6 +11,12 @@ export const maxDuration = 60;
 
 const MAX_TURNS = 6;
 
+// listTools rarely changes: cache declarations briefly to skip one MCP
+// round-trip per message. Only successful fetches are cached.
+type Declarations = ReturnType<typeof toFunctionDeclarations>;
+let declarationsCache: { at: number; value: Declarations } | null = null;
+const DECLARATIONS_TTL_MS = 5 * 60 * 1000;
+
 type SSE
   = { t: "text"; d: string }
   | { t: "status"; d: string }
@@ -47,7 +53,7 @@ function friendlyError(e: unknown, model: string): string {
   if (status === 429) return "Free model limit reached, try again in a bit.";
   if (status === 404) return `Model ${model} is not available on your account. Try GEMINI_MODEL=another-model.`;
   if (e instanceof Error && e.message.length < 200) return e.message;
-  return "El chat falló, intenta de nuevo.";
+  return "Chat failed, try again.";
 }
 
 export async function POST(req: NextRequest) {
@@ -88,10 +94,16 @@ export async function POST(req: NextRequest) {
             requestInit: { headers: { authorization: `Bearer ${jwt}` } },
           }),
         );
-        const { tools } = await mcp.listTools();
-        const declarations = toFunctionDeclarations(
-          tools.map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema as Record<string, unknown> })),
-        );
+        let declarations = declarationsCache && Date.now() - declarationsCache.at < DECLARATIONS_TTL_MS
+          ? declarationsCache.value
+          : null;
+        if (!declarations) {
+          const { tools } = await mcp.listTools();
+          declarations = toFunctionDeclarations(
+            tools.map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema as Record<string, unknown> })),
+          );
+          declarationsCache = { at: Date.now(), value: declarations };
+        }
 
         const ai = new GoogleGenAI({ apiKey });
         const contents = toGeminiContents(history).map((c) => ({ ...c })) as { role: string; parts: unknown[] }[];
@@ -125,7 +137,7 @@ export async function POST(req: NextRequest) {
             if (!fellBack && model !== fallbackModel && isCapacityError(e)) {
               fellBack = true;
               model = fallbackModel;
-              send(controller, { t: "status", d: "Switching to fallback model…" });
+              send(controller, { t: "status", d: `Switching to fallback model (${fallbackModel})…` });
               turn--;
               continue;
             }
