@@ -21,6 +21,7 @@ import {
   SlidersHorizontal,
   ThumbsDown,
   ThumbsUp,
+  Trash2,
   X,
 } from "lucide-react";
 import Markdown from "react-markdown";
@@ -237,6 +238,7 @@ export function ChatWidget() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [leaving, setLeaving] = useState(false);
   const greet = useMemo(greeting, []);
 
   // Reload history when switching workspaces.
@@ -292,6 +294,36 @@ export function ChatWidget() {
     setThoughts("");
     setHistoryOpen(false);
     setQuery("");
+  }
+
+  function persistConvos(next: Convo[]) {
+    setConvos(next);
+    if (!slug) return;
+    try {
+      localStorage.setItem(CHAT_KEY(slug), JSON.stringify(next.slice(0, MAX_CONVOS)));
+    } catch {
+      // storage full or unavailable — chat still works in memory
+    }
+  }
+
+  function deleteConvo(id: string) {
+    persistConvos(convos.filter((c) => c.id !== id));
+    if (id === activeId) {
+      setActiveId(null);
+      setMessages([]);
+      setToolCalls([]);
+      setThoughts("");
+    }
+  }
+
+  function close() {
+    if (leaving) return;
+    setHistoryOpen(false);
+    setLeaving(true);
+    window.setTimeout(() => {
+      setOpen(false);
+      setLeaving(false);
+    }, 170);
   }
 
   async function send(text: string) {
@@ -448,7 +480,7 @@ export function ChatWidget() {
   }
 
   return (
-    <aside className="yoi-chat trell-drawer-right-in relative hidden h-full w-[380px] max-w-[calc(100vw-2rem)] shrink-0 flex-col gap-1 overflow-hidden rounded-xl bg-neutral-100 p-3 md:flex">
+    <aside className={`yoi-chat relative hidden h-full w-[440px] max-w-[calc(100vw-2rem)] shrink-0 flex-col gap-1 overflow-hidden rounded-xl bg-neutral-100 p-3 md:flex ${leaving ? "trell-drawer-right-out" : "trell-drawer-right-in"}`}>
         {/* dotted texture (Cloudflare-style) */}
         <div
           aria-hidden
@@ -473,7 +505,7 @@ export function ChatWidget() {
             <button onClick={newChat} className="trell-btn-outline h-9 w-9 !px-0" title="New conversation" aria-label="New conversation">
               <Plus size={14} />
             </button>
-            <button onClick={() => { setOpen(false); setHistoryOpen(false); }} className="trell-btn-outline h-9 w-9 !px-0" title="Close" aria-label="Close">
+            <button onClick={close} className="trell-btn-outline h-9 w-9 !px-0" title="Close" aria-label="Close">
               <X size={14} />
             </button>
           </div>
@@ -491,7 +523,7 @@ export function ChatWidget() {
                   />
                 </div>
               </div>
-              <div className="max-h-64 overflow-y-auto p-2">
+              <div className="max-h-[196px] overflow-y-auto p-2">
                 {(() => {
                   const q = query.trim().toLowerCase();
                   const filtered = convos.filter((c) => !q || c.title.toLowerCase().includes(q));
@@ -503,16 +535,35 @@ export function ChatWidget() {
                   const recent = filtered.filter((c) => now - c.updatedAt < week);
                   const older = filtered.filter((c) => now - c.updatedAt >= week);
                   const row = (c: Convo) => (
-                    <button
+                    <div
                       key={c.id}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => openConvo(c.id)}
-                      className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:bg-neutral-100 dark:hover:bg-[#262625] ${
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") openConvo(c.id);
+                      }}
+                      className={`group/row flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:bg-neutral-100 dark:hover:bg-[#262625] ${
                         c.id === activeId ? "bg-neutral-100 dark:bg-[#262625]" : ""
                       }`}
                     >
                       <span className="min-w-0 truncate text-[13px] text-trell-ink">{c.title}</span>
-                      <span className="shrink-0 text-[11px] tabular-nums text-neutral-400">{ago(c.updatedAt)}</span>
-                    </button>
+                      <span className="flex shrink-0 items-center gap-0.5">
+                        <span className="text-[11px] tabular-nums text-neutral-400">{ago(c.updatedAt)}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteConvo(c.id);
+                          }}
+                          title="Delete conversation"
+                          aria-label={`Delete ${c.title}`}
+                          className="hidden h-6 w-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-200 hover:text-red-600 group-hover/row:flex dark:hover:bg-[#333332] dark:hover:text-red-400"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </span>
+                    </div>
                   );
                   return (
                     <>
@@ -642,9 +693,9 @@ export function ChatWidget() {
                               </div>
                             ),
                             th: ({ children }) => (
-                              <th className="border-b border-trell-line px-2 py-1 text-left font-semibold text-trell-ink">{children}</th>
+                              <th className="whitespace-nowrap border-b border-trell-line px-2 py-1 text-left font-semibold text-trell-ink">{children}</th>
                             ),
-                            td: ({ children }) => <td className="border-b border-trell-line/60 px-2 py-1">{children}</td>,
+                            td: ({ children }) => <td className="whitespace-nowrap border-b border-trell-line/60 px-2 py-1">{children}</td>,
                           }}
                         >
                           {m.text}
