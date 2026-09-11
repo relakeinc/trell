@@ -111,6 +111,7 @@ export async function POST(req: NextRequest) {
   }
   const def = COMMANDS[command];
   if (!slug || !def) {
+    console.error("[chat:command] rejected", { hasSlug: !!slug, command: command || "(empty)" });
     return new Response(JSON.stringify({ error: "unknown command" }), { status: 400 });
   }
   try {
@@ -119,6 +120,10 @@ export async function POST(req: NextRequest) {
       headers: { "content-type": "application/json" },
     });
   } catch (e) {
+    console.error("[chat:command] failed", {
+      command,
+      message: (e instanceof Error ? e.message : String(e)).slice(0, 300),
+    });
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "command failed" }), {
       status: 502,
     });

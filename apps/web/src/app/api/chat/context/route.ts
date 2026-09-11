@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
   const tool = PAGE_TOOLS[page];
   const label = CHAT_PAGES.find((p) => p.id === page)?.label ?? page;
   if (!slug || !tool) {
+    console.error("[chat:context] rejected", { hasSlug: !!slug, page: page || "(empty)" });
     return new Response(JSON.stringify({ error: "unknown page" }), { status: 400 });
   }
   try {
@@ -52,6 +53,10 @@ export async function POST(req: NextRequest) {
       headers: { "content-type": "application/json" },
     });
   } catch (e) {
+    console.error("[chat:context] failed", {
+      page,
+      message: (e instanceof Error ? e.message : String(e)).slice(0, 300),
+    });
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "context failed" }), {
       status: 502,
     });

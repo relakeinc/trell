@@ -27,7 +27,7 @@ import {
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useChat } from "./ChatProvider";
-import { prettyToolName, parseSSEEvent, CHAT_COMMANDS, CHAT_PAGES, findPageMentions } from "@/lib/chatAgent";
+import { parseSSEEvent, CHAT_COMMANDS, CHAT_PAGES, findPageMentions } from "@/lib/chatAgent";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChatContainerContent, ChatContainerRoot, ChatContainerScrollAnchor } from "@/components/ui/chat-container";
 import {
@@ -36,7 +36,6 @@ import {
   PromptInputTextarea,
 } from "@/components/ui/prompt-input";
 import { ScrollButton } from "@/components/ui/scroll-button";
-import { Tool } from "@/components/ui/tool";
 
 interface Msg {
   id: string;
@@ -50,15 +49,6 @@ interface Convo {
   title: string;
   updatedAt: number;
   messages: Msg[];
-}
-
-interface ToolCall {
-  id: number;
-  name: string;
-  state: "input-available" | "output-available" | "output-error";
-  input?: Record<string, unknown>;
-  output?: Record<string, unknown>;
-  errorText?: string;
 }
 
 type Mode = "ask" | "do";
@@ -296,16 +286,31 @@ function ResponsiveTable({ children }: { children: ReactNode }) {
   );
 }
 
-function ReasoningBlock({ text, streaming }: { text: string; streaming: boolean }) {  const [open, setOpen] = useState(true);
+function ReasoningBlock({ text, streaming, answerStarted }: { text: string; streaming: boolean; answerStarted: boolean }) {
+  const [open, setOpen] = useState(true);
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  // Once the answer starts streaming, collapse so the response takes the stage.
+  useEffect(() => {
+    if (answerStarted) setOpen(false);
+  }, [answerStarted]);
+  // Follow the thoughts while they stream in.
+  useEffect(() => {
+    if (streaming && open && bodyRef.current) {
+      bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+    }
+  }, [text, streaming, open]);
   return (
     <div className="mb-1">
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="flex min-h-7 cursor-pointer items-center gap-1 text-xs font-medium text-trell-ink-muted transition-colors hover:text-trell-ink">
           <ChevronDown size={13} className={`transition-transform duration-200 ${open ? "" : "-rotate-90"}`} />
-          {streaming ? "Reasoning…" : open ? "Hide reasoning" : "Show reasoning"}
+          {streaming && !answerStarted ? "Reasoning…" : open ? "Hide reasoning" : "Show reasoning"}
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="mt-1.5 max-h-56 overflow-y-auto whitespace-pre-wrap break-words border-l-2 border-trell-line pl-3 text-[13px] leading-relaxed text-trell-ink-muted">
+          <div
+            ref={bodyRef}
+            className="mt-1.5 max-h-56 overflow-y-auto whitespace-pre-wrap break-words border-l-2 border-trell-line pl-3 text-[13px] leading-relaxed text-trell-ink-muted"
+          >
             {text}
           </div>
         </CollapsibleContent>
@@ -322,7 +327,7 @@ export function ChatWidget() {
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [status, setStatus] = useState<string | null>(null);
-  const [modeOpen, setModeOpen] = useState(false);  const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
+  const [modeOpen, setModeOpen] = useState(false);
   const [thoughts, setThoughts] = useState("");
   const [toolsOpen, setToolsOpen] = useState(false);
   const [convos, setConvos] = useState<Convo[]>(() => (slug ? loadConvos(slug) : []));
@@ -442,7 +447,7 @@ export function ChatWidget() {
   function newChat() {
     setActiveId(null);
     setMessages([]);
-    setToolCalls([]);
+
     setThoughts("");
     setHistoryOpen(false);
     setQuery("");
@@ -453,7 +458,7 @@ export function ChatWidget() {
     if (!found) return;
     setActiveId(found.id);
     setMessages(found.messages);
-    setToolCalls([]);
+
     setThoughts("");
     setHistoryOpen(false);
     setQuery("");
@@ -474,7 +479,7 @@ export function ChatWidget() {
     if (id === activeId) {
       setActiveId(null);
       setMessages([]);
-      setToolCalls([]);
+  
       setThoughts("");
     }
   }
@@ -490,6 +495,8 @@ export function ChatWidget() {
     const item = menuItems[Math.min(Math.max(idx, 0), menuItems.length - 1)]!;
     if (menu.kind === "@") {
       handleInput(input.replace(/[@][\w-]*$/, `@${item.id} `));
+    } else if (item.id === "help") {
+      sendLocalHelp();
     } else {
       setMenu(null);
       setInput("");
@@ -513,11 +520,18 @@ export function ChatWidget() {
 
   async function runCommand(id: string) {
     if (busy) return;
+    if (!slug) {
+      setMessages((prev) => [
+        ...prev,
+        { id: newId(), role: "model", text: "No workspace detected. Open a workspace and try again.", status: "error" as const },
+      ]);
+      return;
+    }
     setMenu(null);
     const next: Msg[] = [...messages, { id: newId(), role: "user" as const, text: `/${id}`, status: "sending" as const }];
     setMessages(next);
     setInput("");
-    setToolCalls([]);
+
     setThoughts("");
     setBusy(true);
     setStatus("Running command…");
@@ -546,6 +560,13 @@ export function ChatWidget() {
   async function send(text: string) {
     const clean = text.trim();
     if (!clean || busy) return;
+    if (!slug) {
+      setMessages((prev) => [
+        ...prev,
+        { id: newId(), role: "model", text: "No workspace detected. Open a workspace and try again.", status: "error" as const },
+      ]);
+      return;
+    }
     setMenu(null);
     const cmd = clean.match(/^\/([\w-]+)\s*$/);
     if (cmd) {
@@ -563,7 +584,7 @@ export function ChatWidget() {
     const next: Msg[] = [...messages, { id: newId(), role: "user" as const, text: clean, status: "sending" as const }];
     setMessages(next);
     setInput("");
-    setToolCalls([]);
+
     setThoughts("");
     if (mentions.length === 0) {
       await runCompletion(next);
@@ -610,7 +631,7 @@ export function ChatWidget() {
     const base = messages.slice(0, idx);
     if (base[base.length - 1]?.role !== "user") return;
     setMessages(base);
-    setToolCalls([]);
+
     setThoughts("");
     await runCompletion(base);
   }
@@ -661,27 +682,6 @@ export function ChatWidget() {
             appendText(modelText);
           } else if (evt.t === "status") {
             setStatus(evt.d);
-          } else if (evt.t === "tool") {
-            const state = evt.state;
-            const input = evt.input;
-            const output = evt.output;
-            const errorText = evt.errorText;
-            setToolCalls((prev) => {
-              const idx = prev.findIndex((t) => t.name === evt.name && t.state === "input-available");
-              if (idx >= 0) {
-                const copy = [...prev];
-                copy[idx] = {
-                  ...copy[idx]!,
-                  state,
-                  input: input ?? copy[idx]!.input,
-                  output: output ?? copy[idx]!.output,
-                  errorText: errorText ?? copy[idx]!.errorText,
-                };
-                return copy;
-              }
-              return [...prev, { id: Date.now() + prev.length, name: evt.name, state, input, output, errorText }];
-            });
-            if (evt.state !== "input-available") setStatus(null);
           } else if (evt.t === "error") {
             throw new Error(evt.d);
           }
@@ -916,7 +916,9 @@ export function ChatWidget() {
                         className="mt-0.5 h-7 w-7 shrink-0 rounded-full"
                       />
                       <div className="min-w-0 flex-1 text-[15px] leading-[1.7] text-trell-ink">
-                        {thoughts && isLast ? <ReasoningBlock text={thoughts} streaming={streaming} /> : null}
+                        {thoughts && isLast ? (
+                          <ReasoningBlock text={thoughts} streaming={streaming} answerStarted={m.text.length > 0} />
+                        ) : null}
                         {m.text ? (
                           <>
                         <Markdown
@@ -975,13 +977,6 @@ export function ChatWidget() {
                     </div>
                   );
                 })}
-                {toolCalls.map((t) => (
-                  <Tool
-                    key={t.id}
-                    toolPart={{ type: prettyToolName(t.name), state: t.state, input: t.input, output: t.output, errorText: t.errorText }}
-                    className="max-w-full self-start [&_button]:text-xs"
-                  />
-                ))}
                 {awaitingResponse ? (
                   <div className="flex items-center gap-1.5 self-start text-[13px]" role="status">
                     <Cloud size={14} className="shrink-0 text-trell-ink-muted" aria-hidden />
