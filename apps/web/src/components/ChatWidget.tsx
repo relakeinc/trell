@@ -330,9 +330,18 @@ export function ChatWidget() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [leaving, setLeaving] = useState(false);
+  const [entered, setEntered] = useState(false);
   const [menu, setMenu] = useState<{ kind: "@" | "/"; query: string } | null>(null);
   const [menuIndex, setMenuIndex] = useState(0);
   const greet = useMemo(greeting, []);
+
+  // Mount collapsed, then expand: the flex sibling glides instead of snapping.
+  useEffect(() => {
+    if (!open) return;
+    setEntered(false);
+    const t = window.setTimeout(() => setEntered(true), 30);
+    return () => window.clearTimeout(t);
+  }, [open]);
 
   const menuItems = useMemo(() => {
     if (!menu) return [] as { id: string; primary: string; secondary: string }[];
@@ -446,7 +455,7 @@ export function ChatWidget() {
     window.setTimeout(() => {
       setOpen(false);
       setLeaving(false);
-    }, 210);
+    }, 320);
   }
 
   function selectMenuItemAt(idx: number) {
@@ -709,7 +718,8 @@ export function ChatWidget() {
   }
 
   return (
-    <aside className={`yoi-chat relative hidden h-full w-[440px] max-w-[calc(100vw-2rem)] shrink-0 flex-col gap-1 overflow-hidden rounded-xl bg-neutral-100 p-3 md:flex ${leaving ? "trell-chat-out" : "trell-drawer-right-in"}`}>
+    <aside className={`yoi-chat relative hidden h-full max-w-[calc(100vw-2rem)] shrink-0 overflow-hidden rounded-xl bg-neutral-100 transition-[width,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:block ${entered && !leaving ? "w-[440px] opacity-100" : "w-0 opacity-0"}`}>
+      <div className="relative flex h-full w-[440px] max-w-[calc(100vw-2rem)] flex-col gap-1 p-3">
         {/* dotted texture (Cloudflare-style) */}
         <div
           aria-hidden
@@ -1129,6 +1139,7 @@ export function ChatWidget() {
             </PromptInputActions>
           </PromptInput>
         </div>
+      </div>
     </aside>
   );
 }
