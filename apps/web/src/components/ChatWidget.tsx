@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { useEffect, useMemo, useState, Children, isValidElement, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, Children, isValidElement, type ReactNode } from "react";
 import {
   ArrowUp,
   ChartColumn,
@@ -334,6 +334,7 @@ export function ChatWidget() {
   const [menu, setMenu] = useState<{ kind: "@" | "/"; query: string } | null>(null);
   const [menuIndex, setMenuIndex] = useState(0);
   const greet = useMemo(greeting, []);
+  const closeTimer = useRef<number | null>(null);
 
   // Mount collapsed, then expand after paint: the flex sibling glides
   // instead of snapping. Double rAF guarantees the collapsed frame commits.
@@ -459,11 +460,25 @@ export function ChatWidget() {
     if (leaving) return;
     setHistoryOpen(false);
     setLeaving(true);
-    window.setTimeout(() => {
+    setEntered(false);
+    closeTimer.current = window.setTimeout(() => {
       setOpen(false);
       setLeaving(false);
+      closeTimer.current = null;
     }, 320);
   }
+
+  // Reopened mid-exit: cancel the pending close and snap back open.
+  useEffect(() => {
+    if (open && leaving) {
+      if (closeTimer.current !== null) {
+        window.clearTimeout(closeTimer.current);
+        closeTimer.current = null;
+      }
+      setLeaving(false);
+      setEntered(true);
+    }
+  }, [open, leaving]);
 
   function selectMenuItemAt(idx: number) {
     if (busy || !menu || menuItems.length === 0) return;
