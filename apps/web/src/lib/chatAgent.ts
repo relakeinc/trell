@@ -36,12 +36,93 @@ export function buildSystemPrompt(opts: { workspaceSlug: string; userEmail: stri
   ].join("\n");
 }
 
-/** Trim history for the model: last N non-empty messages. */
-export function toGeminiContents(messages: ChatMessage[]): { role: "user" | "model"; parts: { text: string }[] }[] {
-  return messages
-    .filter((m) => m.text.trim().length > 0)
-    .slice(-MAX_HISTORY)
-    .map((m) => ({ role: m.role, parts: [{ text: m.text }] }));
+/** Client history → OpenAI-compatible messages with system prompt first. */
+export function toOpenAIMessages(system: string, messages: ChatMessage[]): OpenAIMessage[] {
+  const out: OpenAIMessage[] = [{ role: "system", content: system }];
+  for (const m of messages.filter((m) => m.text.trim().length > 0).slice(-MAX_HISTORY)) {
+    out.push(m.role === "model" ? { role: "assistant", content: m.text } : { role: "user", content: m.text });
+  }
+  return out;
+}
+
+export interface OpenAIFunctionTool {
+  type: "function";
+  function: { name: string; description?: string; parameters: Record<string, unknown> };
+}
+
+/** Declarations → OpenAI-compatible tools (OpenRouter). Parameters always present. */
+export function toOpenAITools(decls: GeminiFunctionDeclaration[]): OpenAIFunctionTool[] {
+  return decls.map((d) => ({
+    type: "function" as const,
+    function: {
+      name: d.name,
+      ...(d.description ? { description: d.description } : {}),
+      parameters:
+        d.parameters && Object.keys(d.parameters).length > 0 ? d.parameters : { type: "object", properties: {} },
+    },
+  }));
+}
+
+export interface OpenAIToolDelta {
+  index: number;
+  id: string;
+  name: string;
+  args: string;
+}
+
+export interface OpenAIChunk {
+  content: string;
+  reasoning: string;
+  toolDeltas: OpenAIToolDelta[];
+}
+
+/**
+ * Normalize one parsed OpenAI-compat streaming chunk. Accepts both
+ * `reasoning` and `reasoning_content` delta fields. Null when not a
+ * choice delta (usage payloads, errors, garbage).
+ */
+export function parseOpenAIChunk(data: unknown): OpenAIChunk | null {
+  if (!data || typeof data !== "object") return null;
+  const choices = (data as { choices?: unknown }).choices;
+  const first = Array.isArray(choices) ? choices[0] : undefined;
+  if (!first || typeof first !== "object") return null;
+  const delta = (first as { delta?: unknown }).delta;
+  if (!delta || typeof delta !== "object") return null;
+  const d = delta as {
+    content?: unknown;
+    reasoning?: unknown;
+    reasoning_content?: unknown;
+    tool_calls?: unknown;
+  };
+  const content = typeof d.content === "string" ? d.content : "";
+  const reasoning =
+    typeof d.reasoning === "string"
+      ? d.reasoning
+      : typeof d.reasoning_content === "string"
+        ? d.reasoning_content
+        : "";
+  const toolDeltas: OpenAIToolDelta[] = [];
+  if (Array.isArray(d.tool_calls)) {
+    d.tool_calls.forEach((t, i) => {
+      if (!t || typeof t !== "object") return;
+      const tt = t as { index?: unknown; id?: unknown; function?: unknown };
+      const fn = (tt.function ?? {}) as { name?: unknown; arguments?: unknown };
+      toolDeltas.push({
+        index: typeof tt.index === "number" ? tt.index : i,
+        id: typeof tt.id === "string" ? tt.id : "",
+        name: typeof fn.name === "string" ? fn.name : "",
+        args: typeof fn.arguments === "string" ? fn.arguments : "",
+      });
+    });
+  }
+  return { content, reasoning, toolDeltas };
+}
+
+export interface OpenAIMessage {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string;
+  tool_calls?: { id: string; type: "function"; function: { name: string; arguments: string } }[];
+  tool_call_id?: string;
 }
 
 /** MCP tool schemas → Gemini function declarations (drop JSON-Schema meta keys Gemini rejects). */
@@ -68,11 +149,34 @@ export function prettyToolName(name: string): string {
   return [first.charAt(0).toUpperCase() + first.slice(1), ...rest].join(" ");
 }
 
+const MAX_TOOL_DISPLAY_CHARS = 2000;
+
+/** Tool result → compact display object for the Tool chip (truncates huge payloads). */
+export function toDisplayOutput(result: unknown): Record<string, unknown> {
+  if (result !== null && typeof result === "object") {
+    const s = JSON.stringify(result) ?? "";
+    return s.length > MAX_TOOL_DISPLAY_CHARS
+      ? { truncated: `${s.slice(0, MAX_TOOL_DISPLAY_CHARS)}… (${s.length} chars total)` }
+      : (result as Record<string, unknown>);
+  }
+  const s = typeof result === "string" ? result : String(result ?? "");
+  return s.length > MAX_TOOL_DISPLAY_CHARS
+    ? { truncated: `${s.slice(0, MAX_TOOL_DISPLAY_CHARS)}… (${s.length} chars total)` }
+    : { result: s };
+}
+
 export type StreamEvent =
   | { t: "text"; d: string }
   | { t: "status"; d: string }
   | { t: "thought"; d: string }
-  | { t: "tool"; name: string; state: "input-available" | "output-available" | "output-error" }
+  | {
+      t: "tool";
+      name: string;
+      state: "input-available" | "output-available" | "output-error";
+      input?: Record<string, unknown>;
+      output?: Record<string, unknown>;
+      errorText?: string;
+    }
   | { t: "done" }
   | { t: "error"; d: string };
 

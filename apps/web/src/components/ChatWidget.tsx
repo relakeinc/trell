@@ -55,6 +55,9 @@ interface ToolCall {
   id: number;
   name: string;
   state: "input-available" | "output-available" | "output-error";
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  errorText?: string;
 }
 
 type Mode = "ask" | "do";
@@ -363,14 +366,24 @@ export function ChatWidget() {
           } else if (evt.t === "status") {
             setStatus(evt.d);
           } else if (evt.t === "tool") {
+            const state = evt.state;
+            const input = evt.input;
+            const output = evt.output;
+            const errorText = evt.errorText;
             setToolCalls((prev) => {
               const idx = prev.findIndex((t) => t.name === evt.name && t.state === "input-available");
               if (idx >= 0) {
                 const copy = [...prev];
-                copy[idx] = { ...copy[idx]!, state: evt.state };
+                copy[idx] = {
+                  ...copy[idx]!,
+                  state,
+                  input: input ?? copy[idx]!.input,
+                  output: output ?? copy[idx]!.output,
+                  errorText: errorText ?? copy[idx]!.errorText,
+                };
                 return copy;
               }
-              return [...prev, { id: Date.now() + prev.length, name: evt.name, state: evt.state }];
+              return [...prev, { id: Date.now() + prev.length, name: evt.name, state, input, output, errorText }];
             });
             if (evt.state !== "input-available") setStatus(null);
           } else if (evt.t === "error") {
@@ -654,7 +667,7 @@ export function ChatWidget() {
                 {toolCalls.map((t) => (
                   <Tool
                     key={t.id}
-                    toolPart={{ type: prettyToolName(t.name), state: t.state }}
+                    toolPart={{ type: prettyToolName(t.name), state: t.state, input: t.input, output: t.output, errorText: t.errorText }}
                     className="max-w-full self-start [&_button]:text-xs"
                   />
                 ))}
