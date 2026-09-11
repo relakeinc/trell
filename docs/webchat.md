@@ -14,7 +14,8 @@ contenedor `web`, sin GPU ni RAM extra en el VPS.
    `OPENROUTER_BASE_URL`: el modelo llama tools, el backend las ejecuta y
    stremea la respuesta final. Eventos SSE: `text` (respuesta), `thought`
    (razonamiento del modelo, solo si el modelo lo emite), `status`,
-   `tool` (chips con input/output), `done`, `error`.
+   `tool` (solo backend; los chips no se muestran en la UI por diseño),
+   `done`, `error`.
 4. Destructivas exigen confirmación en lenguaje natural antes de llamarlas
    (la tool además pide `confirm: true`).
 5. Reasoning: se pide `reasoning: { effort: "medium" }` y los deltas
