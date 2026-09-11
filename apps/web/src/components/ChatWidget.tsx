@@ -335,12 +335,19 @@ export function ChatWidget() {
   const [menuIndex, setMenuIndex] = useState(0);
   const greet = useMemo(greeting, []);
 
-  // Mount collapsed, then expand: the flex sibling glides instead of snapping.
+  // Mount collapsed, then expand after paint: the flex sibling glides
+  // instead of snapping. Double rAF guarantees the collapsed frame commits.
   useEffect(() => {
     if (!open) return;
     setEntered(false);
-    const t = window.setTimeout(() => setEntered(true), 30);
-    return () => window.clearTimeout(t);
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setEntered(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
   }, [open]);
 
   const menuItems = useMemo(() => {

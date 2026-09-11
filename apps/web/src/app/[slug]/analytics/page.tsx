@@ -244,7 +244,7 @@ function MetricCell({ label, value, loading, color, dividerHint, hint }: { label
       {dividerHint && (
         <span
           aria-hidden="true"
-          className="absolute top-1/2 -left-[9px] z-10 inline-flex h-[18px] w-[18px] -translate-y-1/2 items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-400 dark:border-white/20 dark:bg-neutral-900 dark:text-neutral-500"
+          className="absolute top-1/2 -left-[9px] inline-flex h-[18px] w-[18px] -translate-y-1/2 items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-400 dark:border-white/20 dark:bg-neutral-900 dark:text-neutral-500"
         >
           <ChevronRight className="h-3 w-3" />
         </span>
