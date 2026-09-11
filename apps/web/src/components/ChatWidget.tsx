@@ -338,18 +338,41 @@ export function ChatWidget() {
 
   // Mount collapsed, then expand after paint: the flex sibling glides
   // instead of snapping. Double rAF guarantees the collapsed frame commits.
+  // Closing collapses first and unmounts after the animation; reopening
+  // mid-exit cancels the pending unmount. All driven by `open`.
   useEffect(() => {
-    if (!open) return;
+    if (closeTimer.current !== null) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    if (!open && !leaving) return; // fully closed, nothing to do
+    if (open) {
+      setLeaving(false);
+      setEntered(false);
+      let raf2 = 0;
+      const raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => setEntered(true));
+      });
+      return () => {
+        cancelAnimationFrame(raf1);
+        cancelAnimationFrame(raf2);
+      };
+    }
+    setLeaving(true);
     setEntered(false);
-    let raf2 = 0;
-    const raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => setEntered(true));
-    });
-    return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-    };
-  }, [open]);
+    closeTimer.current = window.setTimeout(() => {
+      setLeaving(false);
+      closeTimer.current = null;
+    }, 320);
+    return;
+  }, [open ]);
+
+  useEffect(
+    () => () => {
+      if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    },
+    [],
+  );
 
   const menuItems = useMemo(() => {
     if (!menu) return [] as { id: string; primary: string; secondary: string }[];
@@ -459,26 +482,8 @@ export function ChatWidget() {
   function close() {
     if (leaving) return;
     setHistoryOpen(false);
-    setLeaving(true);
-    setEntered(false);
-    closeTimer.current = window.setTimeout(() => {
-      setOpen(false);
-      setLeaving(false);
-      closeTimer.current = null;
-    }, 320);
+    setOpen(false);
   }
-
-  // Reopened mid-exit: cancel the pending close and snap back open.
-  useEffect(() => {
-    if (open && leaving) {
-      if (closeTimer.current !== null) {
-        window.clearTimeout(closeTimer.current);
-        closeTimer.current = null;
-      }
-      setLeaving(false);
-      setEntered(true);
-    }
-  }, [open, leaving]);
 
   function selectMenuItemAt(idx: number) {
     if (busy || !menu || menuItems.length === 0) return;
@@ -718,7 +723,7 @@ export function ChatWidget() {
   const awaitingResponse =
     busy && lastMsg && (lastMsg.role === "user" || (lastMsg.role === "model" && !lastMsg.text));
 
-  if (!open) {
+  if (!open && !leaving) {
     // Siri-style edge light: symmetric fades (both ends transparent, color
     // handoff at the center) + perpetual motion underneath; only the wrapper
     // opacity toggles, so it fades in/out cleanly — never pops.
