@@ -350,7 +350,6 @@ export function ChatWidget() {
       window.clearTimeout(closeTimer.current);
       closeTimer.current = null;
     }
-    if (!open && !leaving) return; // fully closed, nothing to do
     if (open) {
       setLeaving(false);
       setEntered(false);
