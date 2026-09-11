@@ -7,6 +7,7 @@ describe("chatAgent helpers", () => {
     const p = buildSystemPrompt({ workspaceSlug: "store", userEmail: "a@b.c" });
     expect(p).toContain("store");
     expect(p).toContain("confirm:true");
+    expect(p).toContain("emojis");
   });
 
   it("trims history to non-empty OpenAI messages with system first", () => {

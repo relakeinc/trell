@@ -208,14 +208,13 @@ function ReasoningBlock({ text, streaming }: { text: string; streaming: boolean 
   return (
     <div className="mb-1">
       <Collapsible open={open} onOpenChange={setOpen}>
-        <CollapsibleTrigger className="flex cursor-pointer items-center gap-1 text-xs font-medium text-trell-ink-muted transition-colors hover:text-trell-ink">
+        <CollapsibleTrigger className="flex min-h-7 cursor-pointer items-center gap-1 text-xs font-medium text-trell-ink-muted transition-colors hover:text-trell-ink">
           <ChevronDown size={13} className={`transition-transform duration-200 ${open ? "" : "-rotate-90"}`} />
           {streaming ? "Reasoning…" : open ? "Hide reasoning" : "Show reasoning"}
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="mt-1.5 max-h-56 overflow-y-auto whitespace-pre-wrap break-words border-l-2 border-trell-line pl-3 text-[13px] leading-relaxed text-trell-ink-muted">
             {text}
-            {streaming ? <span className="trell-streaming-cursor" aria-hidden="true" /> : null}
           </div>
         </CollapsibleContent>
       </Collapsible>
@@ -650,7 +649,6 @@ export function ChatWidget() {
                         >
                           {m.text}
                         </Markdown>
-                            {streaming && <span className="trell-streaming-cursor" aria-hidden="true" />}
                           </>
                         ) : null}
                         {m.status === "complete" && m.text && !streaming && (

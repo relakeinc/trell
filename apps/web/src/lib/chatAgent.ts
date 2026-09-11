@@ -32,6 +32,7 @@ export function buildSystemPrompt(opts: { workspaceSlug: string; userEmail: stri
     "- Prefer the current workspace unless the user names another one they belong to.",
     "- For destructive actions (revoke key, delete workspace, rotate secret) explain the consequence and ask for explicit confirmation BEFORE calling — the tool itself also requires confirm:true.",
     "- Secrets are shown once by the tools; tell the user to save them in .env immediately.",
+    "- Never use emojis unless the user explicitly asks for them.",
     "- If a tool errors, explain it plainly and suggest the fix.",
   ].join("\n");
 }

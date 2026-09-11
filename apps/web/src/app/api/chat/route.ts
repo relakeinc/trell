@@ -83,22 +83,20 @@ function friendlyError(e: unknown, model: string): string {
   const status = statusOf(e);
   if (status === 429) return "Free model limit reached, try again in a bit.";
   if (status === 402) return "OpenRouter credits exhausted. Free models need no credits — check your account.";
-  if (status === 404) return `Model ${model} is not available. Try OPENROUTER_MODEL=another-model.`;
+  if (status === 404) return `Model ${model} is not available. Check the provider model env.`;
   if (e instanceof Error && e.message.length < 200) return e.message;
   return "Chat failed, try again.";
 }
 
 async function postChatCompletions(args: {
-  baseUrl: string;
-  apiKey: string;
+  provider: { baseUrl: string; apiKey: string; model: string };
   origin: string;
-  model: string;
   messages: OpenAIMessage[];
   tools: OpenAIFunctionTool[];
   reasoningOff: boolean;
 }): Promise<Response> {
   const body: Record<string, unknown> = {
-    model: args.model,
+    model: args.provider.model,
     messages: args.messages,
     tools: args.tools,
     temperature: 0.3,
@@ -106,10 +104,10 @@ async function postChatCompletions(args: {
     stream: true,
   };
   if (!args.reasoningOff) body.reasoning = { effort: "medium" };
-  const res = await fetch(`${args.baseUrl}/chat/completions`, {
+  const res = await fetch(`${args.provider.baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
-      authorization: `Bearer ${args.apiKey}`,
+      authorization: `Bearer ${args.provider.apiKey}`,
       "content-type": "application/json",
       "HTTP-Referer": args.origin,
       "X-Title": "Trell Ask",
@@ -138,15 +136,22 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
   }
 
-  const baseUrl = process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1";
-  const apiKey = process.env.OPENROUTER_API_KEY ?? "";
   const oauthSecret = process.env.MCP_OAUTH_SECRET ?? "";
   const mcpUrl = process.env.MCP_URL ?? "http://api:8788";
-  const primaryModel = process.env.OPENROUTER_MODEL ?? "openrouter/free";
-  const fallbackModel = process.env.OPENROUTER_FALLBACK_MODEL ?? "meta-llama/llama-3.2-3b-instruct:free";
-  if (!apiKey || !oauthSecret) {
+  const primary = {
+    baseUrl: process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1",
+    apiKey: process.env.OPENROUTER_API_KEY ?? "",
+    model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
+  };
+  const fallback = {
+    baseUrl: process.env.ORCAROUTER_BASE_URL ?? "https://api.orcarouter.ai/v1",
+    apiKey: process.env.ORCAROUTER_API_KEY ?? "",
+    model: process.env.ORCAROUTER_FALLBACK_MODEL ?? "orcarouter/free",
+  };
+  if (!primary.apiKey || !oauthSecret) {
     return new Response(JSON.stringify({ error: "chat_not_configured" }), { status: 503 });
   }
+  const canFallBack = !!fallback.apiKey && fallback.model !== primary.model;
 
   let history;
   let slug = "dashboard";
@@ -162,10 +167,10 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream<string>({
     async start(controller) {
       const mcp = new Client({ name: "trell-webchat", version: "0.0.0" });
-      let model = primaryModel;
+      let provider = primary;
       let fellBack = false;
-      if (model !== fallbackModel && Date.now() < primaryCoolDownUntil) {
-        model = fallbackModel;
+      if (canFallBack && Date.now() < primaryCoolDownUntil) {
+        provider = fallback;
         fellBack = true;
       }
       try {
@@ -194,16 +199,16 @@ export async function POST(req: NextRequest) {
         for (let turn = 0; turn < MAX_TURNS; turn++) {
           let res: Response;
           try {
-            res = await postChatCompletions({ baseUrl, apiKey, origin, model, messages, tools, reasoningOff });
+            res = await postChatCompletions({ provider, origin, messages, tools, reasoningOff });
           } catch (e) {
             // Free-tier models come and go: retry once with the fallback.
-            if (!fellBack && model !== fallbackModel && isCapacityError(e)) {
+            if (!fellBack && canFallBack && isCapacityError(e)) {
               const st = statusOf(e);
               if (st === 429) primaryCoolDownUntil = Date.now() + PRIMARY_COOLDOWN_429_MS;
               else if (st === 404) primaryCoolDownUntil = Date.now() + PRIMARY_COOLDOWN_404_MS;
               fellBack = true;
-              model = fallbackModel;
-              send(controller, { t: "status", d: `Switching to fallback model (${fallbackModel})…` });
+              provider = fallback;
+              send(controller, { t: "status", d: `Switching to fallback (${fallback.model})…` });
               turn--;
               continue;
             }
@@ -322,11 +327,11 @@ export async function POST(req: NextRequest) {
         send(controller, { t: "done" });
       } catch (e) {
         console.error("[chat] request failed", {
-          model,
+          model: provider.model,
           status: statusOf(e),
           message: (e instanceof Error ? e.message : String(e)).slice(0, 500),
         });
-        send(controller, { t: "error", d: friendlyError(e, model) });
+        send(controller, { t: "error", d: friendlyError(e, provider.model) });
       } finally {
         controller.close();
         await mcp.close().catch(() => {});

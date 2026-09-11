@@ -689,12 +689,7 @@ body {
   outline-offset: 2px;
 }
 
-/* Chat streaming cursor + message entry */
-@keyframes trell-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
+/* Chat message entry + thinking shimmer */
 /* Shimmer text (thinking indicator) */
 @keyframes trell-shimmer {
   0% { background-position: -200% 0; }
@@ -715,17 +710,6 @@ body {
   animation: trell-shimmer 2.2s linear infinite;
 }
 
-.trell-streaming-cursor {
-  display: inline-block;
-  width: 7px;
-  height: 17px;
-  margin-left: 3px;
-  vertical-align: -3px;
-  border-radius: 2px;
-  background: currentColor;
-  animation: trell-blink 900ms infinite;
-}
-
 @keyframes trell-msg-in {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
@@ -737,7 +721,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .trell-ask-edge::before,
-  .trell-streaming-cursor,
   .trell-msg-in {
     animation: none !important;
   }
