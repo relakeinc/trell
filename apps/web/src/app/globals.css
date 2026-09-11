@@ -1086,6 +1086,12 @@ body {
 .trell-modal-out { animation: trell-modal-out 0.14s ease-in forwards; }
 .trell-drawer-right-in { animation: trell-drawer-right-in 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
 .trell-drawer-right-out { animation: trell-drawer-right-out 0.16s ease-in forwards; }
+/* Chat panel exit: full fade + short drift toward the edge (no frozen mid-state). */
+@keyframes trell-chat-out {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(24px); }
+}
+.trell-chat-out { animation: trell-chat-out 0.2s cubic-bezier(0.32, 0, 0.67, 0) forwards; }
 .trell-drawer-left-in { animation: trell-drawer-left-in 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
 .trell-drawer-left-out { animation: trell-drawer-left-out 0.16s ease-in forwards; }
 .trell-slide-right-in { animation: trell-slide-right-in 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -1094,6 +1100,7 @@ body {
   .trell-pop-in, .trell-pop-out, .trell-pop-up-in, .trell-pop-up-out, .trell-fade-in, .trell-fade-out,
   .trell-slide-right-in, .trell-slide-left-in,
   .trell-modal-in, .trell-modal-out, .trell-drawer-right-in, .trell-drawer-right-out,
+  .trell-chat-out,
   .trell-drawer-left-in, .trell-drawer-left-out {
     animation: none;
   }

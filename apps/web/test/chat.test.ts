@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildSystemPrompt, parseChatBody, parseOpenAIChunk, parseSSEEvent, prettyToolName, toDisplayOutput, toFunctionDeclarations, toOpenAIMessages, toOpenAITools } from "../src/lib/chatAgent";
+import { buildSystemPrompt, findPageMentions, parseChatBody, parseOpenAIChunk, parseSSEEvent, prettyToolName, toDisplayOutput, toFunctionDeclarations, toOpenAIMessages, toOpenAITools, CHAT_COMMANDS, CHAT_PAGES } from "../src/lib/chatAgent";
 import { signIdentityJwt } from "../src/lib/chatIdentity";
 
 describe("chatAgent helpers", () => {
@@ -132,6 +132,19 @@ describe("chatAgent helpers", () => {
     const out = toDisplayOutput(big);
     expect(Object.keys(out)).toEqual(["truncated"]);
     expect((out.truncated as string).length).toBeLessThan(2500);
+  });
+
+  it("exposes page and command catalogs", () => {
+    expect(CHAT_PAGES.map((p) => p.id)).toContain("analytics");
+    expect(CHAT_PAGES.map((p) => p.id)).toContain("tracking");
+    expect(CHAT_COMMANDS.map((c) => c.id)).toEqual(["tracking", "recent", "stats", "help"]);
+  });
+
+  it("finds @page mentions in free text", () => {
+    expect(findPageMentions("how is @analytics doing?")).toEqual(["analytics"]);
+    expect(findPageMentions("@events and @events again + @bogus")).toEqual(["events"]);
+    expect(findPageMentions("no mentions here")).toEqual([]);
+    expect(findPageMentions("email me@example.com")).toEqual([]);
   });
 });
 

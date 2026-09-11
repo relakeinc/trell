@@ -26,6 +26,15 @@ contenedor `web`, sin GPU ni RAM extra en el VPS.
    fallback y enfría el primario (10 min tras 429, 60 min tras 404) para
    no pagar el intento condenado en cada mensaje. Las declarations de
    tools se cachean 5 min. Límites típicos `:free`: ~20 req/min, 200/día.
+7. `@paginas` y `/comandos` (ahorro de requests): el composer sugiere
+   `@analytics|events|funnels|forms|tracking|project` (prefetch de un
+   snapshot MCP vía `POST /api/chat/context`, 0 turnos LLM — el modelo
+   suele responder directo) y `/tracking|recent|/stats` determinísticos
+   vía `POST /api/chat/command` (1 tool MCP, 0 llamadas IA). `/help` es
+   local (0 requests). Historial recortado a 12 mensajes.
+8. Tablas anchas (>3 columnas) se renderizan como cards apiladas
+   etiqueta:valor para no cortar nada; las angostas siguen en tabla
+   con scroll horizontal.
 
 ## Variables (servicio `web`)
 

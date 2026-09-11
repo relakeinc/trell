@@ -15,7 +15,49 @@ export interface GeminiFunctionDeclaration {
   parameters?: Record<string, unknown>;
 }
 
-const MAX_HISTORY = 20;
+const MAX_HISTORY = 12;
+
+/** Pages mentionable with @ — the widget prefetches one MCP snapshot each. */
+export interface ChatPage {
+  id: string;
+  label: string;
+  hint: string;
+}
+
+export const CHAT_PAGES: ChatPage[] = [
+  { id: "analytics", label: "Analytics", hint: "30-day stats snapshot" },
+  { id: "events", label: "Events", hint: "latest raw events" },
+  { id: "funnels", label: "Funnels", hint: "funnel definitions" },
+  { id: "forms", label: "Forms", hint: "form ranking, 90 days" },
+  { id: "tracking", label: "Tracking", hint: "ingest status" },
+  { id: "project", label: "Project", hint: "workspace detail" },
+];
+
+/** Slash commands. Deterministic ones run with zero LLM calls. */
+export interface ChatCommand {
+  id: string;
+  label: string;
+  hint: string;
+  local?: boolean;
+}
+
+export const CHAT_COMMANDS: ChatCommand[] = [
+  { id: "tracking", label: "/tracking", hint: "Is data coming in?" },
+  { id: "recent", label: "/recent", hint: "Latest events" },
+  { id: "stats", label: "/stats", hint: "30-day summary" },
+  { id: "help", label: "/help", hint: "Show commands", local: true },
+];
+
+/** @ids in free text that match known pages (deduped, order kept). */
+export function findPageMentions(text: string): string[] {
+  const ids = new Set(CHAT_PAGES.map((p) => p.id));
+  const out: string[] = [];
+  for (const m of text.matchAll(/@([\w-]+)/g)) {
+    const id = m[1]!.toLowerCase();
+    if (ids.has(id) && !out.includes(id)) out.push(id);
+  }
+  return out;
+}
 
 export function buildSystemPrompt(opts: { workspaceSlug: string; userEmail: string; mode?: "ask" | "do" }): string {
   const modeLine =
