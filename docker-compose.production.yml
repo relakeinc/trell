@@ -55,7 +55,7 @@ services:
         condition: service_completed_successfully
     ports:
       - "127.0.0.1:8787:8787"
-      - "127.0.0.1:8788:8788"
+      # NOTE: 127.0.0.1:8788 belongs to the dedicated trell-mcp stack — do NOT map it here.
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:8787/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 10s
