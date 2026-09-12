@@ -48,11 +48,11 @@ function prettyRawType(type: string): string {
     .join(" ");
 }
 
-function typeMeta(type: string): { label: string; dot: string } {
+export function typeMeta(type: string): { label: string; dot: string } {
   return TYPE_META[type] ?? { label: prettyRawType(type), dot: "bg-neutral-400" };
 }
 
-function displayName(e: EventsFeedEvent): string | null {
+export function displayName(e: EventsFeedEvent): string | null {
   const formName = e.formName?.trim();
   if (formName) return formName;
   const formId = e.formId?.trim();

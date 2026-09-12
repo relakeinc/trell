@@ -31,6 +31,10 @@ export interface MetricsSummary {
   avgScrollDepth: number | null;
   /** avg time on page from page_exit events, in ms */
   avgTimeOnPageMs: number | null;
+  /** avg focus → first change per field from field_interaction.hesitationMs, in ms */
+  avgHesitationMs: number | null;
+  /** avg time between consecutive field interactions from field_interaction.gapMs, in ms */
+  avgInteractionGapMs: number | null;
 }
 
 export interface TimelinePoint {
@@ -95,6 +99,8 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
     pagesPerSession: null,
     avgScrollDepth: null,
     avgTimeOnPageMs: null,
+    avgHesitationMs: null,
+    avgInteractionGapMs: null,
   };
 
   const sessions = new Set<string>();
@@ -103,6 +109,8 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
   const pageviewCounts = new Map<string, number>(); // sessionId → pageview count
   const scrollMaxByPage = new Map<string, number>(); // sessionId|pagePath → max depth
   const pageExitDurations: number[] = [];
+  const hesitations: number[] = [];
+  const gaps: number[] = [];
 
   for (const e of events) {
     m.events++;
@@ -116,7 +124,15 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
       case "form_success": m.successes++; break;
       case "form_abandon": m.abandons++; break;
       case "cta_click": m.ctaClicks++; break;
-      case "field_interaction": m.fieldInteractions++; break;
+      case "field_interaction": {
+        m.fieldInteractions++;
+        const props = parseProps(e.properties);
+        const hesitation = props?.hesitationMs;
+        if (typeof hesitation === "number" && hesitation >= 0) hesitations.push(hesitation);
+        const gap = props?.gapMs;
+        if (typeof gap === "number" && gap >= 0) gaps.push(gap);
+        break;
+      }
       case "scroll_depth": {
         // Milestones fire repeatedly per page — keep the max per session+page
         // so the average reflects deepest reach, not event volume.
@@ -202,6 +218,14 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
   // Avg time on page
   if (pageExitDurations.length > 0) {
     m.avgTimeOnPageMs = pageExitDurations.reduce((a, b) => a + b, 0) / pageExitDurations.length;
+  }
+
+  // Avg hesitation (focus → first change) and interaction gap
+  if (hesitations.length > 0) {
+    m.avgHesitationMs = hesitations.reduce((a, b) => a + b, 0) / hesitations.length;
+  }
+  if (gaps.length > 0) {
+    m.avgInteractionGapMs = gaps.reduce((a, b) => a + b, 0) / gaps.length;
   }
 
   return m;

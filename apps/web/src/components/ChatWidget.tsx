@@ -27,7 +27,7 @@ import {
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useChat } from "./ChatProvider";
-import { parseSSEEvent, CHAT_COMMANDS, CHAT_PAGES, findPageMentions } from "@/lib/chatAgent";
+import { parseSSEEvent, CHAT_COMMANDS, CHAT_PAGES, findPageMentions, answerLocalIntent } from "@/lib/chatAgent";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChatContainerContent, ChatContainerRoot, ChatContainerScrollAnchor } from "@/components/ui/chat-container";
 import {
@@ -586,6 +586,12 @@ export function ChatWidget() {
 
     setThoughts("");
     if (mentions.length === 0) {
+      // Small talk answers instantly with zero AI requests.
+      const local = answerLocalIntent(clean);
+      if (local) {
+        setMessages((prev) => [...prev, { id: newId(), role: "model" as const, text: local, status: "complete" as const }]);
+        return;
+      }
       await runCompletion(next);
       return;
     }
@@ -744,7 +750,7 @@ export function ChatWidget() {
   }
 
   return (
-    <aside className={`yoi-chat relative hidden h-full max-w-[calc(100vw-2rem)] shrink-0 overflow-hidden rounded-xl bg-neutral-100 transition-[width,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:block ${entered && !leaving ? "w-[440px] opacity-100" : "w-0 opacity-0"}`}>
+    <aside className={`yoi-chat relative hidden h-full max-w-[calc(100vw-2rem)] shrink-0 overflow-hidden rounded-xl bg-neutral-100 transition-[width,opacity,margin-left,visibility] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:block ${entered && !leaving ? "w-[440px] opacity-100" : "w-0 opacity-0 invisible pointer-events-none -ml-2"}`}>
       <div className="relative flex h-full w-[440px] max-w-[calc(100vw-2rem)] flex-col gap-1 p-3">
         {/* dotted texture (Cloudflare-style) */}
         <div

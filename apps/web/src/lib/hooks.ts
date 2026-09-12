@@ -170,7 +170,7 @@ export function useProjectForms(projectId: string | null, qs: string) {
 
 // ── Events ────────────────────────────────────────────────
 
-interface DrillEvent {
+export interface DrillEvent {
   eventId: string;
   type: string;
   ts: string;
@@ -207,6 +207,7 @@ interface Submission {
   formId: string;
   formName: string | null;
   page: string;
+  url?: string | null;
   visitorId: string;
   fields: Record<string, unknown> | null;
   device: string;

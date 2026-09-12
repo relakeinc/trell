@@ -13,6 +13,10 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # Dummy connection string — prisma validate/generate only need the var
+      # present. No live database required (tests use in-memory repos).
+      DATABASE_URL: postgresql://trell:trell@localhost:5432/trell
     steps:
       - uses: actions/checkout@v4
 

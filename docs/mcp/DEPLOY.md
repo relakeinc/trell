@@ -1,34 +1,34 @@
 # Trell MCP — Deploy
 
-## Producción (VPS)
+## Production
 
-- Stack independiente `/opt/trell-mcp` (rama `feat/mcp`), red `trell_default`,
-  misma DB que el stack vivo (al que **no** se toca).
-- Servicio `mcp`: imagen del Dockerfile de `apps/api`, `MCP_ONLY=1`
-  (solo MCP, sin Hono), puerto `127.0.0.1:8788`.
-- `.env` (600): `DATABASE_URL` (misma DB), `MCP_ONLY=1`, `MCP_HTTP_PORT=8788`,
-  `MCP_API_KEY` (generada en el servidor), `MCP_ALLOWED_SLUGS=*`,
+- Standalone stack in `<APP_DIR>` (branch `main`), sharing the Postgres
+  network of the main stack (which is left untouched).
+- Service `mcp`: image from the `apps/api` Dockerfile with `MCP_ONLY=1`
+  (MCP only, no Hono), published on `127.0.0.1:8788`.
+- `.env` (mode 600): `DATABASE_URL` (shared DB), `MCP_ONLY=1`,
+  `MCP_HTTP_PORT=8788`, `MCP_API_KEY` (generate with
+  `openssl rand -hex 32`), `MCP_ALLOWED_SLUGS=*`,
   `MCP_ALLOW_DESTRUCTIVE=false`.
-- nginx `mcp.relake.co` → `127.0.0.1:8788` (fichero en
-  `/etc/nginx/sites-{available,enabled}/`, timeouts 300s por streams largos).
-- TLS: cert `trell.relake.co` expandido (`trell` + `trepi` + `mcp`).
-  Renovar/expandir: `certbot --expand -d trell.relake.co -d trepi.relake.co -d mcp.relake.co`.
-  Nota: el dominio va tras proxy Cloudflare — el smoke público pasa igual.
-- TLS: expandir el cert existente
-  `certbot --expand -d trell.relake.co -d trepi.relake.co -d mcp.relake.co`
-  (requiere `A mcp.relake.co → 89.117.76.234`).
+- Reverse proxy `mcp.example.com` → `127.0.0.1:8788` (nginx site file,
+  long timeouts ~300s for streaming responses).
+- TLS: expand your existing cert to cover the MCP subdomain, e.g.
+  `certbot --expand -d app.example.com -d api.example.com -d mcp.example.com`
+  (requires the `A mcp.example.com` record pointing at your server).
+  Note: if the domain sits behind a CDN proxy, the public smoke test
+  passes the same way.
 
-Actualizar:
+Update:
 
 ```bash
-cd /opt/trell-mcp && git pull && docker compose up -d --build mcp
-curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8788/  # 405 = vivo
+cd <APP_DIR> && git pull && docker compose up -d --build mcp
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8788/  # 405 = alive
 ```
 
-Checklist pre-deploy (lección 2026-09-10: un filtro quedó sin commitear):
+Checklist pre-deploy (lesson learned: a filter once went out uncommitted):
 
-1. `git status --short -- apps/mcp apps/api` sin `M` pendientes de la rama.
-2. Post-deploy: probe de identidad (tokens para 2 emails → solo sus slugs).
+1. `git status --short -- apps/mcp apps/api` shows no pending changes.
+2. Post-deploy: identity probe (tokens for 2 emails → only their slugs).
 
 Sin Bearer → `401` + `WWW-Authenticate` (discovery OAuth, RFC 9728).
 

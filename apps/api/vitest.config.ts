@@ -4,15 +4,30 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const sdkAlias = {
+  "@trell/sdk": path.resolve(__dirname, "../sdk/src/index.ts"),
+};
+
 export default defineConfig({
-  resolve: {
-    alias: {
-      "@trell/sdk": path.resolve(__dirname, "../sdk/src/index.ts"),
-    },
-  },
   test: {
-    include: ["test/**/*.test.ts"],
-    environment: "node",
-    environmentMatchGlobs: [["test/**/*.browser.test.ts", "jsdom"]],
+    projects: [
+      {
+        resolve: { alias: sdkAlias },
+        test: {
+          name: "node",
+          include: ["test/**/*.test.ts"],
+          exclude: ["test/**/*.browser.test.ts"],
+          environment: "node",
+        },
+      },
+      {
+        resolve: { alias: sdkAlias },
+        test: {
+          name: "browser",
+          include: ["test/**/*.browser.test.ts"],
+          environment: "jsdom",
+        },
+      },
+    ],
   },
 });

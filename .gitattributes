@@ -1,0 +1,3 @@
+# Generated / vendored files — excluded from GitHub language stats
+apps/api/public/trell.js linguist-generated=true
+*.css linguist-vendored=true

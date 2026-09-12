@@ -255,6 +255,9 @@
   function observeForm(formEl) {
     if (trackedForms.has(formEl)) return;
     trackedForms.add(formEl);
+    // Per-form interaction clock (gapMs) + per-field focus/change state (hesitationMs).
+    var lastInteractAt = 0;
+    var fieldState = new WeakMap();
 
     // form_view: when the form becomes visible
     if ("IntersectionObserver" in window) {
@@ -272,6 +275,8 @@
     // field focus → form_start
     var fields = formEl.querySelectorAll("input, textarea, select");
     Array.prototype.forEach.call(fields, function (field) {
+      var fieldName = field.getAttribute("name") || field.getAttribute("id") || field.type || "field";
+      fieldState.set(field, { focusTs: 0, changed: false });
       field.addEventListener("focus", function () {
         if (!formStartTimes.has(formEl)) {
           formStartTimes.set(formEl, Date.now());
@@ -281,20 +286,36 @@
         }
       });
 
-      // field_interaction
+      // field_interaction (focus carries gapMs; change adds hesitationMs on first edit)
       field.addEventListener("focus", function () {
+        var now = Date.now();
+        var st = fieldState.get(field) || { focusTs: 0, changed: false };
+        if (!st.focusTs) { st.focusTs = now; fieldState.set(field, st); }
         var ev = buildFormBase(formEl);
         ev.type = "field_interaction";
-        ev.field = field.getAttribute("name") || field.getAttribute("id") || field.type || "field";
+        ev.field = fieldName;
         ev.interaction = "focus";
+        ev.properties = ev.properties || {};
+        if (lastInteractAt) ev.properties.gapMs = now - lastInteractAt;
+        lastInteractAt = now;
         send(ev);
       });
 
       field.addEventListener("change", function () {
+        var now = Date.now();
+        var st = fieldState.get(field) || { focusTs: 0, changed: false };
         var ev = buildFormBase(formEl);
         ev.type = "field_interaction";
-        ev.field = field.getAttribute("name") || field.getAttribute("id") || field.type || "field";
+        ev.field = fieldName;
         ev.interaction = "change";
+        ev.properties = ev.properties || {};
+        if (st.focusTs && !st.changed) {
+          ev.properties.hesitationMs = Math.max(0, now - st.focusTs);
+          st.changed = true;
+          fieldState.set(field, st);
+        }
+        if (lastInteractAt) ev.properties.gapMs = now - lastInteractAt;
+        lastInteractAt = now;
         send(ev);
       });
     });

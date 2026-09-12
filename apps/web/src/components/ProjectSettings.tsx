@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Icon } from "./Icon";
+import { SDK_URL } from "@/lib/publicUrls";
 
 type SettingsSection = "general" | "billing" | "domains" | "api" | "tracking" | "webhooks";
 
@@ -160,7 +161,7 @@ export function ProjectSettings({
 
   const { project, installation, usage } = status;
   const stepDone = [true, project.domains.length > 0, true, installation.connected, installation.connected];
-  const snippet = `<script defer src="https://cdn.trell.dev/sdk.js" data-project="${project.pk}" data-domain="${project.domains[0] ?? "yourdomain.com"}"></script>`;
+  const snippet = `<script defer src="${SDK_URL}" data-project="${project.pk}" data-domain="${project.domains[0] ?? "yourdomain.com"}"></script>`;
   const usagePct = Math.min((usage.events / (usage.limit || 1)) * 100, 100);
 
   return (

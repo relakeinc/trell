@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TrellLogo } from "./TrellLogo";
+import { SDK_URL } from "@/lib/publicUrls";
 
 type Keys = { pk: string; sk: string };
 
 const SDK_SNIPPET = (pk: string, domain: string) =>
-  `<script\n  defer\n  src="https://cdn.trell.dev/sdk.js"\n  data-project="${pk}"\n  data-domain="${domain}"\n></script>`;
+  `<script\n  defer\n  src="${SDK_URL}"\n  data-project="${pk}"\n  data-domain="${domain}"\n></script>`;
 
 export function OnboardingFlow({ initialStep }: { initialStep: number }) {
   const router = useRouter();

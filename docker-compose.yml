@@ -62,6 +62,13 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      # NEXT_PUBLIC_* vars are baked into the Next.js build. Defaults serve
+      # local testing; public deployments MUST override the SDK/ingest URLs
+      # with their own API origin (see .env.example).
+      args:
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_SDK_URL: ${NEXT_PUBLIC_SDK_URL:-http://localhost:8787/sdk/trell.js}
+        NEXT_PUBLIC_INGEST_URL: ${NEXT_PUBLIC_INGEST_URL:-http://localhost:8787/v1/events}
     environment:
       DATABASE_URL: ${DATABASE_URL}
       AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}

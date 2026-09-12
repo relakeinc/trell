@@ -1,4 +1,4 @@
-# Ask Trell — webchat del dashboard
+# Yoi — webchat del dashboard
 
 Widget flotante en los workspaces (`[slug]`), potenciado por OpenRouter
 (modelos `:free`) y las 28 tools del MCP. Sin infra nueva: corre en el

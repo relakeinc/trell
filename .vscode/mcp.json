@@ -1,18 +1,16 @@
 {
-  // Trell MCP vía mcp-remote (stdio): el proxy abre solo el navegador para el
-  // login con Google, guarda los tokens y los refresca. Sin keys a mano.
-  // Si pide login de nuevo o algo se atasca: borra %USERPROFILE%\.mcp-auth
-  // y reinicia el servidor.
+  // Trell MCP over local stdio. First build the API so dist/mcp-stdio.js exists:
+  //   pnpm --filter @trell/api build
+  // MCP_DEMO=1 runs with ephemeral in-memory data (no DB needed).
+  // Against your own deployment, replace this server with an http entry
+  // pointing at your MCP URL + Authorization header.
   "servers": {
     "trell": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@automattic/mcp-remote",
-        "https://mcp.relake.co",
-        "--transport",
-        "http-only"
-      ]
+      "command": "node",
+      "args": ["apps/api/dist/mcp-stdio.js"],
+      "env": {
+        "MCP_DEMO": "1"
+      }
     }
   }
 }

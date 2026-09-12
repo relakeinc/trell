@@ -4,6 +4,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { auth } from "@/lib/auth";
 import { signIdentityJwt } from "@/lib/chatIdentity";
 import {
+  answerLocalIntent,
   buildSystemPrompt,
   parseChatBody,
   parseOpenAIChunk,
@@ -110,7 +111,7 @@ async function postChatCompletions(args: {
       authorization: `Bearer ${args.provider.apiKey}`,
       "content-type": "application/json",
       "HTTP-Referer": args.origin,
-      "X-Title": "Trell Ask",
+      "X-Title": "Yoi",
     },
     body: JSON.stringify(body),
   });
@@ -164,6 +165,24 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "bad request" }), { status: 400 });
   }
+  // Small talk never touches MCP or the model: instant canned reply.
+  const local = answerLocalIntent(history[history.length - 1]!.text);
+  if (local) {
+    const sseHeaders = {
+      "content-type": "text/event-stream",
+      "cache-control": "no-cache, no-transform",
+      connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    };
+    const body = new ReadableStream<string>({
+      start(controller) {
+        controller.enqueue(`data: ${JSON.stringify({ t: "text", d: local })}\n\n`);
+        controller.enqueue(`data: ${JSON.stringify({ t: "done" })}\n\n`);
+        controller.close();
+      },
+    });
+    return new Response(body, { headers: sseHeaders });
+  }
   const stream = new ReadableStream<string>({
     async start(controller) {
       const mcp = new Client({ name: "trell-webchat", version: "0.0.0" });
@@ -192,7 +211,15 @@ export async function POST(req: NextRequest) {
         }
         const tools = toOpenAITools(declarations);
 
-        const messages = toOpenAIMessages(buildSystemPrompt({ workspaceSlug: slug, userEmail: email, mode }), history);
+        const messages = toOpenAIMessages(
+          buildSystemPrompt({
+            workspaceSlug: slug,
+            userEmail: email,
+            mode,
+            today: new Date().toISOString().slice(0, 10),
+          }),
+          history,
+        );
         const origin = req.nextUrl.origin;
         let reasoningOff = false;
 

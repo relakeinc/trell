@@ -60,8 +60,13 @@ docker compose up -d --build
 docker compose ps
 docker compose logs -f api web
 
-# 5) smoke (opcional)
-./scripts/selfhost-smoke.sh
+# 5) smoke (opcional, mismos pasos que el workflow "Self-host smoke" en CI)
+# health → proyecto(pk/sk) → ingestión → analytics → web responde
+curl -sf http://localhost:8787/health && \
+curl -sf -X POST http://localhost:8787/v1/projects \
+  -H "authorization: Bearer $TRELL_ADMIN_KEY" \
+  -H 'content-type: application/json' \
+  -d '{"name":"Smoke","domains":["example.com"]}'
 ```
 
 ## 3. Google OAuth
@@ -88,8 +93,9 @@ curl -X POST http://localhost:8787/v1/projects \
 
 **Instala el SDK** en tu sitio (ver `docs/sdk-contract.md`):
 ```html
-<script defer src="https://cdn.../sdk.js" data-project="pk_..." data-domain="example.com"></script>
+<script defer src="<NEXT_PUBLIC_SDK_URL>" data-project="pk_..." data-domain="example.com"></script>
 ```
+(por defecto apunta al SaaS; en self-host pon tu API en `NEXT_PUBLIC_SDK_URL`)
 
 **Ingesta** (pública, `pk`): `POST /v1/events` (batch). **Analytics** (privada,
 `sk`): `GET /v1/projects/:id/{stats|series|breakdown|forms|events}`. El dashboard
@@ -114,7 +120,8 @@ npx prisma migrate dev --name baseline     # genera prisma/migrations
 - Volumen `pg_data` persiste Postgres.
 
 ## 7. Smoke
-`./scripts/selfhost-smoke.sh` valida el flujo completo headless:
+El workflow "Self-host smoke" (`.github/workflows/selfhost-smoke.yml`, corre en
+CI con cada push a `main`) valida el flujo completo headless:
 `healthy → api /health → proyecto(pk/sk) → ingestión → evento en Postgres (analytics) → web responde`.
 
 ## 8. Notas / límites de esta versión

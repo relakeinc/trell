@@ -11,6 +11,9 @@ interface FormState {
   startedAt: number | null;
   succeeded: boolean;
   lastField: Map<string, number>;
+  focusAt: Map<string, number>;
+  changedFields: Set<string>;
+  lastInteractAt: number | null;
   disposers: (() => void)[];
 }
 
@@ -28,7 +31,7 @@ export function attachAuto(win: Window, emitter: AutoEmitter, opts: { autoDetect
   const states = new Map<string, FormState>();
 
   function createState(element: HTMLElement, config: FormConfig): FormState {
-    return { config, element, startedAt: null, succeeded: false, lastField: new Map(), disposers: [] };
+    return { config, element, startedAt: null, succeeded: false, lastField: new Map(), focusAt: new Map(), changedFields: new Set(), lastInteractAt: null, disposers: [] };
   }
 
   function markStart(state: FormState): void {
@@ -43,12 +46,23 @@ export function attachAuto(win: Window, emitter: AutoEmitter, opts: { autoDetect
   function throttleField(state: FormState, input: HTMLElement, interaction: "focus" | "change"): void {
     const name = (input as HTMLInputElement).name || input.id || "";
     const now = Date.now();
+    if (interaction === "focus" && !state.focusAt.has(name)) state.focusAt.set(name, now);
     const last = state.lastField.get(name);
     if (last != null && now - last < FIELD_THROTTLE_MS) return;
     state.lastField.set(name, now);
+    // gapMs: ms since the previous tracked interaction in this form.
+    // hesitationMs: focus → first change per field ("thinking time").
+    const props: Record<string, unknown> = {};
+    if (state.lastInteractAt != null) props["gapMs"] = now - state.lastInteractAt;
+    if (interaction === "change" && !state.changedFields.has(name)) {
+      const focusedAt = state.focusAt.get(name);
+      if (focusedAt != null) props["hesitationMs"] = Math.max(0, now - focusedAt);
+      state.changedFields.add(name);
+    }
+    state.lastInteractAt = now;
     emitter.trackEvent("field_interaction", {
       form: state.config,
-      extra: { field: name, interaction },
+      extra: { field: name, interaction, properties: props },
     });
   }
 

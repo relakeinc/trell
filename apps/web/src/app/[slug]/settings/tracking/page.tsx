@@ -6,6 +6,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { Icon } from "@/components/Icon";
 import { useProject } from "../_components/ProjectContext";
+import { SDK_URL, INGEST_URL } from "@/lib/publicUrls";
 
 export default function TrackingSettingsPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -18,12 +19,11 @@ export default function TrackingSettingsPage() {
   const isPkReady = Boolean(project?.pk);
   const hasDomains = (project?.domains.length ?? 0) > 0;
   const script = `<!-- Trell Tracking -->
-<script src="https://trepi.relake.co/sdk/trell.js"
+<script src="${SDK_URL}"
   data-pk="${pk}"
   data-auto-track="true"
   defer></script>`;
 
-  const INGEST_URL = "https://trepi.relake.co/v1/events";
   const serverEvent = `{
   "v": 1,
   "event_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",

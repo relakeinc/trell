@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildSystemPrompt, findPageMentions, parseChatBody, parseOpenAIChunk, parseSSEEvent, prettyToolName, toDisplayOutput, toFunctionDeclarations, toOpenAIMessages, toOpenAITools, CHAT_COMMANDS, CHAT_PAGES } from "../src/lib/chatAgent";
+import { buildSystemPrompt, findPageMentions, parseChatBody, parseOpenAIChunk, parseSSEEvent, prettyToolName, toDisplayOutput, toFunctionDeclarations, toOpenAIMessages, toOpenAITools, CHAT_COMMANDS, CHAT_PAGES, answerLocalIntent } from "../src/lib/chatAgent";
 import { signIdentityJwt } from "../src/lib/chatIdentity";
 
 describe("chatAgent helpers", () => {
@@ -8,6 +8,13 @@ describe("chatAgent helpers", () => {
     expect(p).toContain("store");
     expect(p).toContain("confirm:true");
     expect(p).toContain("emojis");
+  });
+
+  it("identifies the assistant as Yoi, never Ask Trell", () => {
+    const p = buildSystemPrompt({ workspaceSlug: "store", userEmail: "a@b.c", today: "2026-09-12" });
+    expect(p).toContain("Yoi");
+    expect(p).not.toContain("Ask Trell");
+    expect(p).toContain("2026-09-12");
   });
 
   it("trims history to non-empty OpenAI messages with system first", () => {
@@ -145,6 +152,28 @@ describe("chatAgent helpers", () => {
     expect(findPageMentions("@events and @events again + @bogus")).toEqual(["events"]);
     expect(findPageMentions("no mentions here")).toEqual([]);
     expect(findPageMentions("email me@example.com")).toEqual([]);
+  });
+
+  it("answers small talk locally without AI", () => {
+    expect(answerLocalIntent("hola")).toContain("Yoi");
+    expect(answerLocalIntent("¡Hola, Yoi!")).toContain("Yoi");
+    expect(answerLocalIntent("hello")).toMatch(/Hey|Yoi/);
+    expect(answerLocalIntent("gracias")).toMatch(/De nada/);
+    expect(answerLocalIntent("thanks!")).toMatch(/Anytime/);
+    expect(answerLocalIntent("adiós")).toMatch(/Hasta luego/);
+    expect(answerLocalIntent("quién eres?")).toContain("Yoi");
+    expect(answerLocalIntent("hola, quién eres")).toContain("Yoi");
+    expect(answerLocalIntent("qué puedes hacer")).toMatch(/Do/);
+    expect(answerLocalIntent("what can you do")).toMatch(/Do/);
+  });
+
+  it("sends real content to the model, not the local matcher", () => {
+    expect(answerLocalIntent("hola, dame el resumen semanal")).toBeNull();
+    expect(answerLocalIntent("help me create a funnel")).toBeNull();
+    expect(answerLocalIntent("gracias por el resumen, ahora dime las conversiones")).toBeNull();
+    expect(answerLocalIntent("history of my events")).toBeNull();
+    expect(answerLocalIntent("")).toBeNull();
+    expect(answerLocalIntent("   ")).toBeNull();
   });
 });
 

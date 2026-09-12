@@ -857,6 +857,14 @@ body {
   transform: translateX(2px);
 }
 
+/* Opt out of the hover shift (keeps the bg highlight). */
+.trell-table-plain tbody tr {
+  transition: background-color 0.1s ease;
+}
+.trell-table-plain tbody tr:hover {
+  transform: none;
+}
+
 /* ── Skeleton loading pulse ──────────────────────────────── */
 @keyframes trell-skeleton-pulse {
   0%, 100% { opacity: 1; }

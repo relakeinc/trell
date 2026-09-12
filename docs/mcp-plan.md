@@ -117,8 +117,7 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
   Deps: `@modelcontextprotocol/sdk@1.30.0`, `zod@3`, `@trell/api` (repos),
   `@prisma/client` (reutiliza el cliente ya generado; NO correr
   `prisma generate` en `apps/mcp` — el engine DLL lo bloquea el api en dev).
-- **Fase 2 — lectura completa**: ✅ HECHA Y DESPLEGADA (2026-09-09, rama
-  `feat/mcp`). 14 tools (`get_series`, `get_breakdown`, `get_forms`,
+- **Fase 2 — lectura completa**: ✅ HECHA Y DESPLEGADA (2026-09-09). 14 tools (`get_series`, `get_breakdown`, `get_forms`,
   `query_events`, `list/get_funnel`, `list_views`, `list_webhooks`,
   `list_utm_templates`, `list_api_keys` + las 4 de Fase 1), 3 resources
   (`trell://projects`, `trell://projects/{slug}/usage`,
@@ -134,8 +133,8 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
   9728, JWT HS256 stateless (codes 10min, access 12h, refresh 30d). Bearer =
   service key (modo servicio) o access token (identidad → membresías reales;
   `list_projects` solo devuelve tus workspaces). Tests MCP 42/42. Vars en
-  `/opt/trell-mcp/.env`: `GOOGLE_CLIENT_ID/SECRET` (del stack vivo),
-  `MCP_OAUTH_SECRET`, `MCP_PUBLIC_URL`, `MCP_ALLOWED_EMAILS` opcional.
+  el `.env` del stack MCP: `GOOGLE_CLIENT_ID/SECRET` (los mismos del
+  dashboard), `MCP_OAUTH_SECRET`, `MCP_PUBLIC_URL`, `MCP_ALLOWED_EMAILS` opcional.
 - **Fase 3 — escrituras**: ✅ HECHA Y DESPLEGADA (2026-09-10). 28 tools:
   funnels CRUD, UTM CRUD, add/remove domain (normalizados), webhooks
   create/delete (URL validada), `create_api_key` (secreto una vez),
@@ -151,8 +150,8 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
   ver abajo). Listener `createMcpHttpListener` (stateless, un transport por
   request — el transport compartido del SDK falla en la 2ª petición),
   Bearer `MCP_API_KEY` (fail-closed), `MCP_ONLY=1` para contenedor dedicado.
-  Stack independiente `/opt/trell-mcp` en el VPS (misma DB vía red
-  `trell_default`, contenedores vivos intactos): build OK, `GET→405`,
+  Stack independiente `<APP_DIR>` en el servidor (misma DB vía la red del
+  compose principal, sin tocar los contenedores en servicio): build OK, `GET→405`,
   sin-auth→401, `tracking_checkup` con datos reales OK.
   - Package graph acíclico: `apps/mcp` define `src/store.ts` (contrato
     mínimo) y NO depende de `@trell/api`; los runners (`src/mcp-stdio.ts`,
@@ -182,21 +181,21 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
 Elegir plataforma (Telegram/Discord/WhatsApp/webchat), identidad del bot,
 formato de respuestas (idioma, resúmenes) y hosting. El MCP no cambia por esto.
 
-## 9. Deploy en VPS (2026-09-09)
+## 9. Deploy (ejemplo con subdominio propio)
 
-- Subdominio: **`mcp.relake.co`** (convención `trell.`/`trepi.`/`mcp.`).
-- Stack: `/opt/trell-mcp` (rama `feat/mcp`, commits `cb9bbc4`, `52549ff`),
-  compose propio, red `trell_default`, `.env` 600 con `DATABASE_URL`,
-  `MCP_ONLY=1`, `MCP_API_KEY` (generada en el servidor),
-  `MCP_ALLOWED_SLUGS=*`, `MCP_ALLOW_DESTRUCTIVE=false`.
-- nginx: `/etc/nginx/sites-{available,enabled}/mcp.relake.co` → `127.0.0.1:8788`
-  (HTTP por ahora). Actualizar: `cd /opt/trell-mcp && git pull && docker compose up -d --build mcp`.
-- ✅ TLS ACTIVO (2026-09-09): `A mcp.relake.co` resuelve (vía proxy
-  Cloudflare); cert expandido `trell.relake.co` (+`trepi`, +`mcp`, válido 89
-  días). Smoke público OK: sin-auth→401, `get_stats` con datos reales por
-  `https://mcp.relake.co`.
-- Clave del bot: leer `MCP_API_KEY` de `/opt/trell-mcp/.env` (root). Endpoint
-  para el bot: `https://mcp.relake.co` (tras TLS) con `Authorization: Bearer`.
+- Subdominio: **`mcp.example.com`**.
+- Stack: `<APP_DIR>` (rama `main`), compose propio, `.env` 600 con
+  `DATABASE_URL`, `MCP_ONLY=1`, `MCP_API_KEY` (generada con
+  `openssl rand -hex 32`), `MCP_ALLOWED_SLUGS=*`,
+  `MCP_ALLOW_DESTRUCTIVE=false`.
+- nginx: `mcp.example.com` → `127.0.0.1:8788`. Actualizar:
+  `cd <APP_DIR> && git pull && docker compose up -d --build mcp`.
+- ✅ TLS: el `A mcp.example.com` debe resolver a tu servidor; cert
+  expandido para cubrir el subdominio. Smoke público OK: sin-auth→401,
+  `get_stats` con datos reales por `https://mcp.example.com`.
+- Clave del bot: lee `MCP_API_KEY` de tu `.env` (nunca la commitees).
+  Endpoint para el bot: `https://mcp.example.com` con
+  `Authorization: Bearer`.
 
 ## 9. Notas de implementación (Fase 1)
 
