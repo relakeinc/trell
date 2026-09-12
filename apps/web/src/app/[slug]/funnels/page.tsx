@@ -69,11 +69,11 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
   },
 ];
 
-function TemplateCardShell({ eyebrow, onClick, disabled, children }: { eyebrow: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+function TemplateCardShell({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
   return (
     <div
       onClick={() => { if (!disabled) onClick(); }}
-      className={`group relative flex min-h-[300px] cursor-pointer flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition-shadow hover:shadow-md xl:aspect-[3/4] xl:min-h-0 ${disabled ? "pointer-events-none opacity-70" : ""}`}
+      className={`group relative flex h-[317px] w-full cursor-pointer flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition-shadow hover:shadow-md sm:w-[356px] sm:shrink-0 ${disabled ? "pointer-events-none opacity-70" : ""}`}
     >
       <div
         aria-hidden
@@ -83,40 +83,27 @@ function TemplateCardShell({ eyebrow, onClick, disabled, children }: { eyebrow: 
         aria-hidden
         className="absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(37,99,235,0.28),transparent_70%)]"
       />
-      <div className="relative flex flex-1 flex-col p-5">
+      <div className="relative flex flex-1 flex-col justify-end p-5">
         {children}
       </div>
-      <span className="absolute left-5 top-4 text-[0.625rem] font-semibold uppercase tracking-wide text-neutral-400">
-        {eyebrow}
-      </span>
     </div>
   );
 }
 
 function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTemplate) => void; creating: boolean; onAskYoi: () => void }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="flex flex-wrap gap-4">
       {FUNNEL_TEMPLATES.map((t) => (
-        <TemplateCardShell key={t.name} eyebrow="Template" onClick={() => onUse(t)} disabled={creating}>
-          <div className="flex size-10 items-center justify-center rounded-lg border border-neutral-200 bg-white text-trell-ink shadow-sm">
-            <Icon name={t.icon} size={20} />
-          </div>
-          <div className="mt-auto pt-8">
-            <p className="text-[15px] font-semibold text-trell-ink">{creating ? "Creating…" : t.name}</p>
-            <p className="mt-1 line-clamp-2 min-h-10 text-[13px] leading-snug text-trell-ink-subtle">{t.desc}</p>
-            <p className="mt-2 text-xs font-semibold text-blue-600">Use template →</p>
-          </div>
+        <TemplateCardShell key={t.name} onClick={() => onUse(t)} disabled={creating}>
+          <p className="text-[15px] font-semibold text-trell-ink">{creating ? "Creating…" : t.name}</p>
+          <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-trell-ink-subtle">{t.desc}</p>
+          <p className="mt-2 text-xs font-semibold text-blue-600">Use template →</p>
         </TemplateCardShell>
       ))}
-      <TemplateCardShell eyebrow="AI" onClick={onAskYoi}>
-        <div className="flex size-10 items-center justify-center rounded-lg border border-neutral-200 bg-white text-trell-ink shadow-sm">
-          <Icon name="magic-star" size={20} />
-        </div>
-        <div className="mt-auto pt-8">
-          <p className="text-[15px] font-semibold text-trell-ink">Generate with Yoi</p>
-          <p className="mt-1 line-clamp-2 min-h-10 text-[13px] leading-snug text-trell-ink-subtle">Describe the funnel you want and Yoi builds it for you.</p>
-          <p className="mt-2 text-xs font-semibold text-blue-600">Ask Yoi →</p>
-        </div>
+      <TemplateCardShell onClick={onAskYoi}>
+        <p className="text-[15px] font-semibold text-trell-ink">Generate with Yoi</p>
+        <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-trell-ink-subtle">Describe the funnel you want and Yoi builds it for you.</p>
+        <p className="mt-2 text-xs font-semibold text-blue-600">Ask Yoi →</p>
       </TemplateCardShell>
     </div>
   );
