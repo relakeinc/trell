@@ -73,7 +73,11 @@ function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTempl
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {FUNNEL_TEMPLATES.map((t) => (
-        <div key={t.name} className="flex flex-col overflow-hidden rounded-xl border border-trell-line bg-white">
+        <div
+          key={t.name}
+          onClick={() => { if (!creating) onUse(t); }}
+          className="flex cursor-pointer flex-col overflow-hidden rounded-xl border border-trell-line bg-white transition-shadow hover:shadow-md"
+        >
           <div className="flex h-24 items-center justify-center bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)]">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/40 text-trell-ink backdrop-blur-sm">
               <Icon name={t.icon} size={24} />
@@ -82,20 +86,23 @@ function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTempl
           <div className="flex flex-1 flex-col gap-1 p-4">
             <h3 className="text-sm font-semibold text-trell-ink">{t.name}</h3>
             <p className="text-xs leading-relaxed text-trell-ink-subtle">{t.desc}</p>
-            <p className="mt-1 text-[11px] font-medium text-trell-ink-muted">
+            <p className="mt-1 pb-3 text-[11px] font-medium text-trell-ink-muted">
               {t.steps.map((s) => s.label).join(" → ")}
             </p>
             <button
-              onClick={() => onUse(t)}
+              onClick={(e) => { e.stopPropagation(); onUse(t); }}
               disabled={creating}
-              className="trell-btn-secondary mt-3 h-9 justify-center text-xs disabled:opacity-50"
+              className="trell-btn-secondary mt-auto h-9 justify-center text-xs disabled:opacity-50"
             >
               {creating ? "Creating…" : "Use template"}
             </button>
           </div>
         </div>
       ))}
-      <div className="flex flex-col overflow-hidden rounded-xl border border-trell-line bg-white">
+      <div
+        onClick={onAskYoi}
+        className="flex cursor-pointer flex-col overflow-hidden rounded-xl border border-trell-line bg-white transition-shadow hover:shadow-md"
+      >
         <div className="flex h-24 items-center justify-center bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)]">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/40 text-trell-ink backdrop-blur-sm">
             <Icon name="magic-star" size={24} />
@@ -104,12 +111,12 @@ function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTempl
         <div className="flex flex-1 flex-col gap-1 p-4">
           <h3 className="text-sm font-semibold text-trell-ink">Generate with Yoi</h3>
           <p className="text-xs leading-relaxed text-trell-ink-subtle">Describe the funnel you want and Yoi builds it for you.</p>
-          <p className="mt-1 text-[11px] font-medium text-trell-ink-muted">
+          <p className="mt-1 pb-3 text-[11px] font-medium text-trell-ink-muted">
             e.g. “track signup drop-off”
           </p>
           <button
-            onClick={onAskYoi}
-            className="trell-btn-secondary mt-3 h-9 justify-center text-xs"
+            onClick={(e) => { e.stopPropagation(); onAskYoi(); }}
+            className="trell-btn-secondary mt-auto h-9 justify-center text-xs"
           >
             Ask Yoi
           </button>
