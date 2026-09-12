@@ -372,8 +372,8 @@ export default function FunnelsPage() {
 
       {!activeFunnel && !builderOpen && !pendingTemplate && savedFunnels.length === 0 && (
         <div className="space-y-6">
-          <div className="flex flex-col items-center justify-center rounded-xl border border-trell-line bg-white px-6 py-16 text-center">
-            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-trell-line bg-white text-trell-ink-subtle">
+          <div className="flex min-h-[380px] flex-col items-center justify-center rounded-xl border border-trell-line bg-white px-6 py-24 text-center">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-trell-line bg-white text-trell-ink-subtle">
               <Icon name="funnels" size={24} />
             </div>
             <h2 className="text-base font-semibold text-trell-ink">No funnels yet</h2>
