@@ -12,23 +12,19 @@ export const metadata: Metadata = {
 export default function RegisterPage() {
   return (
     <main className="force-light grid min-h-dvh lg:grid-cols-[60%_40%]">
-      {/* Left — form panel */}
       <div className="relative flex flex-col bg-white">
-        {/* Mobile header */}
         <header className="flex items-center justify-between px-6 pt-6 lg:hidden">
           <Link href="/">
             <TrellLogo className="h-6 w-auto" />
           </Link>
         </header>
 
-        {/* Desktop logo */}
         <div className="hidden px-8 pt-6 lg:block">
           <Link href="/">
             <TrellLogo className="h-7 w-auto" />
           </Link>
         </div>
 
-        {/* Form */}
         <div className="flex flex-1 items-center justify-center px-6 pb-12">
           <div className="w-full max-w-[400px]">
             <h1 className="mb-6 text-center text-[26px] font-semibold tracking-tight text-zinc-900">
@@ -40,14 +36,12 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Right — brand panel (blue with dotted globe) */}
       <div className="relative hidden overflow-hidden bg-[#2563eb] lg:block">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-[72%] bg-linear-to-r from-[#1d4ed8]/90 via-[#2563eb]/85 to-transparent"
         />
 
-        {/* Shapes image */}
         <Image
           src="/img/img_shapes.png"
           alt=""

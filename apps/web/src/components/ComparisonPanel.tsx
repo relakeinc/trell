@@ -79,10 +79,7 @@ export function ComparisonPanel({
           const fmt = (v: number | null) => (format === "rate" ? fmtPct(v) : fmtCount(v));
           const up = d?.direction === "up";
           const down = d?.direction === "down";
-          const pctStr =
-            d && d.percentage != null
-              ? `${d.percentage > 0 ? "+" : ""}${d.percentage.toFixed(1)}%`
-              : null;
+          const pctStr = d && d.percentage != null ? `${d.percentage > 0 ? "+" : ""}${d.percentage.toFixed(1)}%` : null;
           return (
             <div key={key} className="group" title={`${label}: ${fmt(b)} → ${fmt(c)}`}>
               <div className="mb-1.5 flex items-baseline justify-between gap-3">
@@ -93,7 +90,11 @@ export function ComparisonPanel({
                   {d ? (
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${
-                        up ? "bg-green-50 text-green-700" : down ? "bg-red-50 text-red-600" : "bg-neutral-100 text-neutral-500"
+                        up
+                          ? "bg-green-50 text-green-700"
+                          : down
+                            ? "bg-red-50 text-red-600"
+                            : "bg-neutral-100 text-neutral-500"
                       }`}
                     >
                       {up ? "↗" : down ? "↘" : "→"}

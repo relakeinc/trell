@@ -23,10 +23,12 @@ export function sendOk(c: Context, status: number, body: unknown): Response {
 }
 
 export const badRequest = (c: Context, msg: string, code = "invalid_request") => sendError(c, 400, code, msg);
-export const unauthorized = (c: Context, msg = "invalid_api_key", code = "unauthorized") => sendError(c, 401, code, msg);
+export const unauthorized = (c: Context, msg = "invalid_api_key", code = "unauthorized") =>
+  sendError(c, 401, code, msg);
 export const forbidden = (c: Context, msg = "origin_not_allowed", code = "forbidden") => sendError(c, 403, code, msg);
 export const tooMany = (c: Context, retryAfter: number, msg = "rate_limited", code = "rate_limited") => {
   c.header("Retry-After", String(Math.ceil(retryAfter / 1000)));
   return sendError(c, 429, code, msg);
 };
-export const payloadTooLarge = (c: Context, msg = "payload_too_large", code = "payload_too_large") => sendError(c, 413, code, msg);
+export const payloadTooLarge = (c: Context, msg = "payload_too_large", code = "payload_too_large") =>
+  sendError(c, 413, code, msg);

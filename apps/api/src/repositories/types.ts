@@ -5,8 +5,8 @@ export interface ProjectRecord {
   slug: string;
   plan: string;
   publishableKey: string; // pk
-  apiKeyHash: string;     // sha256(sk)
-  domains: string;        // comma-separated allowed origins
+  apiKeyHash: string; // sha256(sk)
+  domains: string; // comma-separated allowed origins
   createdAt: Date;
 }
 
@@ -38,7 +38,7 @@ export interface StoredEvent {
   formId: string | null;
   formName: string | null;
   properties: string | null; // JSON
-  raw: string | null;        // JSON (original envelope)
+  raw: string | null; // JSON (original envelope)
 }
 
 /** Filter applied before analytics aggregation (pushed down to the repo). */
@@ -175,7 +175,6 @@ export interface Repo {
   listUtmTemplates(projectId: string): Promise<UtmTemplateMeta[]>;
   listApiKeys(projectId: string): Promise<ApiKeyMeta[]>;
 
-  // Identity
   findUserByEmail(email: string): Promise<UserRef | null>;
   listMemberships(userId: string): Promise<MembershipRef[]>;
 
@@ -211,14 +210,12 @@ export interface Repo {
   deleteProject(id: string): Promise<void>;
   rotateProjectSecret(id: string, skHash: string): Promise<void>;
 
-  // Funnel CRUD
   listFunnels(projectId: string): Promise<FunnelRecord[]>;
   getFunnel(id: string): Promise<FunnelRecord | null>;
   createFunnel(input: CreateFunnelInput): Promise<FunnelRecord>;
   updateFunnel(id: string, input: UpdateFunnelInput): Promise<FunnelRecord>;
   deleteFunnel(id: string): Promise<void>;
 
-  // SavedView CRUD
   listSavedViews(projectId: string): Promise<SavedViewRecord[]>;
   getSavedView(id: string): Promise<SavedViewRecord | null>;
   createSavedView(input: CreateSavedViewInput): Promise<SavedViewRecord>;

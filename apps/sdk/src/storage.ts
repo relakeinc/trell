@@ -33,10 +33,7 @@ function safeSessionStorage(win: Window): Storage | null {
   }
 }
 
-export function createBrowserStore(
-  win: Window,
-  opts: { sessionOnly: boolean },
-): KeyValueStore {
+export function createBrowserStore(win: Window, opts: { sessionOnly: boolean }): KeyValueStore {
   const storage = opts.sessionOnly ? safeSessionStorage(win) : safeLocalStorage(win);
   return {
     get: (k) => {
@@ -67,10 +64,7 @@ export function createBrowserStore(
  * Decide whether persistent identifiers are allowed based on privacy mode,
  * DNT/GPC signals and consent. Returns the store plus whether it persists.
  */
-export function resolveStore(
-  win: Window,
-  config: TrellConfig,
-): { store: KeyValueStore; persistent: boolean } {
+export function resolveStore(win: Window, config: TrellConfig): { store: KeyValueStore; persistent: boolean } {
   const { privacy } = config;
 
   const respectsDoNotTrack =
@@ -78,8 +72,7 @@ export function resolveStore(
     (navigator.doNotTrack === "1" ||
       (navigator as unknown as { globalPrivacyControl?: boolean }).globalPrivacyControl === true);
 
-  const mayPersist =
-    privacy !== "strict" && !respectsDoNotTrack && (privacy !== "consent" || config.consent !== false);
+  const mayPersist = privacy !== "strict" && !respectsDoNotTrack && (privacy !== "consent" || config.consent !== false);
 
   if (mayPersist) {
     return { store: createBrowserStore(win, { sessionOnly: false }), persistent: true };

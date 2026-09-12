@@ -47,7 +47,6 @@ export const POST = Webhooks({
       return;
     }
 
-    // Fallback: find the account by subscription id
     const user = await prisma.user.findFirst({ where: { subscriptionId: sub.id } });
     if (!user) return;
 
@@ -97,10 +96,12 @@ export const POST = Webhooks({
 async function pruneOwnerMeta(userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { plan: true, planExpiresAt: true } });
   if (!user) return;
-  await prisma.projectUser.findMany({ where: { userId, role: "owner" }, select: { projectId: true } }).then(async (members) => {
-    await prisma.project.updateMany({
-      where: { id: { in: members.map((m) => m.projectId) } },
-      data: { plan: user.plan ?? "free", planExpiresAt: user.planExpiresAt },
+  await prisma.projectUser
+    .findMany({ where: { userId, role: "owner" }, select: { projectId: true } })
+    .then(async (members) => {
+      await prisma.project.updateMany({
+        where: { id: { in: members.map((m) => m.projectId) } },
+        data: { plan: user.plan ?? "free", planExpiresAt: user.planExpiresAt },
+      });
     });
-  });
 }

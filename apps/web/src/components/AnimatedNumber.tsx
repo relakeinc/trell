@@ -30,7 +30,9 @@ export function AnimatedNumber({
 
     ref.current = requestAnimationFrame(tick);
     prev.current = to;
-    return () => { if (ref.current) cancelAnimationFrame(ref.current); };
+    return () => {
+      if (ref.current) cancelAnimationFrame(ref.current);
+    };
   }, [value, duration]);
 
   return <span className={className}>{display.toLocaleString()}</span>;

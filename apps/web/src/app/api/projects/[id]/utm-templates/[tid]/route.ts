@@ -8,10 +8,7 @@ async function canAccess(projectId: string, userId: string): Promise<boolean> {
   return svc.canAccessProject(userId, projectId);
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string; tid: string }> }
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string; tid: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
@@ -51,10 +48,7 @@ export async function PATCH(
   return NextResponse.json({ template });
 }
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: Promise<{ id: string; tid: string }> }
-) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string; tid: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 

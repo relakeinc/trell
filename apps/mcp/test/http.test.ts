@@ -121,9 +121,7 @@ describe("MCP HTTP listener", () => {
     const { url, close } = await startServer();
     try {
       const meta = await (await fetch(`${url}/.well-known/oauth-protected-resource`)).json();
-      expect((meta as { authorization_servers: string[] }).authorization_servers).toEqual([
-        "https://mcp.relake.co",
-      ]);
+      expect((meta as { authorization_servers: string[] }).authorization_servers).toEqual(["https://mcp.relake.co"]);
       const as = await (await fetch(`${url}/.well-known/oauth-authorization-server`)).json();
       expect((as as { registration_endpoint: string }).registration_endpoint).toContain("/register");
     } finally {

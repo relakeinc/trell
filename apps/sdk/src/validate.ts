@@ -2,9 +2,15 @@ import type { EventPayload, EventType, FormContext } from "@trell/shared";
 
 /** Tiny internal validator (not a dependency) — see docs/sdk-contract.md §11. */
 export function isEventType(value: string): value is EventType {
-  return ["form_view", "form_start", "field_interaction", "form_submit", "form_success", "form_abandon", "cta_click"].includes(
-    value,
-  );
+  return [
+    "form_view",
+    "form_start",
+    "field_interaction",
+    "form_submit",
+    "form_success",
+    "form_abandon",
+    "cta_click",
+  ].includes(value);
 }
 
 export function validateEvent(event: EventPayload): boolean {
@@ -22,7 +28,14 @@ export function validateEvent(event: EventPayload): boolean {
   if (!event.properties || typeof event.properties !== "object") return false;
 
   const type = event.type;
-  const e = event as unknown as { field?: string; interaction?: string; valid?: boolean; durationMs?: number; cta?: string; form?: FormContext };
+  const e = event as unknown as {
+    field?: string;
+    interaction?: string;
+    valid?: boolean;
+    durationMs?: number;
+    cta?: string;
+    form?: FormContext;
+  };
   const form = e.form;
 
   switch (type) {
@@ -40,7 +53,6 @@ export function validateEvent(event: EventPayload): boolean {
     case "form_start":
       return !!form?.id;
     default:
-      // custom event: only the base contract applies
       return true;
   }
 }

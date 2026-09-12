@@ -73,12 +73,13 @@ export function MobileShell({
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [sidebarOpen]);
 
   return (
     <>
-      {/* Mobile hamburger */}
       <button
         onClick={openSidebar}
         className="fixed left-3 top-3 z-50 flex size-9 items-center justify-center rounded-lg bg-neutral-100 text-neutral-600 transition-colors hover:bg-neutral-200 md:hidden"
@@ -87,11 +88,15 @@ export function MobileShell({
         <Icon name="menu-01" size={18} />
       </button>
 
-      {/* Mobile sidebar overlay */}
       {t.mounted && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className={`absolute inset-0 bg-black/40 ${t.closing ? "trell-fade-out" : "trell-fade-in"}`} onClick={closeSidebar} />
-          <div className={`absolute inset-y-0 left-0 flex w-[280px] flex-col overflow-hidden bg-neutral-100 py-2 pr-2 ${t.closing ? "trell-drawer-left-out" : "trell-drawer-left-in"}`}>
+          <div
+            className={`absolute inset-0 bg-black/40 ${t.closing ? "trell-fade-out" : "trell-fade-in"}`}
+            onClick={closeSidebar}
+          />
+          <div
+            className={`absolute inset-y-0 left-0 flex w-[280px] flex-col overflow-hidden bg-neutral-100 py-2 pr-2 ${t.closing ? "trell-drawer-left-out" : "trell-drawer-left-in"}`}
+          >
             <ProjectSidebar
               projectSlug={projectSlug}
               projectName={projectName}

@@ -13,6 +13,13 @@ RUN pnpm install --frozen-lockfile
 # Generate Prisma client for the web app (schema copied from api)
 RUN pnpm --filter @trell/web exec prisma generate
 
+# NEXT_PUBLIC_* are baked into the client bundle at build time.
+# docker-compose.yml passes them as build args (see .env.example).
+ARG NEXT_PUBLIC_BASE_URL=http://localhost:3000
+ARG NEXT_PUBLIC_SDK_URL=http://localhost:8787/sdk/trell.js
+ARG NEXT_PUBLIC_INGEST_URL=http://localhost:8787/v1/events
+ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL NEXT_PUBLIC_SDK_URL=$NEXT_PUBLIC_SDK_URL NEXT_PUBLIC_INGEST_URL=$NEXT_PUBLIC_INGEST_URL
+
 # Build shared (types/constants), generate the Prisma client (schema lives in apps/api),
 # then build the Next.js dashboard.
 RUN pnpm --filter @trell/shared build

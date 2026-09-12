@@ -4,13 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 /** Global route error boundary: friendly retry instead of a blank crash screen. */
-export default function GlobalError({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error("[trell] route error", error);
   }, [error]);

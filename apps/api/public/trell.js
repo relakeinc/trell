@@ -11,10 +11,12 @@
   "use strict";
 
   // ── Config ──────────────────────────────────────────────────
-  var scriptEl = document.currentScript || (function () {
-    var s = document.getElementsByTagName("script");
-    return s[s.length - 1];
-  })();
+  var scriptEl =
+    document.currentScript ||
+    (function () {
+      var s = document.getElementsByTagName("script");
+      return s[s.length - 1];
+    })();
 
   var PK = scriptEl.getAttribute("data-pk") || "";
   var AUTO_TRACK = (scriptEl.getAttribute("data-auto-track") || "true") === "true";
@@ -23,7 +25,11 @@
   var scriptSrc = scriptEl.src || "";
   var API_BASE = (scriptEl.getAttribute("data-api-url") || "").trim();
   if (!API_BASE) {
-    try { API_BASE = new URL(scriptSrc).origin; } catch (_) { API_BASE = ""; }
+    try {
+      API_BASE = new URL(scriptSrc).origin;
+    } catch (_) {
+      API_BASE = "";
+    }
   }
 
   if (!PK || !API_BASE) return;
@@ -42,14 +48,18 @@
   var LS = tryLS();
 
   function tryLS() {
-    try { return window.localStorage; } catch (_) { return null; }
+    try {
+      return window.localStorage;
+    } catch (_) {
+      return null;
+    }
   }
 
   function uuid() {
     if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-      var r = Math.random() * 16 | 0;
-      return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+      var r = (Math.random() * 16) | 0;
+      return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
     });
   }
 
@@ -58,7 +68,7 @@
   function hashCode(str) {
     var hash = 5381;
     for (var i = 0; i < str.length; i++) {
-      hash = ((hash << 5) + hash) + str.charCodeAt(i);
+      hash = (hash << 5) + hash + str.charCodeAt(i);
       hash = hash & 0x7fffffff;
     }
     return hash.toString(36);
@@ -80,7 +90,10 @@
   function getVisitorId() {
     var key = "_trell_vid";
     var id = LS && LS.getItem(key);
-    if (!id) { id = uuid(); if (LS) LS.setItem(key, id); }
+    if (!id) {
+      id = uuid();
+      if (LS) LS.setItem(key, id);
+    }
     return id;
   }
 
@@ -90,9 +103,12 @@
     var now = Date.now();
     var id = LS && LS.getItem(key);
     var ts = LS && LS.getItem(tsKey);
-    if (!id || !ts || (now - Number(ts)) > SESSION_TTL_MS) {
+    if (!id || !ts || now - Number(ts) > SESSION_TTL_MS) {
       id = uuid();
-      if (LS) { LS.setItem(key, id); LS.setItem(tsKey, String(now)); }
+      if (LS) {
+        LS.setItem(key, id);
+        LS.setItem(tsKey, String(now));
+      }
     } else {
       if (LS) LS.setItem(tsKey, String(now));
     }
@@ -132,7 +148,13 @@
     var term = p.get("utm_term");
     var cont = p.get("utm_content");
     if (!src && !med && !cam && !term && !cont) return null;
-    return { source: src || null, medium: med || null, campaign: cam || null, term: term || null, content: cont || null };
+    return {
+      source: src || null,
+      medium: med || null,
+      campaign: cam || null,
+      term: term || null,
+      content: cont || null,
+    };
   }
 
   // ── Build Event ─────────────────────────────────────────────
@@ -188,9 +210,16 @@
     xhr.onerror = function () {
       sending = false;
       // Retry after 2s
-      setTimeout(function () { queue.unshift.apply(queue, batch); flush(); }, 2000);
+      setTimeout(function () {
+        queue.unshift.apply(queue, batch);
+        flush();
+      }, 2000);
     };
-    try { xhr.send(JSON.stringify(body)); } catch (_) { sending = false; }
+    try {
+      xhr.send(JSON.stringify(body));
+    } catch (_) {
+      sending = false;
+    }
   }
 
   // ── Event Name Mapping ──────────────────────────────────────
@@ -255,23 +284,31 @@
   function observeForm(formEl) {
     if (trackedForms.has(formEl)) return;
     trackedForms.add(formEl);
+    // Per-form interaction clock (gapMs) + per-field focus/change state (hesitationMs).
+    var lastInteractAt = 0;
+    var fieldState = new WeakMap();
 
     // form_view: when the form becomes visible
     if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            var ev = buildFormBase(formEl);
-            ev.type = "form_view";
-            send(ev);
-          }
-        });
-      }, { threshold: 0.1 }).observe(formEl);
+      new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              var ev = buildFormBase(formEl);
+              ev.type = "form_view";
+              send(ev);
+            }
+          });
+        },
+        { threshold: 0.1 },
+      ).observe(formEl);
     }
 
     // field focus → form_start
     var fields = formEl.querySelectorAll("input, textarea, select");
     Array.prototype.forEach.call(fields, function (field) {
+      var fieldName = field.getAttribute("name") || field.getAttribute("id") || field.type || "field";
+      fieldState.set(field, { focusTs: 0, changed: false });
       field.addEventListener("focus", function () {
         if (!formStartTimes.has(formEl)) {
           formStartTimes.set(formEl, Date.now());
@@ -281,20 +318,39 @@
         }
       });
 
-      // field_interaction
+      // field_interaction (focus carries gapMs; change adds hesitationMs on first edit)
       field.addEventListener("focus", function () {
+        var now = Date.now();
+        var st = fieldState.get(field) || { focusTs: 0, changed: false };
+        if (!st.focusTs) {
+          st.focusTs = now;
+          fieldState.set(field, st);
+        }
         var ev = buildFormBase(formEl);
         ev.type = "field_interaction";
-        ev.field = field.getAttribute("name") || field.getAttribute("id") || field.type || "field";
+        ev.field = fieldName;
         ev.interaction = "focus";
+        ev.properties = ev.properties || {};
+        if (lastInteractAt) ev.properties.gapMs = now - lastInteractAt;
+        lastInteractAt = now;
         send(ev);
       });
 
       field.addEventListener("change", function () {
+        var now = Date.now();
+        var st = fieldState.get(field) || { focusTs: 0, changed: false };
         var ev = buildFormBase(formEl);
         ev.type = "field_interaction";
-        ev.field = field.getAttribute("name") || field.getAttribute("id") || field.type || "field";
+        ev.field = fieldName;
         ev.interaction = "change";
+        ev.properties = ev.properties || {};
+        if (st.focusTs && !st.changed) {
+          ev.properties.hesitationMs = Math.max(0, now - st.focusTs);
+          st.changed = true;
+          fieldState.set(field, st);
+        }
+        if (lastInteractAt) ev.properties.gapMs = now - lastInteractAt;
+        lastInteractAt = now;
         send(ev);
       });
     });
@@ -328,25 +384,29 @@
   }
 
   // ── Auto-Track: CTA Clicks ──────────────────────────────────
-  document.addEventListener("click", function (e) {
-    if (!AUTO_TRACK) return;
-    var el = e.target;
+  document.addEventListener(
+    "click",
+    function (e) {
+      if (!AUTO_TRACK) return;
+      var el = e.target;
 
-    // Walk up to find a clickable element
-    var clickEl = el.closest("a, button, [data-trell-track]");
-    if (!clickEl) return;
+      // Walk up to find a clickable element
+      var clickEl = el.closest("a, button, [data-trell-track]");
+      if (!clickEl) return;
 
-    // Skip if inside a form (handled by form logic)
-    if (clickEl.closest("form")) return;
+      // Skip if inside a form (handled by form logic)
+      if (clickEl.closest("form")) return;
 
-    var name = clickEl.getAttribute("data-trell-track") || eventNameFor(clickEl);
-    var ev = buildBase();
-    ev.type = "cta_click";
-    ev.cta = name;
-    ev.label = (clickEl.textContent || "").trim().slice(0, 100) || undefined;
-    ev.href = clickEl.getAttribute("href") || undefined;
-    send(ev);
-  }, true);
+      var name = clickEl.getAttribute("data-trell-track") || eventNameFor(clickEl);
+      var ev = buildBase();
+      ev.type = "cta_click";
+      ev.cta = name;
+      ev.label = (clickEl.textContent || "").trim().slice(0, 100) || undefined;
+      ev.href = clickEl.getAttribute("href") || undefined;
+      send(ev);
+    },
+    true,
+  );
 
   // ── Auto-Track: Scroll Depth ────────────────────────────────
   if (AUTO_TRACK) {
@@ -377,13 +437,17 @@
       });
     }
 
-    window.addEventListener("scroll", function () {
-      if (scrollThrottle) return;
-      scrollThrottle = setTimeout(function () {
-        scrollThrottle = null;
-        checkScrollDepth();
-      }, 200);
-    }, { passive: true });
+    window.addEventListener(
+      "scroll",
+      function () {
+        if (scrollThrottle) return;
+        scrollThrottle = setTimeout(function () {
+          scrollThrottle = null;
+          checkScrollDepth();
+        }, 200);
+      },
+      { passive: true },
+    );
   }
 
   // ── Auto-Track: Time on Page ────────────────────────────────
@@ -398,11 +462,16 @@
       var durationMs = Date.now() - pageLoadTime;
       var ev = buildBase();
       ev.type = "page_exit";
-      ev.properties = { durationMs: durationMs, maxScrollDepth: typeof maxScrollDepth !== "undefined" ? maxScrollDepth : 0 };
+      ev.properties = {
+        durationMs: durationMs,
+        maxScrollDepth: typeof maxScrollDepth !== "undefined" ? maxScrollDepth : 0,
+      };
       try {
         var blob = new Blob([JSON.stringify(ev)], { type: "application/json" });
         navigator.sendBeacon(beaconUrl(), blob);
-      } catch (_) { send(ev); }
+      } catch (_) {
+        send(ev);
+      }
     }
 
     window.addEventListener("beforeunload", trackPageExit);
@@ -424,7 +493,9 @@
       if (!formStartTimes.has(formEl)) return;
       // Check if any field was filled
       var fields = formEl.querySelectorAll("input, textarea, select");
-      var hasData = Array.prototype.some.call(fields, function (f) { return f.value; });
+      var hasData = Array.prototype.some.call(fields, function (f) {
+        return f.value;
+      });
       if (hasData) {
         var ev = buildFormBase(formEl);
         ev.type = "form_abandon";
@@ -433,7 +504,9 @@
         try {
           var blob = new Blob([JSON.stringify(ev)], { type: "application/json" });
           navigator.sendBeacon(beaconUrl(), blob);
-        } catch (_) { send(ev); }
+        } catch (_) {
+          send(ev);
+        }
       }
     });
   });

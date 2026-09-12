@@ -4,6 +4,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { auth } from "@/lib/auth";
 import { signIdentityJwt } from "@/lib/chatIdentity";
 import {
+  answerLocalIntent,
   buildSystemPrompt,
   parseChatBody,
   parseOpenAIChunk,
@@ -21,21 +22,18 @@ export const maxDuration = 60;
 const MAX_TURNS = 6;
 const MAX_TOOL_RESULT_CHARS = 8000;
 
-// listTools rarely changes: cache declarations briefly to skip one MCP
-// round-trip per message. Only successful fetches are cached.
+// listTools rarely changes: cache declarations briefly to skip one MCP round-trip per message.
 type Declarations = ReturnType<typeof toFunctionDeclarations>;
 let declarationsCache: { at: number; value: Declarations } | null = null;
 const DECLARATIONS_TTL_MS = 5 * 60 * 1000;
 
-// Skip the doomed primary attempt for a while after it 429s/404s: the free
-// tier doesn't recover within a conversation, and each failed attempt costs
-// a full round-trip per turn.
+// Skip the doomed primary attempt for a while after it 429s/404s; each failed attempt costs a round-trip.
 let primaryCoolDownUntil = 0;
 const PRIMARY_COOLDOWN_429_MS = 10 * 60 * 1000;
 const PRIMARY_COOLDOWN_404_MS = 60 * 60 * 1000;
 
-type SSE
-  = { t: "text"; d: string }
+type SSE =
+  | { t: "text"; d: string }
   | { t: "status"; d: string }
   | { t: "thought"; d: string }
   | {
@@ -110,7 +108,7 @@ async function postChatCompletions(args: {
       authorization: `Bearer ${args.provider.apiKey}`,
       "content-type": "application/json",
       "HTTP-Referer": args.origin,
-      "X-Title": "Trell Ask",
+      "X-Title": "Yoi",
     },
     body: JSON.stringify(body),
   });
@@ -121,9 +119,7 @@ async function postChatCompletions(args: {
       if (j?.error && typeof j.error.message === "string" && j.error.message) {
         msg = j.error.message.slice(0, 300);
       }
-    } catch {
-      // keep default
-    }
+    } catch {}
     throw httpError(res.status, msg);
   }
   return res;
@@ -164,6 +160,24 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "bad request" }), { status: 400 });
   }
+  // Small talk never touches MCP or the model: instant canned reply.
+  const local = answerLocalIntent(history[history.length - 1]!.text);
+  if (local) {
+    const sseHeaders = {
+      "content-type": "text/event-stream",
+      "cache-control": "no-cache, no-transform",
+      connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    };
+    const body = new ReadableStream<string>({
+      start(controller) {
+        controller.enqueue(`data: ${JSON.stringify({ t: "text", d: local })}\n\n`);
+        controller.enqueue(`data: ${JSON.stringify({ t: "done" })}\n\n`);
+        controller.close();
+      },
+    });
+    return new Response(body, { headers: sseHeaders });
+  }
   const stream = new ReadableStream<string>({
     async start(controller) {
       const mcp = new Client({ name: "trell-webchat", version: "0.0.0" });
@@ -180,19 +194,30 @@ export async function POST(req: NextRequest) {
             requestInit: { headers: { authorization: `Bearer ${jwt}` } },
           }),
         );
-        let declarations = declarationsCache && Date.now() - declarationsCache.at < DECLARATIONS_TTL_MS
-          ? declarationsCache.value
-          : null;
+        let declarations =
+          declarationsCache && Date.now() - declarationsCache.at < DECLARATIONS_TTL_MS ? declarationsCache.value : null;
         if (!declarations) {
           const { tools } = await mcp.listTools();
           declarations = toFunctionDeclarations(
-            tools.map((t) => ({ name: t.name, description: t.description, inputSchema: t.inputSchema as Record<string, unknown> })),
+            tools.map((t) => ({
+              name: t.name,
+              description: t.description,
+              inputSchema: t.inputSchema as Record<string, unknown>,
+            })),
           );
           declarationsCache = { at: Date.now(), value: declarations };
         }
         const tools = toOpenAITools(declarations);
 
-        const messages = toOpenAIMessages(buildSystemPrompt({ workspaceSlug: slug, userEmail: email, mode }), history);
+        const messages = toOpenAIMessages(
+          buildSystemPrompt({
+            workspaceSlug: slug,
+            userEmail: email,
+            mode,
+            today: new Date().toISOString().slice(0, 10),
+          }),
+          history,
+        );
         const origin = req.nextUrl.origin;
         let reasoningOff = false;
 
@@ -314,14 +339,18 @@ export async function POST(req: NextRequest) {
             const resultText = JSON.stringify(result) ?? "";
             messages.push({
               role: "tool",
-              content: resultText.length > MAX_TOOL_RESULT_CHARS
-                ? `${resultText.slice(0, MAX_TOOL_RESULT_CHARS)}… (truncated)`
-                : resultText,
+              content:
+                resultText.length > MAX_TOOL_RESULT_CHARS
+                  ? `${resultText.slice(0, MAX_TOOL_RESULT_CHARS)}… (truncated)`
+                  : resultText,
               tool_call_id: call.id,
             });
           }
           if (turn === MAX_TURNS - 1) {
-            send(controller, { t: "text", d: "\n\n(I've reached the step limit; ask to continue if anything is missing.)" });
+            send(controller, {
+              t: "text",
+              d: "\n\n(I've reached the step limit; ask to continue if anything is missing.)",
+            });
           }
         }
         send(controller, { t: "done" });

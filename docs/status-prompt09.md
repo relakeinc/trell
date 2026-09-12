@@ -2,11 +2,12 @@
 
 > **Prompt 09: cerrar las 3 desviaciones del SDK.** `@trell/sdk` queda estable.
 > `docs/sdk-contract.md` **se actualizó solo donde había decisión contractual**
-> (identify + destroy), documentado en un *Decision log*. Handoff: `status-prompt08.md`.
+> (identify + destroy), documentado en un _Decision log_. Handoff: `status-prompt08.md`.
 
 ---
 
 ## 1. `identify()` — semántica resuelta
+
 - **Antes**: mapeaba lo que el llamador pasaba (asumía hash pre-calculado `emailHash`).
 - **Ahora** (contract §2.4 / §8.3, **decisión documentada**):
   - `trell.identify({ userId, email })` recibe el identificador **crudo**.
@@ -17,6 +18,7 @@
   de hashing existente en lugar de duplicar una ruta.
 
 ## 2. `form().destroy()` — ya no es no-op
+
 - **Antes**: no-op.
 - **Ahora** (contract §2.3, **decisión documentada**): elimina listeners del
   elemento, desconecta observers (Intersection/MutationObserver), limpia timers y
@@ -24,9 +26,10 @@
   duplicar eventos**.
 
 ## 3. Bundle < 5 KB gzip — medición y decisión
-| | raw | gzip |
-|---|---|---|
-| Prompt 06 (antes de estas funciones) | 14.9 KB | 5.8 KB |
+
+|                                        | raw     | gzip       |
+| -------------------------------------- | ------- | ---------- |
+| Prompt 06 (antes de estas funciones)   | 14.9 KB | 5.8 KB     |
 | Prompt 09 (identify SHA-256 + destroy) | 17.0 KB | **6.8 KB** |
 
 - **IIFE autocontenido**: **0 dependencias externas** / `@trell/shared` enlazado a
@@ -42,12 +45,14 @@
   queda en ~6.8 KB gzip, ligero y sin dependencias.
 
 ## 4. Estado
+
 - `pnpm build` ✓ · `pnpm typecheck` ✓ · `pnpm test` → **102 tests** (SDK **40**,
   API 50, web 12).
 - SDK: añadidos tests de **hash de identify** (vector SHA-256 + no-leak de PII) y de
   **lifecycle de destroy** (sin listeners duplicados, re-init seguro).
 
 ## 5. Contrato
+
 - `docs/sdk-contract.md`:
   - `§2.4` / `§8.3`: `identify({ userId, email })` crudo → SHA-256 síncrono → solo hash.
   - `§2.3`: `form().destroy()` funcional (limpieza + re-init seguro).
@@ -57,6 +62,7 @@
 ---
 
 ## 6. Siguientes (roadmap)
+
 - **Prompt 10** — Docker Compose / self-host (ahora la frontera `@trell/sdk` es
   estable: contrato fijo → apps/api → Postgres ← apps/web).
 - **Prompt 11** — Pulido UX + onboarding + producto.

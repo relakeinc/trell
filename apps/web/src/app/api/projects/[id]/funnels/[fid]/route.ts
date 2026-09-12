@@ -9,11 +9,15 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string;
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const { id, fid } = await ctx.params;
   const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
-  if (!(await svc.canAccessProject(session.user.id, id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!(await svc.canAccessProject(session.user.id, id)))
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   try {
     return NextResponse.json(await apiRelay({ projectId: id, path: `funnels/${fid}` }));
   } catch (e) {
-    return NextResponse.json({ error: "relay_error", message: e instanceof Error ? e.message : "relay_error" }, { status: 502 });
+    return NextResponse.json(
+      { error: "relay_error", message: e instanceof Error ? e.message : "relay_error" },
+      { status: 502 },
+    );
   }
 }
 
@@ -22,12 +26,16 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const { id, fid } = await ctx.params;
   const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
-  if (!(await svc.canAccessProject(session.user.id, id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!(await svc.canAccessProject(session.user.id, id)))
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const body = await req.json();
   try {
     return NextResponse.json(await apiRelay({ projectId: id, path: `funnels/${fid}`, method: "PATCH", body }));
   } catch (e) {
-    return NextResponse.json({ error: "relay_error", message: e instanceof Error ? e.message : "relay_error" }, { status: 502 });
+    return NextResponse.json(
+      { error: "relay_error", message: e instanceof Error ? e.message : "relay_error" },
+      { status: 502 },
+    );
   }
 }
 
@@ -36,10 +44,14 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const { id, fid } = await ctx.params;
   const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
-  if (!(await svc.canAccessProject(session.user.id, id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!(await svc.canAccessProject(session.user.id, id)))
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   try {
     return NextResponse.json(await apiRelay({ projectId: id, path: `funnels/${fid}`, method: "DELETE" }));
   } catch (e) {
-    return NextResponse.json({ error: "relay_error", message: e instanceof Error ? e.message : "relay_error" }, { status: 502 });
+    return NextResponse.json(
+      { error: "relay_error", message: e instanceof Error ? e.message : "relay_error" },
+      { status: 502 },
+    );
   }
 }

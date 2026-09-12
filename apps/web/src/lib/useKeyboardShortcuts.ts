@@ -26,13 +26,15 @@ export function useKeyboardShortcuts() {
     function handleKeyDown(e: KeyboardEvent) {
       // Ignore if typing in an input/textarea/select
       const tag = (e.target as HTMLElement).tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (e.target as HTMLElement).isContentEditable) return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (e.target as HTMLElement).isContentEditable)
+        return;
 
-      // g + <key> navigation
       if (e.key === "g") {
         gPressed = true;
         if (gTimer) clearTimeout(gTimer);
-        gTimer = setTimeout(() => { gPressed = false; }, 500);
+        gTimer = setTimeout(() => {
+          gPressed = false;
+        }, 500);
         return;
       }
 
@@ -61,10 +63,9 @@ export function useKeyboardShortcuts() {
         return;
       }
 
-      // / to focus search
       if (e.key === "/" && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
-        const searchInput = document.querySelector<HTMLInputElement>('[data-trell-search]');
+        const searchInput = document.querySelector<HTMLInputElement>("[data-trell-search]");
         if (searchInput) searchInput.focus();
       }
     }

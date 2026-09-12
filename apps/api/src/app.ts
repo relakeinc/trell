@@ -33,10 +33,11 @@ export function createApp(deps: AppDeps): Hono {
   const funnels = makeFunnels(deps.repo);
   const views = makeViews(deps.repo);
 
-  // CORS: public ingestion stays open (browser SDK + publishable keys),
-  // everything else only reflects explicitly allowlisted origins.
-  // NOTE: no "*" default here — ingestion openness comes from openCors().
-  const corsOrigins = (process.env.CORS_ORIGIN ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  // CORS: ingestion open (pk), rest allowlisted; no "*" default, openness comes from openCors().
+  const corsOrigins = (process.env.CORS_ORIGIN ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   app.use("/v1/ingest", openCors());
   app.use("/v1/events", openCors());
   app.use("*", corsMiddleware(corsOrigins));
@@ -48,7 +49,6 @@ export function createApp(deps: AppDeps): Hono {
 
   app.get("/health", (c) => c.json({ ok: true }));
 
-  // Serve tracking SDK (minified build when present, readable source as fallback).
   app.get("/sdk/trell.js", async (c) => {
     if (!cachedSdk) {
       try {
@@ -83,7 +83,6 @@ export function createApp(deps: AppDeps): Hono {
   app.get("/v1/projects/:id/funnel-live", skAuth(deps.repo), (c) => analytics.funnelLive(c));
   app.get("/v1/projects/:id/realtime", skAuth(deps.repo), (c) => analytics.realtime(c));
 
-  // Funnels CRUD
   app.get("/v1/projects/:id/funnels", skAuth(deps.repo), (c) => funnels.list(c));
   app.post("/v1/projects/:id/funnels", skAuth(deps.repo), (c) => funnels.create(c));
   app.get("/v1/projects/:id/funnels/:fid", skAuth(deps.repo), (c) => funnels.get(c));
@@ -91,7 +90,6 @@ export function createApp(deps: AppDeps): Hono {
   app.delete("/v1/projects/:id/funnels/:fid", skAuth(deps.repo), (c) => funnels.remove(c));
   app.post("/v1/projects/:id/funnel-compute", skAuth(deps.repo), (c) => funnels.compute(c));
 
-  // Saved views CRUD
   app.get("/v1/projects/:id/views", skAuth(deps.repo), (c) => views.list(c));
   app.post("/v1/projects/:id/views", skAuth(deps.repo), (c) => views.create(c));
   app.delete("/v1/projects/:id/views/:vid", skAuth(deps.repo), (c) => views.remove(c));

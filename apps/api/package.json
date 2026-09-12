@@ -2,7 +2,7 @@
   "name": "@trell/api",
   "version": "0.0.0",
   "description": "Trell ingestion + management API (Hono).",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "main": "./dist/index.js",
   "exports": {
@@ -44,16 +44,18 @@
     "@trell/mcp": "workspace:*",
     "@trell/shared": "workspace:*",
     "dotenv": "^16.4.5",
-    "hono": "^4.6.14",
+    "hono": "^4.13.7",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "esbuild": "^0.28.2",
+    "jsdom": "^25.0.1",
     "prisma": "^6.19.3",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vite": "^7.0.0",
+    "vitest": "^4.1.11"
   }
 }

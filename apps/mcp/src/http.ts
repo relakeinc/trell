@@ -6,8 +6,7 @@ import { createMcpServer } from "./server";
 import { beginAuthorize, handleCallback, handleRegister, handleToken, verifyAccessToken } from "./oauth";
 
 function unauthorized(res: ServerResponse, issuer: string): void {
-  // Spec-compliant 401: editors discover OAuth via metadata and complete
-  // the browser flow (this server implements it — no trap).
+  // Spec-compliant 401: editors discover OAuth via metadata and complete the browser flow.
   res.writeHead(401, {
     "content-type": "application/json",
     "WWW-Authenticate": `Bearer resource_metadata="${issuer}/.well-known/oauth-protected-resource", error="invalid_token"`,
@@ -47,7 +46,9 @@ async function readBody(req: IncomingMessage): Promise<string> {
  *     verified OAuth access token (per-user mode, identity from the token).
  * Unknown paths are 404 so editors never mistake this for something else.
  */
-export function createMcpHttpListener(deps: McpServerDeps): (req: IncomingMessage, res: ServerResponse) => Promise<void> {
+export function createMcpHttpListener(
+  deps: McpServerDeps,
+): (req: IncomingMessage, res: ServerResponse) => Promise<void> {
   const issuer = deps.config.publicUrl;
 
   return async (req: IncomingMessage, res: ServerResponse): Promise<void> => {

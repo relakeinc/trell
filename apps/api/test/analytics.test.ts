@@ -27,9 +27,81 @@ async function makeApp() {
 
 function events(): StoredEvent[] {
   return [
-    { eventId: "e1", type: "form_view", ts: new Date("2026-01-05T10:00:00Z"), sessionId: "s", visitorId: "v", url: "https://example.com/a", referrer: "https://google.com", pagePath: "/a", pageTitle: "A", utmSource: "google", utmMedium: "cpc", utmCampaign: null, utmTerm: null, utmContent: null, deviceType: "mobile", os: "ios", browser: "safari", viewportWidth: 390, viewportHeight: 844, formId: null, formName: null, properties: null, raw: null },
-    { eventId: "e2", type: "form_start", ts: new Date("2026-01-05T10:00:01Z"), sessionId: "s", visitorId: "v", url: "https://example.com/a", referrer: "https://google.com", pagePath: "/a", pageTitle: "A", utmSource: "google", utmMedium: "cpc", utmCampaign: null, utmTerm: null, utmContent: null, deviceType: "mobile", os: "ios", browser: "safari", viewportWidth: 390, viewportHeight: 844, formId: "c", formName: "Contacto", properties: null, raw: null },
-    { eventId: "e3", type: "form_success", ts: new Date("2026-01-05T10:00:11Z"), sessionId: "s", visitorId: "v", url: "https://example.com/a", referrer: "https://google.com", pagePath: "/a", pageTitle: "A", utmSource: "google", utmMedium: "cpc", utmCampaign: null, utmTerm: null, utmContent: null, deviceType: "mobile", os: "ios", browser: "safari", viewportWidth: 390, viewportHeight: 844, formId: "c", formName: "Contacto", properties: null, raw: null },
+    {
+      eventId: "e1",
+      type: "form_view",
+      ts: new Date("2026-01-05T10:00:00Z"),
+      sessionId: "s",
+      visitorId: "v",
+      url: "https://example.com/a",
+      referrer: "https://google.com",
+      pagePath: "/a",
+      pageTitle: "A",
+      utmSource: "google",
+      utmMedium: "cpc",
+      utmCampaign: null,
+      utmTerm: null,
+      utmContent: null,
+      deviceType: "mobile",
+      os: "ios",
+      browser: "safari",
+      viewportWidth: 390,
+      viewportHeight: 844,
+      formId: null,
+      formName: null,
+      properties: null,
+      raw: null,
+    },
+    {
+      eventId: "e2",
+      type: "form_start",
+      ts: new Date("2026-01-05T10:00:01Z"),
+      sessionId: "s",
+      visitorId: "v",
+      url: "https://example.com/a",
+      referrer: "https://google.com",
+      pagePath: "/a",
+      pageTitle: "A",
+      utmSource: "google",
+      utmMedium: "cpc",
+      utmCampaign: null,
+      utmTerm: null,
+      utmContent: null,
+      deviceType: "mobile",
+      os: "ios",
+      browser: "safari",
+      viewportWidth: 390,
+      viewportHeight: 844,
+      formId: "c",
+      formName: "Contacto",
+      properties: null,
+      raw: null,
+    },
+    {
+      eventId: "e3",
+      type: "form_success",
+      ts: new Date("2026-01-05T10:00:11Z"),
+      sessionId: "s",
+      visitorId: "v",
+      url: "https://example.com/a",
+      referrer: "https://google.com",
+      pagePath: "/a",
+      pageTitle: "A",
+      utmSource: "google",
+      utmMedium: "cpc",
+      utmCampaign: null,
+      utmTerm: null,
+      utmContent: null,
+      deviceType: "mobile",
+      os: "ios",
+      browser: "safari",
+      viewportWidth: 390,
+      viewportHeight: 844,
+      formId: "c",
+      formName: "Contacto",
+      properties: null,
+      raw: null,
+    },
   ];
 }
 
@@ -100,7 +172,14 @@ describe("analytics routes (sk auth)", () => {
     await seedEvents(repo, projectId);
     const res = await app.request(`/v1/projects/${projectId}/forms`, { headers: headers() });
     const body = await res.json();
-    expect(body.forms[0]).toMatchObject({ id: "c", name: "Contacto", events: 2, starts: 1, successes: 1, conversionRate: 1 });
+    expect(body.forms[0]).toMatchObject({
+      id: "c",
+      name: "Contacto",
+      events: 2,
+      starts: 1,
+      successes: 1,
+      conversionRate: 1,
+    });
   });
 
   it("returns 400 for an invalid dimension", async () => {

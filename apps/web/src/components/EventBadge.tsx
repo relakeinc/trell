@@ -16,7 +16,9 @@ const DEFAULT_COLOR = { bg: "bg-neutral-100", text: "text-neutral-600", dot: "bg
 export function EventBadge({ type }: { type: string }) {
   const c = EVENT_COLORS[type] ?? DEFAULT_COLOR;
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${c.bg} ${c.text}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${c.bg} ${c.text}`}
+    >
       <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {eventLabel(type)}
     </span>

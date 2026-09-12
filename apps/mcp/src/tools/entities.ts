@@ -42,15 +42,19 @@ export async function getFunnel(store: McpStore, config: McpConfig, args: { proj
     const funnels = await store.listFunnels(p.id);
     const needle = args.funnel.trim().toLowerCase();
     const found =
-      funnels.find((f) => f.id === args.funnel.trim()) ??
-      funnels.find((f) => f.name.toLowerCase() === needle);
+      funnels.find((f) => f.id === args.funnel.trim()) ?? funnels.find((f) => f.name.toLowerCase() === needle);
     if (!found) throw new McpError("invalid_input", `funnel '${args.funnel}' not found in workspace '${p.slug}'`);
     return {
       project: p.slug,
       funnel: {
         id: found.id,
         name: found.name,
-        steps: found.steps.map((s) => ({ eventType: s.eventType, formId: s.formId, label: s.label, position: s.position })),
+        steps: found.steps.map((s) => ({
+          eventType: s.eventType,
+          formId: s.formId,
+          label: s.label,
+          position: s.position,
+        })),
         createdAt: iso(found.createdAt),
         updatedAt: iso(found.updatedAt),
       },

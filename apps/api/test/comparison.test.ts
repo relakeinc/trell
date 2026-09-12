@@ -5,21 +5,36 @@ import type { StoredEvent } from "../src/repositories/types";
 
 function e(overrides: Partial<StoredEvent>): StoredEvent {
   return {
-    eventId: "e1", type: "form_view", ts: new Date(), sessionId: "s1", visitorId: "v1",
-    url: "https://example.com", referrer: null, pagePath: "/", pageTitle: null,
-    utmSource: null, utmMedium: null, utmCampaign: null, utmTerm: null, utmContent: null,
-    deviceType: "desktop", os: null, browser: null, viewportWidth: null, viewportHeight: null,
-    formId: null, formName: null, properties: null, raw: null,
+    eventId: "e1",
+    type: "form_view",
+    ts: new Date(),
+    sessionId: "s1",
+    visitorId: "v1",
+    url: "https://example.com",
+    referrer: null,
+    pagePath: "/",
+    pageTitle: null,
+    utmSource: null,
+    utmMedium: null,
+    utmCampaign: null,
+    utmTerm: null,
+    utmContent: null,
+    deviceType: "desktop",
+    os: null,
+    browser: null,
+    viewportWidth: null,
+    viewportHeight: null,
+    formId: null,
+    formName: null,
+    properties: null,
+    raw: null,
     ...overrides,
   };
 }
 
 describe("computeMetricsComparison", () => {
   it("computes deltas between two periods", () => {
-    const baseline = [
-      e({ type: "form_view", sessionId: "s1" }),
-      e({ type: "form_success", sessionId: "s1" }),
-    ];
+    const baseline = [e({ type: "form_view", sessionId: "s1" }), e({ type: "form_success", sessionId: "s1" })];
     const compare = [
       e({ type: "form_view", sessionId: "s1" }),
       e({ type: "form_view", sessionId: "s2" }),

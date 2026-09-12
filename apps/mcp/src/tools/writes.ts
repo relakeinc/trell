@@ -104,12 +104,20 @@ async function resolveFunnel(store: McpStore, projectId: string, slug: string, r
 export async function updateFunnel(
   store: McpStore,
   config: McpConfig,
-  args: { project: string; funnel: string; name?: string; steps?: { eventType: string; formId?: string; label?: string }[] },
+  args: {
+    project: string;
+    funnel: string;
+    name?: string;
+    steps?: { eventType: string; formId?: string; label?: string }[];
+  },
 ) {
   return runTool(async () => {
     const p = await resolveProject(store, config, args.project);
     await resolveFunnel(store, p.id, p.slug, args.funnel);
-    const updates: { name?: string; steps?: { eventType: string; formId?: string; label?: string; position: number }[] } = {};
+    const updates: {
+      name?: string;
+      steps?: { eventType: string; formId?: string; label?: string; position: number }[];
+    } = {};
     if (args.name !== undefined) {
       if (!args.name.trim()) throw new McpError("invalid_input", "name cannot be empty");
       updates.name = args.name.trim();
@@ -161,7 +169,16 @@ export const createUtmTemplateShape = {
 export async function createUtmTemplate(
   store: McpStore,
   config: McpConfig,
-  args: { project: string; name: string; source?: string; medium?: string; campaign?: string; term?: string; content?: string; referral?: string },
+  args: {
+    project: string;
+    name: string;
+    source?: string;
+    medium?: string;
+    campaign?: string;
+    term?: string;
+    content?: string;
+    referral?: string;
+  },
 ) {
   return runTool(async () => {
     const p = await resolveProject(store, config, args.project);
@@ -198,7 +215,17 @@ async function resolveUtm(store: McpStore, projectId: string, slug: string, ref:
 export async function updateUtmTemplate(
   store: McpStore,
   config: McpConfig,
-  args: { project: string; template: string; name?: string; source?: string; medium?: string; campaign?: string; term?: string; content?: string; referral?: string },
+  args: {
+    project: string;
+    template: string;
+    name?: string;
+    source?: string;
+    medium?: string;
+    campaign?: string;
+    term?: string;
+    content?: string;
+    referral?: string;
+  },
 ) {
   return runTool(async () => {
     const p = await resolveProject(store, config, args.project);
@@ -221,7 +248,11 @@ export const deleteUtmTemplateShape = {
   template: z.string().describe("Template id"),
 };
 
-export async function deleteUtmTemplate(store: McpStore, config: McpConfig, args: { project: string; template: string }) {
+export async function deleteUtmTemplate(
+  store: McpStore,
+  config: McpConfig,
+  args: { project: string; template: string },
+) {
   return runTool(async () => {
     const p = await resolveProject(store, config, args.project);
     const found = await resolveUtm(store, p.id, p.slug, args.template);
@@ -338,7 +369,8 @@ export async function createApiKey(store: McpStore, config: McpConfig, args: { p
       project: p.slug,
       key: { id: created.id, name: created.name },
       secret,
-      warning: "Copy the secret now — it is never shown again. Store it as TRELL_SECRET_KEY in your backend .env, never in the browser.",
+      warning:
+        "Copy the secret now — it is never shown again. Store it as TRELL_SECRET_KEY in your backend .env, never in the browser.",
     };
   });
 }

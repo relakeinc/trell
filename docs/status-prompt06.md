@@ -9,8 +9,10 @@
 ## 1. Qué se implementó
 
 ### Dashboard dev (`apps/api/src/dashboard.ts`) — servido en `GET /`
+
 Un único HTML autocontenido (vanilla JS, sin framework) servido **same-origin**
 desde la API (así no hay CORS). Muestra:
+
 - **Selector**: project id, `sk`, rango de fechas (default: últimos 30 días),
   **form id opcional**, intervalo.
 - **KPIs**: Views, Starts, Submits, Successes, Abandons, Conversion, Start conv.,
@@ -26,12 +28,14 @@ desde la API (así no hay CORS). Muestra:
 > modelo de autenticación definitivo (Prompt 07). Se señala en la propia UI.
 
 ### Filtro `form` (nuevo, no métrica)
+
 Añadido `?form=<id>` a `/stats`, `/series`, `/breakdown`, `/events` y al
 `AnalyticsFilter` para poder aislar un formulario concreto. Permite verificar el
 escenario exacto de un form sin mezclarlo con otros. (Es un filtro, no una métrica
 nueva.)
 
 ### Datos sintéticos (`src/dev/synthetic.ts`)
+
 - `TRELL_DEV_SEED=1` al arrancar el server → siembra y loguea `project id`, `sk`, `pk`.
 - `pnpm db:seed:events` → CLI equivalente (usa `DATABASE_URL` si existe, si no, memoria).
 - Incluye **Form A** (100 views / 60 starts / 40 submits / 25 success / 15 abandons)
@@ -44,18 +48,19 @@ nueva.)
 
 Con `form=form-a` + rango 30 días (lo que verá el dashboard al aislar el form):
 
-| Métrica | Valor mostrado | Esperado |
-|---------|----------------|----------|
-| views | 100 | 100 |
-| starts | 60 | 60 |
-| submits | 40 | 40 |
-| successes | 25 | 25 |
-| abandons | 15 | 15 |
-| **conversionRate** | **25.00%** | 25% |
-| **startConversionRate** | **41.67%** | 41.67% |
-| **avgTimeToCompleteMs** | **10000** | 10s |
+| Métrica                 | Valor mostrado | Esperado |
+| ----------------------- | -------------- | -------- |
+| views                   | 100            | 100      |
+| starts                  | 60             | 60       |
+| submits                 | 40             | 40       |
+| successes               | 25             | 25       |
+| abandons                | 15             | 15       |
+| **conversionRate**      | **25.00%**     | 25%      |
+| **startConversionRate** | **41.67%**     | 41.67%   |
+| **avgTimeToCompleteMs** | **10000**      | 10s      |
 
 Casos borde verificados (tests `scenarios.test.ts` + `metrics.test.ts`):
+
 - sesiones repetidas **no inflan** visitantes (visitors=1, sessions=3);
 - un `event_id` repetido **no duplica** métricas;
 - eventos fuera de rango **no aparecen** (filtro `from`);
@@ -67,6 +72,7 @@ Casos borde verificados (tests `scenarios.test.ts` + `metrics.test.ts`):
 ---
 
 ## 3. Estado
+
 - `pnpm build` ✓ · `pnpm typecheck` ✓ · `pnpm test` → **82 tests verdes**
   (50 API + 32 SDK).
 - Dashboard se sirve en `GET /` (verificado OK), stats con seed en proceso
@@ -75,6 +81,7 @@ Casos borde verificados (tests `scenarios.test.ts` + `metrics.test.ts`):
 ---
 
 ## 4. Semántica observada (para decidir en Prompt 07)
+
 1. `conversionRate` (successes/views) vs `startConversionRate` (successes/starts)
    **ambos útiles**: si hay muchas vistas pero pocos starts, `conversionRate` baja
    y `startConversionRate` sube. El dashboard muestra ambos (recomendado).
@@ -88,6 +95,7 @@ Casos borde verificados (tests `scenarios.test.ts` + `metrics.test.ts`):
 ---
 
 ## 5. Qué sigue (Prompt 07)
+
 - **Endurecer el modelo de auth del dashboard**: NO exponer `sk` en una web pública.
   Opciones: dashboard como app Next.js con Auth.js (sesiones) que usa `sk` en el
   backend, o tokens cortos emitidos desde el backend. Documentar cuál se adopta.

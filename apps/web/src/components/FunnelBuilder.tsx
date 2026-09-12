@@ -63,7 +63,6 @@ export function FunnelBuilder({
 
   return (
     <div className="rounded-2xl border border-trell-line bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-      {/* Header */}
       <div>
         <h3 className="text-sm font-semibold text-trell-ink">{initial?.id ? "Edit funnel" : "New funnel"}</h3>
         <p className="mt-0.5 text-xs text-trell-ink-muted">
@@ -83,23 +82,24 @@ export function FunnelBuilder({
         Flow <span className="text-neutral-400">· {steps.length} steps</span>
       </div>
 
-      {/* Vertical timeline */}
       <div>
         {steps.map((step, i) => {
           const last = i === steps.length - 1;
           const hint = EVENT_TYPES.find((et) => et.value === step.eventType)?.hint;
           return (
             <div key={i} className="flex gap-3">
-              {/* Rail: numbered node + connector */}
               <div className="flex flex-col items-center">
                 <span className="z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black text-xs font-semibold tabular-nums text-white shadow-sm">
                   {i + 1}
                 </span>
-                {!last && <span className="w-0.5 flex-1 bg-gradient-to-b from-neutral-800 via-neutral-300 to-neutral-200" />}
+                {!last && (
+                  <span className="w-0.5 flex-1 bg-gradient-to-b from-neutral-800 via-neutral-300 to-neutral-200" />
+                )}
               </div>
 
-              {/* Step card */}
-              <div className={`mb-2 flex-1 rounded-xl border border-trell-line bg-white p-3 shadow-sm transition-colors ${!last ? "" : "mb-0"}`}>
+              <div
+                className={`mb-2 flex-1 rounded-xl border border-trell-line bg-white p-3 shadow-sm transition-colors ${!last ? "" : "mb-0"}`}
+              >
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <span className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-700">
                     {EVENT_TYPES.find((et) => et.value === step.eventType)?.label ?? step.eventType}
@@ -132,12 +132,14 @@ export function FunnelBuilder({
                   </span>
                 </div>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                    <label className="block">
+                  <label className="block">
                     <span className="mb-1 block text-[11px] text-neutral-500">Event</span>
                     <EventSelect value={step.eventType} onChange={(v) => updateStep(i, { eventType: v })} />
                   </label>
                   <label className="block">
-                    <span className="mb-1 block text-[11px] text-neutral-500">Form ID <span className="text-neutral-400">(any if empty)</span></span>
+                    <span className="mb-1 block text-[11px] text-neutral-500">
+                      Form ID <span className="text-neutral-400">(any if empty)</span>
+                    </span>
                     <input
                       value={step.formId ?? ""}
                       onChange={(e) => updateStep(i, { formId: e.target.value || undefined })}
@@ -146,7 +148,9 @@ export function FunnelBuilder({
                     />
                   </label>
                   <label className="block">
-                    <span className="mb-1 block text-[11px] text-neutral-500">Label <span className="text-neutral-400">(auto if empty)</span></span>
+                    <span className="mb-1 block text-[11px] text-neutral-500">
+                      Label <span className="text-neutral-400">(auto if empty)</span>
+                    </span>
                     <input
                       value={step.label ?? ""}
                       onChange={(e) => updateStep(i, { label: e.target.value || undefined })}
@@ -213,7 +217,7 @@ function EventSelect({ value, onChange }: { value: string; onChange: (v: string)
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open ]);
+  }, [open]);
 
   const current = EVENT_TYPES.find((et) => et.value === value);
 
@@ -228,10 +232,16 @@ function EventSelect({ value, onChange }: { value: string; onChange: (v: string)
         }`}
       >
         <span className="truncate text-trell-ink">{current?.label ?? value}</span>
-        <Icon name="arrow-down-01" size={14} className={`shrink-0 text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`} />
+        <Icon
+          name="arrow-down-01"
+          size={14}
+          className={`shrink-0 text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
       {t.mounted && (
-        <div className={`absolute inset-x-0 z-30 mt-1 overflow-hidden rounded-xl border border-trell-line bg-white py-1 shadow-xl ${t.closing ? "trell-pop-out" : "trell-pop-in"}`}>
+        <div
+          className={`absolute inset-x-0 z-30 mt-1 overflow-hidden rounded-xl border border-trell-line bg-white py-1 shadow-xl ${t.closing ? "trell-pop-out" : "trell-pop-in"}`}
+        >
           {EVENT_TYPES.map((et) => (
             <button
               key={et.value}
@@ -245,7 +255,9 @@ function EventSelect({ value, onChange }: { value: string; onChange: (v: string)
               }`}
             >
               <span>
-                <span className={`block text-xs ${et.value === value ? "font-semibold text-trell-ink" : "text-neutral-700"}`}>
+                <span
+                  className={`block text-xs ${et.value === value ? "font-semibold text-trell-ink" : "text-neutral-700"}`}
+                >
                   {et.label}
                 </span>
                 <span className="block text-[11px] font-normal text-neutral-400">{et.hint}</span>

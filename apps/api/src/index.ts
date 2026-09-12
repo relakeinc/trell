@@ -33,14 +33,12 @@ const app = createApp({
 });
 
 function startMcp(): void {
-  // MCP over Streamable HTTP (same process/DB, localhost only — nginx fronts
-  // it as https://mcp.relake.co). Fail-closed without MCP_API_KEY.
+  // MCP over Streamable HTTP (same process/DB, localhost only); fail-closed without MCP_API_KEY.
   const mcpConfig = mcpConfigFromEnv();
   if (mcpConfig.apiKey) {
     const mcpPort = Number(process.env.MCP_HTTP_PORT ?? 8788);
     const listener = createMcpHttpListener({ store: repo, config: mcpConfig });
-    // 0.0.0.0 inside the container: docker-proxy reaches us via the
-    // container IP, and the published port mapping restricts host access.
+    // 0.0.0.0 in container: docker-proxy reaches us via container IP; port mapping restricts host access.
     createServer((req, res) => void listener(req, res)).listen(mcpPort, "0.0.0.0", () => {
       console.log(`[trell:api] mcp http on :${mcpPort}`);
     });
@@ -57,7 +55,7 @@ if (process.env.MCP_ONLY === "1") {
   serve({ fetch: app.fetch, port }, async (info) => {
     console.log(`[trell:api] listening on http://localhost:${info.port}`);
     if (prisma) {
-      // Sweep deliveries stuck in "pending" (crash mid-retry). Memory repo has no deliveries.
+      // Sweep "pending" deliveries stuck by a crash mid-retry (memory repo has none).
       const sweepStore = prisma;
       const sweep = setInterval(() => {
         retryStuckDeliveries(sweepStore).catch((e) => console.error("[trell:api] webhook retry sweep failed", e));

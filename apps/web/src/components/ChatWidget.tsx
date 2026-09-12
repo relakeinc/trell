@@ -27,14 +27,10 @@ import {
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useChat } from "./ChatProvider";
-import { parseSSEEvent, CHAT_COMMANDS, CHAT_PAGES, findPageMentions } from "@/lib/chatAgent";
+import { parseSSEEvent, CHAT_COMMANDS, CHAT_PAGES, findPageMentions, answerLocalIntent } from "@/lib/chatAgent";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChatContainerContent, ChatContainerRoot, ChatContainerScrollAnchor } from "@/components/ui/chat-container";
-import {
-  PromptInput,
-  PromptInputActions,
-  PromptInputTextarea,
-} from "@/components/ui/prompt-input";
+import { PromptInput, PromptInputActions, PromptInputTextarea } from "@/components/ui/prompt-input";
 import { ScrollButton } from "@/components/ui/scroll-button";
 
 interface Msg {
@@ -54,8 +50,18 @@ interface Convo {
 type Mode = "ask" | "do";
 
 const SUGGESTIONS: { icon: typeof Activity; title: string; subtitle: string; prompt: string }[] = [
-  { icon: ChartColumn, title: "Weekly summary", subtitle: "Last 7 days conversion", prompt: "Give me a weekly conversion summary" },
-  { icon: Activity, title: "Tracking status", subtitle: "Is data coming in?", prompt: "Is data coming into this workspace?" },
+  {
+    icon: ChartColumn,
+    title: "Weekly summary",
+    subtitle: "Last 7 days conversion",
+    prompt: "Give me a weekly conversion summary",
+  },
+  {
+    icon: Activity,
+    title: "Tracking status",
+    subtitle: "Is data coming in?",
+    prompt: "Is data coming into this workspace?",
+  },
   { icon: KeyRound, title: "My API keys", subtitle: "View active keys", prompt: "List my active API keys" },
   { icon: Filter, title: "My funnels", subtitle: "View definitions", prompt: "List my funnels" },
 ];
@@ -206,11 +212,7 @@ function MessageActions({
           <RotateCcw size={13} />
         </ActionButton>
       )}
-      <ActionButton
-        label="Mark as helpful"
-        title="Helpful"
-        onClick={() => setVote((v) => (v === "up" ? null : "up"))}
-      >
+      <ActionButton label="Mark as helpful" title="Helpful" onClick={() => setVote((v) => (v === "up" ? null : "up"))}>
         <ThumbsUp size={13} className={vote === "up" ? "fill-emerald-500 text-emerald-500" : undefined} />
       </ActionButton>
       <ActionButton
@@ -286,14 +288,20 @@ function ResponsiveTable({ children }: { children: ReactNode }) {
   );
 }
 
-function ReasoningBlock({ text, streaming, answerStarted }: { text: string; streaming: boolean; answerStarted: boolean }) {
+function ReasoningBlock({
+  text,
+  streaming,
+  answerStarted,
+}: {
+  text: string;
+  streaming: boolean;
+  answerStarted: boolean;
+}) {
   const [open, setOpen] = useState(true);
   const bodyRef = useRef<HTMLDivElement | null>(null);
-  // Once the answer starts streaming, collapse so the response takes the stage.
   useEffect(() => {
     if (answerStarted) setOpen(false);
   }, [answerStarted]);
-  // Follow the thoughts while they stream in.
   useEffect(() => {
     if (streaming && open && bodyRef.current) {
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
@@ -341,10 +349,7 @@ export function ChatWidget() {
   const greet = useMemo(greeting, []);
   const closeTimer = useRef<number | null>(null);
 
-  // Mount collapsed, then expand after paint: the flex sibling glides
-  // instead of snapping. Double rAF guarantees the collapsed frame commits.
-  // Closing collapses first and unmounts after the animation; reopening
-  // mid-exit cancels the pending unmount. All driven by `open`.
+  // Mount collapsed then expand after paint so the sibling glides; close collapses first, reopen cancels unmount.
   useEffect(() => {
     if (closeTimer.current !== null) {
       window.clearTimeout(closeTimer.current);
@@ -369,7 +374,7 @@ export function ChatWidget() {
       closeTimer.current = null;
     }, 320);
     return;
-  }, [open ]);
+  }, [open]);
 
   useEffect(
     () => () => {
@@ -408,17 +413,14 @@ export function ChatWidget() {
     }
   }
 
-  // Reload history when switching workspaces.
   useEffect(() => {
     setConvos(slug ? loadConvos(slug) : []);
     setActiveId(null);
     setMessages([]);
     setHistoryOpen(false);
     setQuery("");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
-  // Persist the open conversation.
   useEffect(() => {
     if (!slug) return;
     if (messages.length === 0) return;
@@ -478,7 +480,7 @@ export function ChatWidget() {
     if (id === activeId) {
       setActiveId(null);
       setMessages([]);
-  
+
       setThoughts("");
     }
   }
@@ -522,12 +524,20 @@ export function ChatWidget() {
     if (!slug) {
       setMessages((prev) => [
         ...prev,
-        { id: newId(), role: "model", text: "No workspace detected. Open a workspace and try again.", status: "error" as const },
+        {
+          id: newId(),
+          role: "model",
+          text: "No workspace detected. Open a workspace and try again.",
+          status: "error" as const,
+        },
       ]);
       return;
     }
     setMenu(null);
-    const next: Msg[] = [...messages, { id: newId(), role: "user" as const, text: `/${id}`, status: "sending" as const }];
+    const next: Msg[] = [
+      ...messages,
+      { id: newId(), role: "user" as const, text: `/${id}`, status: "sending" as const },
+    ];
     setMessages(next);
     setInput("");
 
@@ -548,7 +558,12 @@ export function ChatWidget() {
     } catch (e) {
       setMessages((prev) => [
         ...prev,
-        { id: newId(), role: "model", text: `⚠️ ${e instanceof Error ? e.message : "Error"}`, status: "error" as const },
+        {
+          id: newId(),
+          role: "model",
+          text: `⚠️ ${e instanceof Error ? e.message : "Error"}`,
+          status: "error" as const,
+        },
       ]);
     } finally {
       setBusy(false);
@@ -562,7 +577,12 @@ export function ChatWidget() {
     if (!slug) {
       setMessages((prev) => [
         ...prev,
-        { id: newId(), role: "model", text: "No workspace detected. Open a workspace and try again.", status: "error" as const },
+        {
+          id: newId(),
+          role: "model",
+          text: "No workspace detected. Open a workspace and try again.",
+          status: "error" as const,
+        },
       ]);
       return;
     }
@@ -586,11 +606,19 @@ export function ChatWidget() {
 
     setThoughts("");
     if (mentions.length === 0) {
+      // Small talk answers instantly with zero AI requests.
+      const local = answerLocalIntent(clean);
+      if (local) {
+        setMessages((prev) => [
+          ...prev,
+          { id: newId(), role: "model" as const, text: local, status: "complete" as const },
+        ]);
+        return;
+      }
       await runCompletion(next);
       return;
     }
-    // @page context: one MCP snapshot each, zero LLM turns. The model
-    // usually answers straight from it, saving tool-call round-trips.
+    // @page context: one MCP snapshot each, zero LLM turns.
     setBusy(true);
     setStatus("Loading page context…");
     try {
@@ -613,9 +641,7 @@ export function ChatWidget() {
         }),
       );
       const ctx = parts.filter((p): p is string => !!p).join("\n\n");
-      const base = ctx
-        ? [...next.slice(0, -1), { ...next[next.length - 1]!, text: `${ctx}\n\n${clean}` }]
-        : next;
+      const base = ctx ? [...next.slice(0, -1), { ...next[next.length - 1]!, text: `${ctx}\n\n${clean}` }] : next;
       await runCompletion(base);
     } catch {
       await runCompletion(next);
@@ -649,7 +675,10 @@ export function ChatWidget() {
           messages: base.map(({ role, text }) => ({ role, text })),
         }),
       });
-      if (!res.ok || !res.body) throw new Error(res.status === 401 ? "Session expired" : res.status === 503 ? "Chat not configured" : "Chat error");
+      if (!res.ok || !res.body)
+        throw new Error(
+          res.status === 401 ? "Session expired" : res.status === 503 ? "Chat not configured" : "Chat error",
+        );
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";
@@ -689,13 +718,16 @@ export function ChatWidget() {
       if (!started && !modelText) {
         setMessages((prev) => {
           const copy = [...prev];
-          copy[copy.length - 1] = { id: assistantId, role: "model", text: "I couldn't generate a response. Try again.", status: "error" as const };
+          copy[copy.length - 1] = {
+            id: assistantId,
+            role: "model",
+            text: "I couldn't generate a response. Try again.",
+            status: "error" as const,
+          };
           return copy;
         });
       } else {
-        setMessages((prev) =>
-          prev.map((m) => (m.id === assistantId ? { ...m, status: "complete" as const } : m)),
-        );
+        setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, status: "complete" as const } : m)));
       }
     } catch (e) {
       setMessages((prev) => {
@@ -710,7 +742,15 @@ export function ChatWidget() {
           };
           return copy;
         }
-        return [...prev, { id: newId(), role: "model", text: `⚠️ ${e instanceof Error ? e.message : "Error"}`, status: "error" as const }];
+        return [
+          ...prev,
+          {
+            id: newId(),
+            role: "model",
+            text: `⚠️ ${e instanceof Error ? e.message : "Error"}`,
+            status: "error" as const,
+          },
+        ];
       });
     } finally {
       setBusy(false);
@@ -719,13 +759,9 @@ export function ChatWidget() {
   }
 
   const lastMsg = messages[messages.length - 1];
-  const awaitingResponse =
-    busy && lastMsg && (lastMsg.role === "user" || (lastMsg.role === "model" && !lastMsg.text));
+  const awaitingResponse = busy && lastMsg && (lastMsg.role === "user" || (lastMsg.role === "model" && !lastMsg.text));
 
   if (!open && !leaving) {
-    // Siri-style edge light: symmetric fades (both ends transparent, color
-    // handoff at the center) + perpetual motion underneath; only the wrapper
-    // opacity toggles, so it fades in/out cleanly — never pops.
     return (
       <div
         aria-hidden
@@ -733,25 +769,22 @@ export function ChatWidget() {
           askHover ? "opacity-100" : "opacity-0"
         }`}
       >
-        {/* soft wash */}
         <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-violet-500/15 via-blue-500/[0.06] to-transparent blur-2xl" />
-        {/* core line: transparent ends, violet→blue handoff at center */}
         <div className="absolute inset-y-0 right-0 w-[2px] bg-[linear-gradient(to_bottom,transparent_0%,rgba(139,92,246,0)_12%,rgba(139,92,246,0.65)_42%,rgba(96,165,250,0.65)_58%,rgba(96,165,250,0)_88%,transparent_100%)]" />
-        {/* traveling highlight, also symmetric */}
         <div className="trell-edge-flow absolute right-0 top-0 h-32 w-[2px] bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.9)_50%,transparent)]" />
       </div>
     );
   }
 
   return (
-    <aside className={`yoi-chat relative hidden h-full max-w-[calc(100vw-2rem)] shrink-0 overflow-hidden rounded-xl bg-neutral-100 transition-[width,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:block ${entered && !leaving ? "w-[440px] opacity-100" : "w-0 opacity-0"}`}>
+    <aside
+      className={`yoi-chat relative hidden h-full max-w-[calc(100vw-2rem)] shrink-0 overflow-hidden rounded-xl bg-neutral-100 transition-[width,opacity,margin-left,visibility] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:block ${entered && !leaving ? "w-[440px] opacity-100" : "w-0 opacity-0 invisible pointer-events-none -ml-2"}`}
+    >
       <div className="relative flex h-full w-[440px] max-w-[calc(100vw-2rem)] flex-col gap-1 p-3">
-        {/* dotted texture (Cloudflare-style) */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(0_0_0/0.05)_1px,transparent_0)] bg-[size:22px_22px] dark:bg-[radial-gradient(circle_at_1px_1px,rgb(255_255_255/0.06)_1px,transparent_0)]"
         />
-        {/* header */}
         <div className="relative flex items-center justify-between px-1 py-1">
           <button
             onClick={() => setHistoryOpen((v) => !v)}
@@ -762,12 +795,20 @@ export function ChatWidget() {
             New conversation
             <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-neutral-200 transition-all duration-200 dark:bg-neutral-800">
               <span className="trell-icon-arrow" style={{ display: "inline-flex" }}>
-                <ChevronDown size={12} className={`text-neutral-500 transition-transform ${historyOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  size={12}
+                  className={`text-neutral-500 transition-transform ${historyOpen ? "rotate-180" : ""}`}
+                />
               </span>
             </span>
           </button>
           <div className="flex items-center gap-1">
-            <button onClick={newChat} className="trell-btn-outline h-9 w-9 !px-0" title="New conversation" aria-label="New conversation">
+            <button
+              onClick={newChat}
+              className="trell-btn-outline h-9 w-9 !px-0"
+              title="New conversation"
+              aria-label="New conversation"
+            >
               <Plus size={14} />
             </button>
             <button onClick={close} className="trell-btn-outline h-9 w-9 !px-0" title="Close" aria-label="Close">
@@ -855,9 +896,12 @@ export function ChatWidget() {
           )}
         </div>
 
-        {/* messages */}
         <ChatContainerRoot className="relative min-h-0 flex-1">
-          <ChatContainerContent className="flex min-h-full flex-col gap-4 px-1 py-2" aria-live="polite" aria-label="Conversation">
+          <ChatContainerContent
+            className="flex min-h-full flex-col gap-4 px-1 py-2"
+            aria-live="polite"
+            aria-label="Conversation"
+          >
             {messages.length === 0 ? (
               <div className="m-auto flex w-full flex-col items-center py-6 text-center">
                 <div className="relative mb-4">
@@ -871,27 +915,31 @@ export function ChatWidget() {
                     priority
                   />
                 </div>
-                <div className="text-[17px] font-semibold tracking-tight text-trell-ink">{greet} What are we doing today?</div>
+                <div className="text-[17px] font-semibold tracking-tight text-trell-ink">
+                  {greet} What are we doing today?
+                </div>
                 <p className="mt-1 max-w-[250px] text-xs leading-relaxed text-trell-ink-muted">
                   Ask about your metrics, funnels or tracking. Type / for shortcuts.
                 </p>
-              <div className="mt-5 flex w-full flex-col">
-                {SUGGESTIONS.map((s, i) => (
-                  <button
-                    key={s.title}
-                    onClick={() => void send(s.prompt)}
-                    className={`flex items-center gap-3 px-2 py-3 text-left transition-colors hover:bg-neutral-100 dark:hover:bg-white/5 ${
-                      i > 0 ? "border-t border-trell-line/70 dark:border-white/10" : ""
-                    }`}
-                  >
-                    <s.icon size={16} className="shrink-0 text-neutral-400 dark:text-neutral-500" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-trell-ink">{s.title}</span>
-                      <span className="block truncate text-[13px] text-neutral-500 dark:text-neutral-400">{s.subtitle}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
+                <div className="mt-5 flex w-full flex-col">
+                  {SUGGESTIONS.map((s, i) => (
+                    <button
+                      key={s.title}
+                      onClick={() => void send(s.prompt)}
+                      className={`flex items-center gap-3 px-2 py-3 text-left transition-colors hover:bg-neutral-100 dark:hover:bg-white/5 ${
+                        i > 0 ? "border-t border-trell-line/70 dark:border-white/10" : ""
+                      }`}
+                    >
+                      <s.icon size={16} className="shrink-0 text-neutral-400 dark:text-neutral-500" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-trell-ink">{s.title}</span>
+                        <span className="block truncate text-[13px] text-neutral-500 dark:text-neutral-400">
+                          {s.subtitle}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               <>
@@ -900,7 +948,10 @@ export function ChatWidget() {
                   const streaming = busy && isLast && m.role === "model" && m.status !== "error";
                   if (m.role === "user") {
                     return (
-                      <div key={m.id} className="trell-msg-in max-w-[75%] self-end whitespace-pre-wrap rounded-[18px_18px_5px_18px] bg-neutral-900 px-[14px] py-[10px] text-sm leading-relaxed text-white max-md:max-w-[88%] dark:bg-[#CDCCCC] dark:text-[#111111]">
+                      <div
+                        key={m.id}
+                        className="trell-msg-in max-w-[75%] self-end whitespace-pre-wrap rounded-[18px_18px_5px_18px] bg-neutral-900 px-[14px] py-[10px] text-sm leading-relaxed text-white max-md:max-w-[88%] dark:bg-[#CDCCCC] dark:text-[#111111]"
+                      >
                         {m.text}
                       </div>
                     );
@@ -920,49 +971,72 @@ export function ChatWidget() {
                         ) : null}
                         {m.text ? (
                           <>
-                        <Markdown
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            h1: ({ children }) => <div className="mb-1.5 text-[15px] font-semibold text-trell-ink">{children}</div>,
-                            h2: ({ children }) => <div className="mb-1.5 text-[15px] font-semibold text-trell-ink">{children}</div>,
-                            h3: ({ children }) => <div className="mb-1 mt-3 text-sm font-semibold text-trell-ink first:mt-0">{children}</div>,
-                            h4: ({ children }) => <div className="mb-1 mt-2 text-sm font-semibold text-trell-ink">{children}</div>,
-                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                            ul: ({ children }) => <ul className="mb-2 ml-1 flex flex-col gap-1">{children}</ul>,
-                            ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal">{children}</ol>,
-                            li: ({ children }) => <li className="list-none [&>p]:mb-0">{children}</li>,
-                            strong: ({ children }) => <strong className="font-semibold text-trell-ink">{children}</strong>,
-                            em: ({ children }) => <em>{children}</em>,
-                            a: ({ children, href }) => (
-                              <a href={href} target="_blank" rel="noreferrer" className="font-medium text-blue-600 underline decoration-blue-300 underline-offset-2 hover:text-blue-700 dark:text-blue-400">
-                                {children}
-                              </a>
-                            ),
-                            blockquote: ({ children }) => (
-                              <blockquote className="mb-2 border-l-2 border-trell-line pl-3 text-trell-ink-muted [&>p]:mb-1">
-                                {children}
-                              </blockquote>
-                            ),
-                            code: ({ children }) => (
-                              <code className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-[12px] text-trell-ink dark:bg-[#2a2a29]">
-                                {children}
-                              </code>
-                            ),
-                            pre: ({ children }) => (
-                              <pre className="mb-2 overflow-x-auto rounded-lg bg-neutral-950 p-3 font-mono text-xs leading-relaxed text-neutral-200">
-                                {children}
-                              </pre>
-                            ),
-                            hr: () => <hr className="my-3 border-trell-line" />,
-                            table: ({ children }) => <ResponsiveTable>{children}</ResponsiveTable>,
-                            th: ({ children }) => (
-                              <th className="whitespace-nowrap border-b border-trell-line px-2 py-1 text-left font-semibold text-trell-ink">{children}</th>
-                            ),
-                            td: ({ children }) => <td className="whitespace-nowrap border-b border-trell-line/60 px-2 py-1">{children}</td>,
-                          }}
-                        >
-                          {m.text}
-                        </Markdown>
+                            <Markdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                h1: ({ children }) => (
+                                  <div className="mb-1.5 text-[15px] font-semibold text-trell-ink">{children}</div>
+                                ),
+                                h2: ({ children }) => (
+                                  <div className="mb-1.5 text-[15px] font-semibold text-trell-ink">{children}</div>
+                                ),
+                                h3: ({ children }) => (
+                                  <div className="mb-1 mt-3 text-sm font-semibold text-trell-ink first:mt-0">
+                                    {children}
+                                  </div>
+                                ),
+                                h4: ({ children }) => (
+                                  <div className="mb-1 mt-2 text-sm font-semibold text-trell-ink">{children}</div>
+                                ),
+                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                ul: ({ children }) => <ul className="mb-2 ml-1 flex flex-col gap-1">{children}</ul>,
+                                ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal">{children}</ol>,
+                                li: ({ children }) => <li className="list-none [&>p]:mb-0">{children}</li>,
+                                strong: ({ children }) => (
+                                  <strong className="font-semibold text-trell-ink">{children}</strong>
+                                ),
+                                em: ({ children }) => <em>{children}</em>,
+                                a: ({ children, href }) => (
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="font-medium text-blue-600 underline decoration-blue-300 underline-offset-2 hover:text-blue-700 dark:text-blue-400"
+                                  >
+                                    {children}
+                                  </a>
+                                ),
+                                blockquote: ({ children }) => (
+                                  <blockquote className="mb-2 border-l-2 border-trell-line pl-3 text-trell-ink-muted [&>p]:mb-1">
+                                    {children}
+                                  </blockquote>
+                                ),
+                                code: ({ children }) => (
+                                  <code className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-[12px] text-trell-ink dark:bg-[#2a2a29]">
+                                    {children}
+                                  </code>
+                                ),
+                                pre: ({ children }) => (
+                                  <pre className="mb-2 overflow-x-auto rounded-lg bg-neutral-950 p-3 font-mono text-xs leading-relaxed text-neutral-200">
+                                    {children}
+                                  </pre>
+                                ),
+                                hr: () => <hr className="my-3 border-trell-line" />,
+                                table: ({ children }) => <ResponsiveTable>{children}</ResponsiveTable>,
+                                th: ({ children }) => (
+                                  <th className="whitespace-nowrap border-b border-trell-line px-2 py-1 text-left font-semibold text-trell-ink">
+                                    {children}
+                                  </th>
+                                ),
+                                td: ({ children }) => (
+                                  <td className="whitespace-nowrap border-b border-trell-line/60 px-2 py-1">
+                                    {children}
+                                  </td>
+                                ),
+                              }}
+                            >
+                              {m.text}
+                            </Markdown>
                           </>
                         ) : null}
                         {m.status === "complete" && m.text && !streaming && (
@@ -989,7 +1063,6 @@ export function ChatWidget() {
           <ScrollButton className="absolute bottom-4 right-4 z-10 bg-white shadow-lg dark:bg-[#1e1e1d]" />
         </ChatContainerRoot>
 
-        {/* composer */}
         <div className="relative px-1 pb-1 pt-2">
           {menu && menuItems.length > 0 && (
             <div className="absolute inset-x-1 bottom-full z-20 mb-2 overflow-hidden rounded-xl border border-trell-line bg-white shadow-[0_20px_50px_-16px_rgb(24_24_27/0.25)] dark:border-[#2a2a29] dark:bg-[#1e1e1d]">
@@ -1012,7 +1085,9 @@ export function ChatWidget() {
                     }`}
                   >
                     <span className="shrink-0 font-mono text-[13px] font-medium text-trell-ink">{item.primary}</span>
-                    <span className="min-w-0 truncate text-xs text-neutral-500 dark:text-neutral-400">{item.secondary}</span>
+                    <span className="min-w-0 truncate text-xs text-neutral-500 dark:text-neutral-400">
+                      {item.secondary}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -1091,8 +1166,18 @@ export function ChatWidget() {
                     <div className="absolute bottom-full left-0 z-20 mb-2 w-64 overflow-hidden rounded-2xl border border-trell-line bg-white p-1.5 shadow-[0_20px_50px_-16px_rgb(24_24_27/0.25)] dark:border-[#2a2a29] dark:bg-[#1e1e1d]">
                       {(
                         [
-                          { id: "ask", icon: Pencil, title: "Ask before editing", subtitle: "Review and approve each change" },
-                          { id: "do", icon: FastForward, title: "Automatically edit", subtitle: "Always allow edits for this conversation" },
+                          {
+                            id: "ask",
+                            icon: Pencil,
+                            title: "Ask before editing",
+                            subtitle: "Review and approve each change",
+                          },
+                          {
+                            id: "do",
+                            icon: FastForward,
+                            title: "Automatically edit",
+                            subtitle: "Always allow edits for this conversation",
+                          },
                         ] as const
                       ).map((o) => (
                         <button
@@ -1108,7 +1193,9 @@ export function ChatWidget() {
                           <o.icon size={16} className="shrink-0 text-neutral-500 dark:text-neutral-400" />
                           <span className="min-w-0">
                             <span className="block truncate text-[13px] font-medium text-trell-ink">{o.title}</span>
-                            <span className="block truncate text-xs text-neutral-500 dark:text-neutral-400">{o.subtitle}</span>
+                            <span className="block truncate text-xs text-neutral-500 dark:text-neutral-400">
+                              {o.subtitle}
+                            </span>
                           </span>
                         </button>
                       ))}

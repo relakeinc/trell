@@ -1,4 +1,4 @@
-# Ask Trell — webchat del dashboard
+# Yoi — webchat del dashboard
 
 Widget flotante en los workspaces (`[slug]`), potenciado por OpenRouter
 (modelos `:free`) y las 28 tools del MCP. Sin infra nueva: corre en el
@@ -39,16 +39,16 @@ contenedor `web`, sin GPU ni RAM extra en el VPS.
 
 ## Variables (servicio `web`)
 
-| Var | Uso |
-|-----|-----|
-| `OPENROUTER_API_KEY` | OpenRouter (primario). Sin ella `/api/chat` da `503` |
-| `OPENROUTER_MODEL` | def. `openrouter/free` (router: elige free con tool-calling) |
-| `OPENROUTER_BASE_URL` | def. `https://openrouter.ai/api/v1` |
-| `ORCAROUTER_API_KEY` | OrcaRouter (fallback). Sin ella no hay fallback |
-| `ORCAROUTER_FALLBACK_MODEL` | def. `orcarouter/free` (entra si el primario da 429/402/404) |
-| `ORCAROUTER_BASE_URL` | def. `https://api.orcarouter.ai/v1` |
-| `MCP_OAUTH_SECRET` | mismo valor que el stack MCP (firma JWT identidad) |
-| `MCP_URL` | def. `http://api:8788`; en prod apunta al stack MCP (`http://trell-mcp-mcp-1:8788`) |
+| Var                         | Uso                                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| `OPENROUTER_API_KEY`        | OpenRouter (primario). Sin ella `/api/chat` da `503`                                |
+| `OPENROUTER_MODEL`          | def. `openrouter/free` (router: elige free con tool-calling)                        |
+| `OPENROUTER_BASE_URL`       | def. `https://openrouter.ai/api/v1`                                                 |
+| `ORCAROUTER_API_KEY`        | OrcaRouter (fallback). Sin ella no hay fallback                                     |
+| `ORCAROUTER_FALLBACK_MODEL` | def. `orcarouter/free` (entra si el primario da 429/402/404)                        |
+| `ORCAROUTER_BASE_URL`       | def. `https://api.orcarouter.ai/v1`                                                 |
+| `MCP_OAUTH_SECRET`          | mismo valor que el stack MCP (firma JWT identidad)                                  |
+| `MCP_URL`                   | def. `http://api:8788`; en prod apunta al stack MCP (`http://trell-mcp-mcp-1:8788`) |
 
 ## Notas
 

@@ -32,7 +32,6 @@ function clampLimit(raw: number | undefined, def: number): number {
 function bucketKey(ts: Date, interval: Interval): string {
   if (interval === "hour") return `${ts.toISOString().slice(0, 13)}:00:00.000Z`;
   if (interval === "week") {
-    // Monday (UTC) of the event's week.
     const d = new Date(Date.UTC(ts.getUTCFullYear(), ts.getUTCMonth(), ts.getUTCDate()));
     const dow = (d.getUTCDay() + 6) % 7;
     d.setUTCDate(d.getUTCDate() - dow);
@@ -49,15 +48,24 @@ function stepMs(interval: Interval): number {
 
 function dimensionValue(e: McpEvent, dimension: Dimension): string | null {
   switch (dimension) {
-    case "page": return e.pagePath || null;
-    case "utm_source": return e.utmSource;
-    case "utm_medium": return e.utmMedium;
-    case "utm_campaign": return e.utmCampaign;
-    case "device": return e.deviceType || null;
-    case "browser": return e.browser;
-    case "os": return e.os;
-    case "form": return e.formId;
-    case "type": return e.type;
+    case "page":
+      return e.pagePath || null;
+    case "utm_source":
+      return e.utmSource;
+    case "utm_medium":
+      return e.utmMedium;
+    case "utm_campaign":
+      return e.utmCampaign;
+    case "device":
+      return e.deviceType || null;
+    case "browser":
+      return e.browser;
+    case "os":
+      return e.os;
+    case "form":
+      return e.formId;
+    case "type":
+      return e.type;
   }
 }
 
@@ -101,7 +109,8 @@ export async function getSeries(
   return runTool(async () => {
     const p = await resolveProject(store, config, args.project);
     const interval: Interval = args.interval ?? "day";
-    if (!INTERVALS.includes(interval)) throw new McpError("invalid_input", `interval must be one of: ${INTERVALS.join(", ")}`);
+    if (!INTERVALS.includes(interval))
+      throw new McpError("invalid_input", `interval must be one of: ${INTERVALS.join(", ")}`);
     const { from, to } = resolveRange(args.from, args.to);
     const events = await store.getEventsForAnalytics(p.id, {
       from,
@@ -140,7 +149,15 @@ export const getBreakdownShape = {
 export async function getBreakdown(
   store: McpStore,
   config: McpConfig,
-  args: { project: string; dimension?: Dimension; from?: string; to?: string; type?: string[]; form?: string; limit?: number },
+  args: {
+    project: string;
+    dimension?: Dimension;
+    from?: string;
+    to?: string;
+    type?: string[];
+    form?: string;
+    limit?: number;
+  },
 ) {
   return runTool(async () => {
     const p = await resolveProject(store, config, args.project);
@@ -189,7 +206,10 @@ export async function getForms(
     const { from, to } = resolveRange(args.from, args.to, 90);
     const events = await store.getEventsForAnalytics(p.id, { from, to });
 
-    const map = new Map<string, { id: string; name: string | null; events: number; starts: number; successes: number }>();
+    const map = new Map<
+      string,
+      { id: string; name: string | null; events: number; starts: number; successes: number }
+    >();
     for (const e of events) {
       if (!e.formId) continue;
       let row = map.get(e.formId);
@@ -221,7 +241,15 @@ export const queryEventsShape = {
 export async function queryEvents(
   store: McpStore,
   config: McpConfig,
-  args: { project: string; from?: string; to?: string; type?: string[]; form?: string; limit?: number; cursor?: string },
+  args: {
+    project: string;
+    from?: string;
+    to?: string;
+    type?: string[];
+    form?: string;
+    limit?: number;
+    cursor?: string;
+  },
 ) {
   return runTool(async () => {
     const p = await resolveProject(store, config, args.project);

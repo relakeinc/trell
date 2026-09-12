@@ -29,19 +29,19 @@ Filosofía (inspirada en herramientas developer-first):
 
 ## 2. Decisiones de alto nivel
 
-| Área | Decisión | Por qué |
-|------|----------|--------|
-| Lenguaje API | **TypeScript + Hono** | TS compartido con SDK y dashboard; Hono rápido y portable a Node/edge para ingestion de alta frecuencia |
-| Dashboard + Auth | **Next.js** (App Router) + **Auth.js (NextAuth)** | Es la referencia de "auth como Dub": sesiones en DB, magic link + OAuth |
-| Base de datos | **PostgreSQL** vía **Prisma** | Migraciones, tipos, RLS multi-tenant; self-hostable con un binario. ClickHouse/Tinybird a futuro para eventos masivos |
-| Auth de usuarios | **Magic link (email vía Resend) + OAuth GitHub/Google** | Auth.js con provider de credenciales/email + OAuth; sesiones guardadas en DB |
-| Tenancy | **Proyectos con roles** (owner/member) | Modelo de workspace de Dub; `Project` es el tenant que agrupa forms |
-| Auth SDK | Clave pública `pk_...` (solo enviar eventos) + clave secreta `sk_...` (gestión/dashboard) | Nunca exponer secretos en el navegador; restringir lo que la `pk` puede hacer. `sk_` guardada **hasheada** |
-| Ingestion | `POST /v1/events` batch → `204`, key en header `Authorization: Bearer pk_...` | Menos round-trips y latencia; simple de firmar |
-| Envío de eventos | `navigator.sendBeacon` para `pagehide`/abandono, `fetch keepalive` para interactivos | No perder eventos al cerrar/página |
-| Identidad | `visitor_id` + `session_id` (UUID en cookie/LocalStorage de primera parte) + hash del email opcional (off) | Deduplicación, sesiones, sin PII por defecto. Cookieless mode (ver §8) |
-| Framework | SDK universal vanilla TS; **sin wrappers** en el MVP | Cubre HTML/React/Vue/Next/Astro/Svelte/WP con una misma lib. Wrappers después |
-| Monorepo | **Turborepo** | Mismo modelo que Dub: packages compartidos, single source of truth del schema |
+| Área             | Decisión                                                                                                   | Por qué                                                                                                               |
+| ---------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Lenguaje API     | **TypeScript + Hono**                                                                                      | TS compartido con SDK y dashboard; Hono rápido y portable a Node/edge para ingestion de alta frecuencia               |
+| Dashboard + Auth | **Next.js** (App Router) + **Auth.js (NextAuth)**                                                          | Es la referencia de "auth como Dub": sesiones en DB, magic link + OAuth                                               |
+| Base de datos    | **PostgreSQL** vía **Prisma**                                                                              | Migraciones, tipos, RLS multi-tenant; self-hostable con un binario. ClickHouse/Tinybird a futuro para eventos masivos |
+| Auth de usuarios | **Magic link (email vía Resend) + OAuth GitHub/Google**                                                    | Auth.js con provider de credenciales/email + OAuth; sesiones guardadas en DB                                          |
+| Tenancy          | **Proyectos con roles** (owner/member)                                                                     | Modelo de workspace de Dub; `Project` es el tenant que agrupa forms                                                   |
+| Auth SDK         | Clave pública `pk_...` (solo enviar eventos) + clave secreta `sk_...` (gestión/dashboard)                  | Nunca exponer secretos en el navegador; restringir lo que la `pk` puede hacer. `sk_` guardada **hasheada**            |
+| Ingestion        | `POST /v1/events` batch → `204`, key en header `Authorization: Bearer pk_...`                              | Menos round-trips y latencia; simple de firmar                                                                        |
+| Envío de eventos | `navigator.sendBeacon` para `pagehide`/abandono, `fetch keepalive` para interactivos                       | No perder eventos al cerrar/página                                                                                    |
+| Identidad        | `visitor_id` + `session_id` (UUID en cookie/LocalStorage de primera parte) + hash del email opcional (off) | Deduplicación, sesiones, sin PII por defecto. Cookieless mode (ver §8)                                                |
+| Framework        | SDK universal vanilla TS; **sin wrappers** en el MVP                                                       | Cubre HTML/React/Vue/Next/Astro/Svelte/WP con una misma lib. Wrappers después                                         |
+| Monorepo         | **Turborepo**                                                                                              | Mismo modelo que Dub: packages compartidos, single source of truth del schema                                         |
 
 **Decisiones confirmadas (Prompt 01):** auth completo estilo Dub · API en TypeScript+Hono ·
 monorepo · nombre de trabajo **trell**.
@@ -149,15 +149,15 @@ trell.success("checkout");
 
 ### 4.4 Conjunto de eventos (schema v1)
 
-| Evento | Detonante | Notas |
-|--------|-----------|-------|
-| `form_view` | el formulario entra en viewport (IntersectionObserver) | = "visita al formulario" |
-| `form_start` | primera interacción real (foco/input/change) en el form | = "formulario iniciado" |
-| `field_interaction` | cada campo que recibe foco/cambio | agregado por campo |
-| `form_submit` | evento `submit` (antes de validar) | intento |
-| `form_success` | confirmación de éxito (ver §4.5) | = "formulario completado" |
-| `form_abandon` | empezado pero sin éxito al salir/sesión | best-effort |
-| `cta_click` | click en elemento `[data-trell-cta]` | bajo prioridad en MVP |
+| Evento              | Detonante                                               | Notas                     |
+| ------------------- | ------------------------------------------------------- | ------------------------- |
+| `form_view`         | el formulario entra en viewport (IntersectionObserver)  | = "visita al formulario"  |
+| `form_start`        | primera interacción real (foco/input/change) en el form | = "formulario iniciado"   |
+| `field_interaction` | cada campo que recibe foco/cambio                       | agregado por campo        |
+| `form_submit`       | evento `submit` (antes de validar)                      | intento                   |
+| `form_success`      | confirmación de éxito (ver §4.5)                        | = "formulario completado" |
+| `form_abandon`      | empezado pero sin éxito al salir/sesión                 | best-effort               |
+| `cta_click`         | click en elemento `[data-trell-cta]`                    | bajo prioridad en MVP     |
 
 ### 4.5 Semántica del "éxito" (punto crítico)
 
@@ -191,8 +191,8 @@ de conversión. Este es un trade-off documentado.
   "device": { "type": "mobile", "os": "ios", "browser": "safari", "viewport": [390, 844] },
   "form": { "id": "contacto", "name": "Contacto" },
   "page": { "title": "Contacto", "path": "/contacto" },
-  "field": "email",          // solo en field_interaction
-  "properties": { "plan": "pro" }
+  "field": "email", // solo en field_interaction
+  "properties": { "plan": "pro" },
 }
 ```
 
@@ -236,15 +236,15 @@ de conversión. Este es un trade-off documentado.
 
 **`projects`** — tenant/entidad trackeada; cada proyecto es "un sitio".
 
-| columna | tipo | notas |
-|---------|------|-------|
-| `id` | uuid pk | |
-| `name` | text | |
-| `slug` | text unique | para URLs públicas |
-| `api_key_hash` | text | `sk_...` hasheada (nunca en claro) |
-| `publishable_key` | text unique indexed | `pk_...` expuesta en el SDK |
-| `domain` | text | allowlist de orígenes para CORS |
-| `created_at` | timestamptz | |
+| columna           | tipo                | notas                              |
+| ----------------- | ------------------- | ---------------------------------- |
+| `id`              | uuid pk             |                                    |
+| `name`            | text                |                                    |
+| `slug`            | text unique         | para URLs públicas                 |
+| `api_key_hash`    | text                | `sk_...` hasheada (nunca en claro) |
+| `publishable_key` | text unique indexed | `pk_...` expuesta en el SDK        |
+| `domain`          | text                | allowlist de orígenes para CORS    |
+| `created_at`      | timestamptz         |                                    |
 
 > El flujo emisor de claves es idéntico al de Dub: la `sk_` se muestra una vez al
 > crear/rotar el proyecto y luego solo se guarda su hash. La `pk_` es segura y se
@@ -252,47 +252,47 @@ de conversión. Este es un trade-off documentado.
 
 **`forms`** — formularios registrados dentro de un proyecto.
 
-| columna | tipo | notas |
-|---------|------|-------|
-| `id` | uuid pk | |
-| `project_id` | uuid fk→projects | |
-| `name` | text | etiqueta (ej. "Contacto") |
-| `selector` | text | como se identifica |
-| `url_pattern` | text | opcional |
-| `created_at` | timestamptz | |
+| columna       | tipo             | notas                     |
+| ------------- | ---------------- | ------------------------- |
+| `id`          | uuid pk          |                           |
+| `project_id`  | uuid fk→projects |                           |
+| `name`        | text             | etiqueta (ej. "Contacto") |
+| `selector`    | text             | como se identifica        |
+| `url_pattern` | text             | opcional                  |
+| `created_at`  | timestamptz      |                           |
 
 **`events`** — stream append-only de eventos (tabla principal).
 
-| columna | tipo | notas |
-|---------|------|-------|
-| `id` | bigint / snowflake pk | |
-| `project_id` | uuid fk→projects | |
-| `event_type` | enum | ver §4.4 |
-| `ts` | timestamptz | hora del evento |
-| `session_id` | uuid | |
-| `visitor_id` | uuid | |
-| `form_id` | uuid nullable | fk→forms (si está registrado) |
-| `form_name` | text nullable | snapshot por si el form se borra |
-| `url` | text | página donde ocurrió |
-| `referrer` | text | |
-| `utm_source`/`utm_medium`/`utm_campaign`/`utm_term`/`utm_content` | text | normalizadas en columnas |
-| `device_type` | text | desktop/tablet/mobile |
-| `os` | text | |
-| `browser` | text | |
-| `viewport_width`/`viewport_height` | int | |
-| `page_title` | text | |
-| `field` | text nullable | para `field_interaction` |
-| `properties` | jsonb | custom |
-| `raw` | jsonb | payload original (debug/replay) |
+| columna                                                           | tipo                  | notas                            |
+| ----------------------------------------------------------------- | --------------------- | -------------------------------- |
+| `id`                                                              | bigint / snowflake pk |                                  |
+| `project_id`                                                      | uuid fk→projects      |                                  |
+| `event_type`                                                      | enum                  | ver §4.4                         |
+| `ts`                                                              | timestamptz           | hora del evento                  |
+| `session_id`                                                      | uuid                  |                                  |
+| `visitor_id`                                                      | uuid                  |                                  |
+| `form_id`                                                         | uuid nullable         | fk→forms (si está registrado)    |
+| `form_name`                                                       | text nullable         | snapshot por si el form se borra |
+| `url`                                                             | text                  | página donde ocurrió             |
+| `referrer`                                                        | text                  |                                  |
+| `utm_source`/`utm_medium`/`utm_campaign`/`utm_term`/`utm_content` | text                  | normalizadas en columnas         |
+| `device_type`                                                     | text                  | desktop/tablet/mobile            |
+| `os`                                                              | text                  |                                  |
+| `browser`                                                         | text                  |                                  |
+| `viewport_width`/`viewport_height`                                | int                   |                                  |
+| `page_title`                                                      | text                  |                                  |
+| `field`                                                           | text nullable         | para `field_interaction`         |
+| `properties`                                                      | jsonb                 | custom                           |
+| `raw`                                                             | jsonb                 | payload original (debug/replay)  |
 
 **`daily_form_metrics`** — rollup agregado para consultas rápidas del dashboard.
 
-| columna | tipo |
-|---------|------|
-| `project_id`, `form_id`, `day` | clave compuesta |
-| `views`, `starts`, `submits`, `successes`, `abandons` | int |
-| `avg_time_to_complete_ms` | int |
-| `visitors` | int (distintos) |
+| columna                                               | tipo            |
+| ----------------------------------------------------- | --------------- |
+| `project_id`, `form_id`, `day`                        | clave compuesta |
+| `views`, `starts`, `submits`, `successes`, `abandons` | int             |
+| `avg_time_to_complete_ms`                             | int             |
+| `visitors`                                            | int (distintos) |
 
 ### 5.2 Índices
 
@@ -303,17 +303,17 @@ de conversión. Este es un trade-off documentado.
 
 ### 5.3 Definición de métricas (fuente de verdad)
 
-| Métrica | Definición |
-|---------|-----------|
-| Visitas al formulario | `count(form_view)` |
-| Formularios iniciados | `count(form_start)` |
-| Formularios completados | `count(form_success)` |
-| Tasa de conversión | `successes / views` (o `successes / starts`; se aclara en UI) |
-| Abandonados | `starts - successes` (o `count(form_abandon)`) |
-| Tiempo hasta completo | `avg(success_ts - start_ts)` por sesión/formulario |
-| Origen/UTM | group by `utm_*` (con fallback a `referrer`) |
-| Dispositivo | group by `device_type` |
-| Página | group by `url`/`page_title` |
+| Métrica                 | Definición                                                    |
+| ----------------------- | ------------------------------------------------------------- |
+| Visitas al formulario   | `count(form_view)`                                            |
+| Formularios iniciados   | `count(form_start)`                                           |
+| Formularios completados | `count(form_success)`                                         |
+| Tasa de conversión      | `successes / views` (o `successes / starts`; se aclara en UI) |
+| Abandonados             | `starts - successes` (o `count(form_abandon)`)                |
+| Tiempo hasta completo   | `avg(success_ts - start_ts)` por sesión/formulario            |
+| Origen/UTM              | group by `utm_*` (con fallback a `referrer`)                  |
+| Dispositivo             | group by `device_type`                                        |
+| Página                  | group by `url`/`page_title`                                   |
 
 ---
 
@@ -343,7 +343,7 @@ de conversión. Este es un trade-off documentado.
 - `GET /v1/projects/:id/forms` → listar.
 - `GET /v1/projects/:id/stats?from&to&interval&dimension` → métricas agregadas
   (devuelve series para el dashboard). `dimension` ∈ `form | device | utm_source |
-  page`.
+page`.
 
 **Health:** `GET /health` → `200`.
 
@@ -470,18 +470,18 @@ producto open source replica el comportamiento en "modo self-hosted".
 
 ## 12. Decisiones finales (resueltas)
 
-| Área | Decisión |
-|------|----------|
-| Auth de usuarios | Completo estilo Dub: Auth.js/NextAuth, magic link (Resend) + GitHub/Google, sesiones en DB, proyectos con roles |
-| Email | **Resend al inicio bajo una abstracción `Auth → EmailProvider → Resend`**, dejando hueco para `→ SMTP` en self-host |
-| API | TypeScript + Hono |
-| DB ORM | **Prisma** |
-| Database | PostgreSQL |
-| Analytics | **Postgres + rollups** (eventos + agregaciones). ClickHouse/Tinybird solo si el volumen lo exige (futuro: `SDK → ingestion → queue → ClickHouse`) |
-| Monorepo | Turborepo |
-| SDK | TypeScript/JavaScript universal |
-| Repo | Monorepo |
-| Nombre | trell |
+| Área             | Decisión                                                                                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth de usuarios | Completo estilo Dub: Auth.js/NextAuth, magic link (Resend) + GitHub/Google, sesiones en DB, proyectos con roles                                   |
+| Email            | **Resend al inicio bajo una abstracción `Auth → EmailProvider → Resend`**, dejando hueco para `→ SMTP` en self-host                               |
+| API              | TypeScript + Hono                                                                                                                                 |
+| DB ORM           | **Prisma**                                                                                                                                        |
+| Database         | PostgreSQL                                                                                                                                        |
+| Analytics        | **Postgres + rollups** (eventos + agregaciones). ClickHouse/Tinybird solo si el volumen lo exige (futuro: `SDK → ingestion → queue → ClickHouse`) |
+| Monorepo         | Turborepo                                                                                                                                         |
+| SDK              | TypeScript/JavaScript universal                                                                                                                   |
+| Repo             | Monorepo                                                                                                                                          |
+| Nombre           | trell                                                                                                                                             |
 
 > **Racional key:** Prisma por velocidad de desarrollo y paridad conceptual con
 > Dub, pero **sin** guardar cada evento para siempre ahí (scroll a rollups).

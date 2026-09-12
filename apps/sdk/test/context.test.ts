@@ -1,10 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  getOrCreateVisitorId,
-  getOrCreateSessionId,
-  getOrCreateUtm,
-  detectDevice,
-} from "../src/context";
+import { getOrCreateVisitorId, getOrCreateSessionId, getOrCreateUtm, detectDevice } from "../src/context";
 import { createMemoryStore } from "../src/storage";
 import { COOKIE_VISITOR, STORAGE_SESSION, STORAGE_UTM } from "@trell/shared";
 
@@ -36,7 +31,13 @@ describe("context", () => {
   });
 
   it("prefers already-stored UTM (first touch wins)", () => {
-    const stored = { source: "google", medium: "cpc", campaign: "s", term: null as string | null, content: null as string | null };
+    const stored = {
+      source: "google",
+      medium: "cpc",
+      campaign: "s",
+      term: null as string | null,
+      content: null as string | null,
+    };
     const store = createMemoryStore();
     store.set(STORAGE_UTM, JSON.stringify(stored));
     const utm = getOrCreateUtm(window, store, true);

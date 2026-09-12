@@ -29,7 +29,6 @@ export function skAuth(repo: Repo): MiddlewareHandler {
       return;
     }
 
-    // Named server key (dashboard → API Keys), scoped to this project.
     const row = await repo.findApiKeyProject(hash);
     if (!row || row.projectId !== project.id) {
       return sendError(c, 401, "invalid_api_key", "invalid secret key");

@@ -25,7 +25,10 @@ function clientIp(c: Context): string {
   return c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || "local";
 }
 
-export function makeIngest(deps: IngestDeps): { handler: (c: Context) => Promise<Response>; preflight: (c: Context) => Promise<Response> } {
+export function makeIngest(deps: IngestDeps): {
+  handler: (c: Context) => Promise<Response>;
+  preflight: (c: Context) => Promise<Response>;
+} {
   const limiter = deps.limiter ?? new RateLimiter(deps.config.rateLimitMax, deps.config.rateLimitWindowMs);
   const quota = new EventQuota();
   const maxBodyBytes = deps.config.maxBodyBytes;
@@ -69,9 +72,7 @@ export function makeIngest(deps: IngestDeps): { handler: (c: Context) => Promise
         const result = await deps.repo.insertEvents({ projectId, events: stored });
         quota.trackInserted(projectId, result.inserted);
 
-        // Deliver webhooks async (don't block response).
-        // No hardcoded type filter: deliverWebhooks only sends event types the
-        // webhook actually subscribes to (events array in DB).
+        // Deliver webhooks async without blocking; only subscribed event types are sent.
         const prisma = deps.prisma;
         if (!prisma || events.length === 0) {
           return sendOk(c, 202, { inserted: result.inserted, duplicates: result.duplicates });
@@ -79,16 +80,21 @@ export function makeIngest(deps: IngestDeps): { handler: (c: Context) => Promise
         Promise.allSettled(
           events.map((e) => {
             const form = "form" in e ? e.form : undefined;
-            return deliverWebhooks(projectId, e.type, {
-              event_id: e.event_id,
-              type: e.type,
-              page: e.page,
-              form_id: form?.id ?? null,
-              properties: e.properties,
-              visitor_id: e.visitor_id,
-              session_id: e.session_id,
-              timestamp: e.ts,
-            }, prisma);
+            return deliverWebhooks(
+              projectId,
+              e.type,
+              {
+                event_id: e.event_id,
+                type: e.type,
+                page: e.page,
+                form_id: form?.id ?? null,
+                properties: e.properties,
+                visitor_id: e.visitor_id,
+                session_id: e.session_id,
+                timestamp: e.ts,
+              },
+              prisma,
+            );
           }),
         ).catch(() => {});
 

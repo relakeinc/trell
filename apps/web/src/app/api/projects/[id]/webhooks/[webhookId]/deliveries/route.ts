@@ -3,10 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PrismaMembershipRepo, ProjectAccessService } from "@/lib/authz";
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string; webhookId: string }> }
-) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string; webhookId: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 

@@ -2,7 +2,7 @@
   "name": "@trell/mcp",
   "version": "0.0.0",
   "description": "Trell MCP server — analytics and actions for AI assistants and bots. Pure logic; runners live in @trell/api.",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,7 +12,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
@@ -28,6 +30,7 @@
     "@types/node": "^22.10.0",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vite": "^7.0.0",
+    "vitest": "^4.1.11"
   }
 }

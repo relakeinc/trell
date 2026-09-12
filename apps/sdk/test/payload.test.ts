@@ -59,7 +59,9 @@ describe("buildEvent (payload)", () => {
   });
 
   it("carries the form context", () => {
-    const ev = buildEvent(baseArgs({ type: "form_submit", form: { id: "checkout", name: "Checkout" }, extra: { valid: true } }));
+    const ev = buildEvent(
+      baseArgs({ type: "form_submit", form: { id: "checkout", name: "Checkout" }, extra: { valid: true } }),
+    );
     const e = ev as { form: { id: string; name: string }; valid: boolean };
     expect(e.form.id).toBe("checkout");
     expect(e.form.name).toBe("Checkout");

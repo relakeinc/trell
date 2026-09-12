@@ -31,7 +31,10 @@ function makeStore() {
       update: async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
         const row = deliveries[where.id]!;
         for (const [k, v] of Object.entries(data)) {
-          row[k] = v !== null && typeof v === "object" && "increment" in (v as object) ? ((row[k] as number) + (v as { increment: number }).increment) : v;
+          row[k] =
+            v !== null && typeof v === "object" && "increment" in (v as object)
+              ? (row[k] as number) + (v as { increment: number }).increment
+              : v;
         }
         return row;
       },

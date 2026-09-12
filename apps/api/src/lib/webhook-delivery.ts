@@ -22,15 +22,11 @@ interface WebhookTarget {
  */
 export interface WebhookStore {
   webhook: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     findMany(args: any): Promise<any>;
   };
   webhookDelivery: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     create(args: any): Promise<any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     update(args: any): Promise<any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     findMany(args: any): Promise<any>;
   };
 }
@@ -57,9 +53,7 @@ export async function deliverWebhooks(
 
   const deliverables = webhooks.slice(0, 10); // cap at 10
 
-  await Promise.allSettled(
-    deliverables.map((wh) => deliverOne(store, wh, projectId, event, payload)),
-  );
+  await Promise.allSettled(deliverables.map((wh) => deliverOne(store, wh, projectId, event, payload)));
 }
 
 async function deliverOne(
@@ -83,9 +77,7 @@ async function deliverOne(
         data: { webhookId: webhook.id, event, status: "pending", payload: JSON.stringify(payload) },
       })) as { id: string });
 
-  const signature = createHmac("sha256", webhook.secret)
-    .update(body)
-    .digest("hex");
+  const signature = createHmac("sha256", webhook.secret).update(body).digest("hex");
 
   let lastError: string | null = null;
   let attempt = resume?.attempts ?? 0;
@@ -98,7 +90,6 @@ async function deliverOne(
 
     attempt++;
     if (attempt < MAX_RETRIES) {
-      // attempt is now the number of tries made → delay for retry #attempt.
       const delay = RETRY_DELAYS_MS[attempt - 1] ?? RETRY_DELAYS_MS[RETRY_DELAYS_MS.length - 1] ?? 30_000;
       await store.webhookDelivery.update({
         where: { id: delivery.id },
@@ -112,7 +103,6 @@ async function deliverOne(
     }
   }
 
-  // all retries failed
   await store.webhookDelivery.update({
     where: { id: delivery.id },
     data: {
@@ -245,7 +235,10 @@ export async function retryStuckDeliveries(store: WebhookStore): Promise<number>
     } catch {
       payload = {};
     }
-    await deliverOne(store, row.webhook, row.webhook.projectId, row.event, payload, { id: row.id, attempts: row.attempts }).catch(() => {});
+    await deliverOne(store, row.webhook, row.webhook.projectId, row.event, payload, {
+      id: row.id,
+      attempts: row.attempts,
+    }).catch(() => {});
     reprocessed++;
   }
   return reprocessed;

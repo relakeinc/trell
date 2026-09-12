@@ -5,6 +5,7 @@
 > Actualizado con el rediseño Prompt 13 (repliqué el layout de la app de dub.co).
 
 ## Principios
+
 - Interfaz **limpia y minimalista**: mucho espacio en blanco, bordes finos, paleta
   con acento oscuro (`#171717`) sobre fondos claros (`#f5f5f5`), labels pequeños.
 - **Layout tipo Dub** replicado del código real (`apps/web/ui/layout/*`):
@@ -31,6 +32,7 @@
 - Acciones contextuales con botones pill (negro) y opciones secundarias ghost.
 
 ## Tokens (Tailwind, `apps/web`)
+
 - `bg #f5f5f5`, `muted #737373` (**texto** gris atenuado, antes era #f5f5f5 y casi invisible),
   `muted-bg #f5f5f5`, `card #fff`, `line #e5e5e5`, `line-emphasis #a3a3a3`,
   `ink #171717`, `ink-default #404040`, `ink-subtle #737373`, `ink-muted #a3a3a3`,
@@ -41,15 +43,18 @@
 > para fondos grises claros — NO `bg-trell-muted` (que es texto gris).
 
 ## Iconos
+
 - Se usa **`lucide-react`** (no emojis). Ejemplos:
   `LineChart` (Analytics), `GitBranch` (Funnels), `Scale` (Comparison),
   `Zap` (Events), `Settings2` (settings), `LogOut` (sign out), `Settings2`.
 
 ## Regla
+
 - Mantener la coherencia con Dub: menos es más; no sobrecargar con widgets ni
   color; la jerarquía la marca el valor numérico + la escala tipográfica.
 
 ## Notas de implementación
+
 - **Carga en tiempo real**: la lista de proyectos se obtiene con `refreshProjects()`
   (fetch a `GET /api/projects`) tras crear un proyecto y al montar; no hace falta
   recargar la página para ver el proyecto recién creado.

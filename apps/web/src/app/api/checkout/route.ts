@@ -30,16 +30,16 @@ export async function POST(req: Request) {
   let checkout;
   try {
     checkout = await polar.checkouts.create({
-    products: [productId],
-    customerEmail: session.user.email ?? undefined,
-    // Land back on the project's billing page (shows the Pro plan) — never a dead route.
-    successUrl: membership?.project
-      ? `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/${membership.project.slug}/settings/billing?upgraded=1`
-      : `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/?upgraded=1`,
-    metadata: {
-      userId: session.user.id,
-      projectId: membership?.projectId ?? "",
-    },
+      products: [productId],
+      customerEmail: session.user.email ?? undefined,
+      // Land back on the project's billing page (shows the Pro plan) — never a dead route.
+      successUrl: membership?.project
+        ? `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/${membership.project.slug}/settings/billing?upgraded=1`
+        : `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/?upgraded=1`,
+      metadata: {
+        userId: session.user.id,
+        projectId: membership?.projectId ?? "",
+      },
     });
   } catch (e) {
     console.error("[checkout] polar.checkouts.create failed", e);

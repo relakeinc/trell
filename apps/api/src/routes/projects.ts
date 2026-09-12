@@ -7,7 +7,10 @@ import { badRequest, sendError, sendOk } from "../lib/errors";
 
 const bodySchema = z.object({
   name: z.string().min(1),
-  slug: z.string().regex(/^[a-z0-9-]+$/).optional(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
   organizationName: z.string().min(1).optional(),
   domains: z.array(z.string()).or(z.string()).optional(),
 });
@@ -36,7 +39,7 @@ export function makeProjects(repo: Repo, config: ApiConfig) {
       }
 
       const slug = parsed.slug ?? slugify(parsed.name);
-      const domains = Array.isArray(parsed.domains) ? parsed.domains.join(",") : parsed.domains ?? "";
+      const domains = Array.isArray(parsed.domains) ? parsed.domains.join(",") : (parsed.domains ?? "");
 
       const { pk, sk, skHash } = newApiKeys(config.pkPrefix, config.skPrefix);
 

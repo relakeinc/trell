@@ -22,8 +22,7 @@ const METRICS: { key: MetricKey; label: string; title: string; color: string }[]
 
 const PREV_COLOR = "#94a3b8";
 
-// Plot box inside the 0..100 viewBox / % container. Bottom 8% stays clear so
-// the series never touches the date labels; top 8% gives the line headroom.
+// Plot box: bottom 8% clears date labels, top 8% gives the line headroom.
 const TOP = 8;
 const BOTTOM = 92;
 const SPAN = BOTTOM - TOP;
@@ -129,7 +128,6 @@ export function AreaChart({
 
   const line = useMemo(
     () => smoothLine(series.map((_, i) => ({ x: x(i), y: y(cur[i] ?? 0) }))),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [series, cur, axisMax],
   );
   const prevLine = useMemo(() => {
@@ -139,7 +137,6 @@ export function AreaChart({
       .filter((p): p is { i: number; v: number } => p.v != null)
       .map((p) => ({ x: x(p.i), y: y(p.v) }));
     return smoothLine(pts);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prev, series, metric, axisMax]);
   const area = line ? `${line} L${x(n - 1)},${BOTTOM} L${x(0)},${BOTTOM} Z` : "";
 
@@ -159,7 +156,6 @@ export function AreaChart({
     const el = plotRef.current;
     if (!el || n === 0) return;
     const rect = el.getBoundingClientRect();
-    // x is in % of the plot div (svg spans the full plot div width)
     const mouseX = ((e.clientX - rect.left) / rect.width) * 100;
     let best = 0;
     let bestD = Infinity;
@@ -170,8 +166,7 @@ export function AreaChart({
         best = i;
       }
     }
-    // Only engage when actually close to a point (px, not %): no aggressive
-    // mid-gap snapping — the tooltip appears as you reach the point.
+    // Only engage near a point (px): no mid-gap snapping, tooltip appears as you reach it.
     const bestPx = (bestD / 100) * rect.width;
     setHoverIdx(bestPx <= 32 ? best : null);
   }
@@ -190,7 +185,6 @@ export function AreaChart({
 
   return (
     <div className="mb-6 rounded-2xl border border-trell-line bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-      {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-trell-ink">
@@ -200,15 +194,23 @@ export function AreaChart({
             {loading && total === 0 ? (
               <div className="trell-skeleton h-8 w-28" />
             ) : (
-              <AnimatedNumber value={total} className="text-[28px] font-semibold tabular-nums leading-8 text-trell-ink" />
+              <AnimatedNumber
+                value={total}
+                className="text-[28px] font-semibold tabular-nums leading-8 text-trell-ink"
+              />
             )}
             {delta != null && (
               <span
                 className={`rounded-full px-1.5 py-0.5 text-xs font-semibold tabular-nums ${
-                  delta > 0 ? "bg-green-50 text-green-700" : delta < 0 ? "bg-red-50 text-red-600" : "bg-neutral-100 text-neutral-500"
+                  delta > 0
+                    ? "bg-green-50 text-green-700"
+                    : delta < 0
+                      ? "bg-red-50 text-red-600"
+                      : "bg-neutral-100 text-neutral-500"
                 }`}
               >
-                {delta > 0 ? "↗" : delta < 0 ? "↘" : "→"} {Math.abs(delta * 100).toFixed(Math.abs(delta * 100) < 0.1 && delta !== 0 ? 2 : 1)}%
+                {delta > 0 ? "↗" : delta < 0 ? "↘" : "→"}{" "}
+                {Math.abs(delta * 100).toFixed(Math.abs(delta * 100) < 0.1 && delta !== 0 ? 2 : 1)}%
               </span>
             )}
           </div>
@@ -248,7 +250,6 @@ export function AreaChart({
         </div>
       </div>
 
-      {/* Legend */}
       {(series.length > 0 || loading) && (
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
           <span className="inline-flex items-center gap-1.5">
@@ -264,9 +265,7 @@ export function AreaChart({
         </div>
       )}
 
-      {/* Chart */}
       <div className="relative mt-3 flex">
-        {/* Y axis — labels pinned to the exact gridline positions */}
         <div className="relative h-72 w-11 shrink-0">
           {gridVals.map((g, i) => (
             <span
@@ -311,7 +310,6 @@ export function AreaChart({
                     </clipPath>
                   </defs>
 
-                  {/* Gridlines */}
                   {gridVals.map((g, i) => (
                     <line
                       key={i}
@@ -320,7 +318,9 @@ export function AreaChart({
                       x2="100"
                       y2={BOTTOM - (g / axisMax) * SPAN}
                       stroke="currentColor"
-                      className={i === 0 ? "text-neutral-300 dark:text-white/20" : "text-neutral-200 dark:text-white/10"}
+                      className={
+                        i === 0 ? "text-neutral-300 dark:text-white/20" : "text-neutral-200 dark:text-white/10"
+                      }
                       strokeWidth="1"
                       vectorEffect="non-scaling-stroke"
                     />
@@ -359,8 +359,7 @@ export function AreaChart({
                   </g>
                 </svg>
 
-                {/* Bars as HTML — pixel-perfect rounding at any aspect ratio.
-                    Clipped to the plot box so edge bars never overflow the card. */}
+                {/* Bars as HTML for crisp rounding; clipped so edge bars never overflow. */}
                 {variant === "bars" && (
                   <div className="pointer-events-none absolute inset-0 overflow-hidden">
                     {series.map((_, i) => {
@@ -402,8 +401,7 @@ export function AreaChart({
                   </div>
                 )}
 
-                {/* Hover layer — always mounted, fades/slides via CSS so it
-                    feels clean instead of popping. Guide + dots + tooltip. */}
+                {/* Hover layer stays mounted; CSS fades it so it never pops. */}
                 <div
                   className="pointer-events-none absolute transition-opacity duration-150"
                   style={{
@@ -438,7 +436,6 @@ export function AreaChart({
                   />
                 )}
 
-                {/* Tooltip anchored to the hovered point */}
                 <div
                   className="pointer-events-none absolute z-20 min-w-36 rounded-xl border border-trell-line bg-white/95 px-3 py-2 shadow-xl backdrop-blur transition-all duration-150"
                   style={{
@@ -450,7 +447,9 @@ export function AreaChart({
                 >
                   {hover != null && (
                     <>
-                      <div className="mb-1 text-[11px] font-medium text-neutral-500">{fmtShortDate(series[hover]!.date)}</div>
+                      <div className="mb-1 text-[11px] font-medium text-neutral-500">
+                        {fmtShortDate(series[hover]!.date)}
+                      </div>
                       <div className="flex items-center gap-1.5 text-sm font-semibold tabular-nums text-trell-ink">
                         <span className="h-2 w-2 rounded-full" style={{ background: meta.color }} />
                         {fullFmt.format(hoverCur)}
@@ -462,7 +461,15 @@ export function AreaChart({
                             {fullFmt.format(hoverPrev)}
                           </span>
                           {hoverDelta != null && (
-                            <span className={hoverDelta > 0 ? "font-semibold text-green-600" : hoverDelta < 0 ? "font-semibold text-red-500" : ""}>
+                            <span
+                              className={
+                                hoverDelta > 0
+                                  ? "font-semibold text-green-600"
+                                  : hoverDelta < 0
+                                    ? "font-semibold text-red-500"
+                                    : ""
+                              }
+                            >
                               {hoverDelta > 0 ? "+" : ""}
                               {(hoverDelta * 100).toFixed(1)}%
                             </span>
@@ -474,7 +481,6 @@ export function AreaChart({
                 </div>
               </div>
 
-              {/* X ticks sit below the plot — the series can never overlap them */}
               <div className="relative h-5">
                 {ticks.map((t) => (
                   <span

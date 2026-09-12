@@ -46,12 +46,21 @@ export const baseEventSchema = z.object({
 export const formEventSchema = baseEventSchema.extend({ form: formContextSchema });
 
 export const eventSchema = z.union([
-  formEventSchema.extend({ type: z.literal("field_interaction"), field: z.string(), interaction: z.enum(["focus", "change"]) }),
+  formEventSchema.extend({
+    type: z.literal("field_interaction"),
+    field: z.string(),
+    interaction: z.enum(["focus", "change"]),
+  }),
   formEventSchema.extend({ type: z.literal("form_submit"), valid: z.boolean() }),
   formEventSchema.extend({ type: z.literal("form_success"), timeToSuccessMs: z.number().optional() }),
   formEventSchema.extend({ type: z.literal("form_abandon"), durationMs: z.number() }),
   formEventSchema.extend({ type: z.enum(["form_view", "form_start"]) }),
-  baseEventSchema.extend({ type: z.literal("cta_click"), cta: z.string(), label: z.string().optional(), href: z.string().optional() }),
+  baseEventSchema.extend({
+    type: z.literal("cta_click"),
+    cta: z.string(),
+    label: z.string().optional(),
+    href: z.string().optional(),
+  }),
   baseEventSchema,
 ]);
 

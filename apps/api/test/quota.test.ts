@@ -46,5 +46,4 @@ describe("EventQuota", () => {
     expect(calls()).toBe(2);
     expect(quota.size).toBe(2);
   });
-
 });

@@ -119,7 +119,10 @@ interface SeriesResponse {
 export function useProjectSeries(projectId: string | null, interval: string, qs: string | null) {
   return useQuery({
     queryKey: ["series", projectId, interval, qs],
-    queryFn: () => fetch(`/api/projects/${projectId}/series?interval=${interval}&${qs}`).then((r) => r.json() as Promise<SeriesResponse>),
+    queryFn: () =>
+      fetch(`/api/projects/${projectId}/series?interval=${interval}&${qs}`).then(
+        (r) => r.json() as Promise<SeriesResponse>,
+      ),
     enabled: !!projectId && !!qs,
   });
 }
@@ -134,7 +137,9 @@ interface BreakdownResponse {
 }
 
 export function fetchBreakdown(projectId: string, dim: string, qs: string): Promise<BreakdownResponse> {
-  return fetch(`/api/projects/${projectId}/breakdown?dimension=${dim}&${qs}`).then((r) => r.json() as Promise<BreakdownResponse>);
+  return fetch(`/api/projects/${projectId}/breakdown?dimension=${dim}&${qs}`).then(
+    (r) => r.json() as Promise<BreakdownResponse>,
+  );
 }
 
 export function useProjectBreakdown(projectId: string | null, dim: string, qs: string) {
@@ -170,7 +175,7 @@ export function useProjectForms(projectId: string | null, qs: string) {
 
 // ── Events ────────────────────────────────────────────────
 
-interface DrillEvent {
+export interface DrillEvent {
   eventId: string;
   type: string;
   ts: string;
@@ -193,7 +198,8 @@ interface EventsResponse {
 export function useProjectEvents(projectId: string | null, qs: string, limit = 50) {
   return useQuery({
     queryKey: ["events", projectId, qs, limit],
-    queryFn: () => fetch(`/api/projects/${projectId}/events?limit=${limit}&${qs}`).then((r) => r.json() as Promise<EventsResponse>),
+    queryFn: () =>
+      fetch(`/api/projects/${projectId}/events?limit=${limit}&${qs}`).then((r) => r.json() as Promise<EventsResponse>),
     enabled: !!projectId,
   });
 }
@@ -207,6 +213,7 @@ interface Submission {
   formId: string;
   formName: string | null;
   page: string;
+  url?: string | null;
   visitorId: string;
   fields: Record<string, unknown> | null;
   device: string;
@@ -221,7 +228,8 @@ interface SubmissionsResponse {
 export function useProjectSubmissions(projectId: string | null) {
   return useQuery({
     queryKey: ["submissions", projectId],
-    queryFn: () => fetch(`/api/projects/${projectId}/submissions`).then((r) => r.json() as Promise<SubmissionsResponse>),
+    queryFn: () =>
+      fetch(`/api/projects/${projectId}/submissions`).then((r) => r.json() as Promise<SubmissionsResponse>),
     enabled: !!projectId,
   });
 }
@@ -263,7 +271,10 @@ interface FunnelLiveResponse {
 export function useFunnelLive(projectId: string | null, funnelId: string | null, qs: string) {
   return useQuery({
     queryKey: ["funnel-live", projectId, funnelId, qs],
-    queryFn: () => fetch(`/api/projects/${projectId}/funnel-live?funnelId=${funnelId}&${qs}`).then((r) => r.json() as Promise<FunnelLiveResponse>),
+    queryFn: () =>
+      fetch(`/api/projects/${projectId}/funnel-live?funnelId=${funnelId}&${qs}`).then(
+        (r) => r.json() as Promise<FunnelLiveResponse>,
+      ),
     enabled: !!projectId && !!funnelId,
   });
 }
@@ -277,7 +288,10 @@ export function useFunnelMutations(projectId: string | null) {
   };
 
   const createFunnel = useMutation({
-    mutationFn: (data: { name: string; steps: { eventType: string; formId?: string; label?: string; position: number }[] }) =>
+    mutationFn: (data: {
+      name: string;
+      steps: { eventType: string; formId?: string; label?: string; position: number }[];
+    }) =>
       fetch(`/api/projects/${projectId}/funnels`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -287,7 +301,14 @@ export function useFunnelMutations(projectId: string | null) {
   });
 
   const updateFunnel = useMutation({
-    mutationFn: ({ id, ...data }: { id: string; name: string; steps: { eventType: string; formId?: string; label?: string; position: number }[] }) =>
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string;
+      name: string;
+      steps: { eventType: string; formId?: string; label?: string; position: number }[];
+    }) =>
       fetch(`/api/projects/${projectId}/funnels/${id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },

@@ -9,6 +9,7 @@
 ## 1. Qué se implementó en `apps/api` (Hono, TypeScript)
 
 ### Rutas
+
 - `POST /v1/ingest` y `POST /v1/events` (**alias**) → ingestion de eventos.
   - Se mantiene `/v1/events` porque es el endpoint por defecto del SDK (contract
     §13) y `/v1/ingest` como ruta canónica que pediste; ambas apuntan al mismo
@@ -18,6 +19,7 @@
 - `GET /health` → `{ ok: true }`.
 
 ### Middleware (orden correcto)
+
 1. **Size limit** — `content-length`/serializado > `maxBodyBytes` (256 KB) → 413.
 2. **Auth por `pk`** (`Authorization: Bearer pk_...`) → resuelve proyecto; valida
    **Origin/Referer** contra la allowlist de dominios; adjunta `project`.
@@ -30,17 +32,20 @@
 5. **Idempotencia** por `event_id` (unique + `skipDuplicates`) → `inserted`/`duplicates`.
 
 ### Repositorios
+
 - `Repo` (interfaz) + **`MemoryRepo`** (tests/demo, herméticos) + **`PrismaRepo`**
   (Postgres, producción).
 - `index.ts` elige repo según que exista `DATABASE_URL` (Postgres) o no (memoria).
 
 ### Esquema Prisma (`apps/api/prisma/schema.prisma`, Postgres)
+
 - **Organization**, **Project** (`publishableKey` único, `apiKeyHash` = sha256 de
   `sk`, `domains` byte string de allowlist), **Event** (índices `(projectId, ts)`
   y `(projectId, type, ts)`, `eventId` único, `ts`/`receivedAt`, propiedades/raw
   persistidas). Timestamps e índices desde el arranque.
 
 ### Seguridad
+
 - Separación `pk`/`sk`; **solo se almacena el hash** de `sk`; `sk` se muestra una
   vez al crear el proyecto (`scripts/seed.ts` + endpoint bootstrap).
 - Validación de dominio/origen (allowlist con `*.domain`).
@@ -50,6 +55,7 @@
 ---
 
 ## 2. Estado de build / tests
+
 - `pnpm build` ✓ · `pnpm typecheck` ✓ (strict, 5 tareas verdes).
 - `pnpm test` ✓ — **57 tests**:
   - `apps/api` **25**: validación (6), rate limit (4), auth/ingestion/errores (10),
@@ -62,6 +68,7 @@
 ---
 
 ## 3. Qué falta (fuera del alcance de Prompt 04)
+
 - **Dashboard / analytics UI** (leer métricas/rollups) — Prompt 05.
 - **API de management con `sk`** (CRUD de projects/forms, stats/queries).
 - **Rollups / agregaciones** y queries del dashboard.
@@ -76,6 +83,7 @@
 ---
 
 ## 4. Notas / decisiones tomadas
+
 1. **Endpoint alias** (`/v1/events` + `/v1/ingest`): se mantuvo el default del
    contrato para no romper el SDK y se añadió `/v1/ingest` como canónico. Si
    quieres unificar, es un cambio de una línea en `@trell/shared` §13 + `index.ts`.
@@ -91,6 +99,7 @@
 ---
 
 ## 5. Cómo probar end-to-end (manual, sin DB)
+
 ```bash
 TRELL_ADMIN_KEY=devadmin PORT=8787 pnpm --filter @trell/api db:generate  # una vez
 pnpm --filter @trell/api dev

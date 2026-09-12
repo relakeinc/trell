@@ -1,7 +1,16 @@
 import type { Context } from "hono";
 import type { Repo } from "../repositories/types";
 import { sendOk, badRequest } from "../lib/errors";
-import { buildFilter, computeBreakdown, computeMetrics, computeSeries, DIMENSIONS, INTERVALS, type Dimension, type Interval } from "../analytics/metrics";
+import {
+  buildFilter,
+  computeBreakdown,
+  computeMetrics,
+  computeSeries,
+  DIMENSIONS,
+  INTERVALS,
+  type Dimension,
+  type Interval,
+} from "../analytics/metrics";
 import { filterEvents, getSessionSegment } from "../analytics/segmentation";
 import { computeFunnel } from "../analytics/funnel";
 import { computeMetricsComparison } from "../analytics/comparison";
@@ -72,7 +81,13 @@ export function makeAnalytics(repo: Repo) {
       const result: Record<string, unknown> = {
         projectId,
         metrics: computeMetrics(events),
-        filters: { from: filter.from ?? null, to: filter.to ?? null, type: filter.type ?? null, form: filter.form ?? null, segment: segment ?? null },
+        filters: {
+          from: filter.from ?? null,
+          to: filter.to ?? null,
+          type: filter.type ?? null,
+          form: filter.form ?? null,
+          segment: segment ?? null,
+        },
       };
 
       if (compareFrom && compareTo) {
@@ -88,7 +103,8 @@ export function makeAnalytics(repo: Repo) {
     series: guard(async (c: Context): Promise<Response> => {
       const projectId = c.get("projectId");
       const intervalRaw = c.req.query("interval") ?? "day";
-      if (!INTERVALS.includes(intervalRaw as Interval)) return badRequest(c, `invalid interval: ${intervalRaw}`, "invalid_interval");
+      if (!INTERVALS.includes(intervalRaw as Interval))
+        return badRequest(c, `invalid interval: ${intervalRaw}`, "invalid_interval");
       const interval = intervalRaw as Interval;
 
       const from = parseDateQuery(c.req.query("from"), "from");
@@ -97,7 +113,12 @@ export function makeAnalytics(repo: Repo) {
       const form = c.req.query("form");
       const segment = parseSegment(c);
 
-      const events = await repo.getEventsForAnalytics(projectId, { from, to, type: type?.split(",").filter(Boolean), form });
+      const events = await repo.getEventsForAnalytics(projectId, {
+        from,
+        to,
+        type: type?.split(",").filter(Boolean),
+        form,
+      });
       const filtered = segment ? filterEvents(events, segment) : events;
       return sendOk(c, 200, { interval, series: computeSeries(filtered, interval, { from, to }) });
     }),
@@ -105,7 +126,8 @@ export function makeAnalytics(repo: Repo) {
     breakdown: guard(async (c: Context): Promise<Response> => {
       const projectId = c.get("projectId");
       const dimRaw = c.req.query("dimension") ?? "page";
-      if (!DIMENSIONS.includes(dimRaw as Dimension)) return badRequest(c, `invalid dimension: ${dimRaw}`, "invalid_dimension");
+      if (!DIMENSIONS.includes(dimRaw as Dimension))
+        return badRequest(c, `invalid dimension: ${dimRaw}`, "invalid_dimension");
       const dimension = dimRaw as Dimension;
 
       const from = parseDateQuery(c.req.query("from"), "from");
@@ -115,7 +137,12 @@ export function makeAnalytics(repo: Repo) {
       const form = c.req.query("form");
       const segment = parseSegment(c);
 
-      const events = await repo.getEventsForAnalytics(projectId, { from, to, type: type?.split(",").filter(Boolean), form });
+      const events = await repo.getEventsForAnalytics(projectId, {
+        from,
+        to,
+        type: type?.split(",").filter(Boolean),
+        form,
+      });
       const filtered = segment ? filterEvents(events, segment) : events;
       return sendOk(c, 200, { dimension, rows: computeBreakdown(filtered, dimension, topN) });
     }),
@@ -123,7 +150,10 @@ export function makeAnalytics(repo: Repo) {
     forms: guard(async (c: Context): Promise<Response> => {
       const projectId = c.get("projectId");
       const events = await repo.getEventsForAnalytics(projectId, {});
-      const map = new Map<string, { id: string; name: string | null; events: number; starts: number; successes: number }>();
+      const map = new Map<
+        string,
+        { id: string; name: string | null; events: number; starts: number; successes: number }
+      >();
       for (const e of events) {
         if (!e.formId) continue;
         let row = map.get(e.formId);
@@ -137,8 +167,7 @@ export function makeAnalytics(repo: Repo) {
       }
       const rows = Array.from(map.values())
         .sort((a, b) => b.events - a.events)
-        // Completion = successes / starts (same definition as the dashboard KPI),
-        // not successes / all events — that diluted the rate with views/interactions.
+        // Completion = successes / starts (dashboard KPI), not successes / all events.
         .map((r) => ({ ...r, conversionRate: r.starts > 0 ? r.successes / r.starts : null }));
       return sendOk(c, 200, { forms: rows });
     }),
@@ -153,9 +182,13 @@ export function makeAnalytics(repo: Repo) {
       const segment = parseSegment(c);
       const funnelId = c.req.query("funnelId");
 
-      let events = await repo.getEventsForAnalytics(projectId, { from, to, type: type?.split(",").filter(Boolean), form });
+      let events = await repo.getEventsForAnalytics(projectId, {
+        from,
+        to,
+        type: type?.split(",").filter(Boolean),
+        form,
+      });
 
-      // Session segment for funnel drill-down
       if (funnelId) {
         const funnel = await repo.getFunnel(funnelId);
         if (funnel) {
@@ -166,7 +199,6 @@ export function makeAnalytics(repo: Repo) {
         events = filterEvents(events, segment);
       }
 
-      // Pagination via cursor (event id)
       const cursor = c.req.query("cursor");
       let startIdx = 0;
       if (cursor) {
@@ -216,13 +248,15 @@ export function makeAnalytics(repo: Repo) {
       const filter = { from: thirtySecAgo, to: new Date(now) };
       const events = await repo.getEventsForAnalytics(projectId, filter);
 
-      // Group by type
       const byType: Record<string, number> = {};
-      const recent = events.slice(-10).reverse().map((e) => ({
-        type: e.type,
-        page: e.pagePath,
-        ts: e.ts.toISOString(),
-      }));
+      const recent = events
+        .slice(-10)
+        .reverse()
+        .map((e) => ({
+          type: e.type,
+          page: e.pagePath,
+          ts: e.ts.toISOString(),
+        }));
 
       for (const e of events) {
         byType[e.type] = (byType[e.type] || 0) + 1;

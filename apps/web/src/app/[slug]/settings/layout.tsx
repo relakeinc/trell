@@ -7,7 +7,8 @@ import { Toaster } from "react-hot-toast";
 import { Icon } from "@/components/Icon";
 import { ProjectProvider, useProject } from "./_components/ProjectContext";
 
-type SettingsSection = "general" | "appearance" | "billing" | "domains" | "api" | "tracking" | "webhooks" | "utm-templates";
+type SettingsSection =
+  "general" | "appearance" | "billing" | "domains" | "api" | "tracking" | "webhooks" | "utm-templates";
 
 interface Group {
   label: string;
@@ -52,11 +53,7 @@ function RequireProject({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export default function SettingsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const { slug } = useParams<{ slug: string }>();
   const pathname = usePathname();
   const currentSection = (pathname.split("/")[3] ?? "general") as SettingsSection;
@@ -78,9 +75,7 @@ export default function SettingsLayout({
         }}
       />
 
-      {/* Mobile: horizontal scrollable tabs */}
       <div className="flex flex-col md:flex md:h-full md:gap-3 md:p-0">
-        {/* Mobile back + horizontal tabs */}
         <div className="flex flex-col gap-2 px-1 pb-2 md:hidden">
           <Link
             href={`/${slug}/analytics`}
@@ -110,7 +105,6 @@ export default function SettingsLayout({
           </div>
         </div>
 
-        {/* Desktop: sidebar + content / Mobile: full-width content (single mount) */}
         <div className="flex min-w-0 flex-1 gap-3 md:h-full">
           <aside className="hidden h-full w-[220px] shrink-0 flex-col overflow-hidden rounded-xl bg-neutral-100 py-2 pr-2 md:flex">
             <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
@@ -129,9 +123,7 @@ export default function SettingsLayout({
                 <div className="flex flex-col gap-6">
                   {GROUPS.map((group) => (
                     <div key={group.label} className="flex flex-col gap-1">
-                      <div className="mb-2 px-3 text-[13px] text-neutral-400">
-                        {group.label}
-                      </div>
+                      <div className="mb-2 px-3 text-[13px] text-neutral-400">{group.label}</div>
                       {group.items.map((item) => {
                         const active = currentSection === item.id;
                         return (
@@ -164,7 +156,9 @@ export default function SettingsLayout({
           <main className="flex h-full min-w-0 flex-1">
             <div className="trell-main">
               <div className="trell-content">
-                <div><RequireProject>{children}</RequireProject></div>
+                <div>
+                  <RequireProject>{children}</RequireProject>
+                </div>
               </div>
             </div>
           </main>

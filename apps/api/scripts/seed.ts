@@ -19,14 +19,14 @@ const domains = process.env.TRELL_SEED_DOMAINS ?? "example.com,*.example.com";
 const prisma = new PrismaClient();
 const repo = new PrismaRepo(prisma);
 
-const { pk, sk, skHash } = newApiKeys(
-  process.env.TRELL_PK_PREFIX ?? "pk",
-  process.env.TRELL_SK_PREFIX ?? "sk",
-);
+const { pk, sk, skHash } = newApiKeys(process.env.TRELL_PK_PREFIX ?? "pk", process.env.TRELL_SK_PREFIX ?? "sk");
 
 const project = await repo.createOrganizationAndProject({
   name,
-  slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
+  slug: name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, ""),
   organizationName: name,
   pk,
   skHash,

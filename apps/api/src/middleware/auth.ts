@@ -29,9 +29,7 @@ export function pkAuth(repo: Repo): MiddlewareHandler {
   return async (c, next) => {
     const header = c.req.header("authorization") ?? "";
     const bearer = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
-    // Fallback for navigator.sendBeacon, which cannot set request headers.
-    // Only the publishable key is accepted here (it ships in public pages),
-    // never a secret key — sk routes use skauth and stay header-only.
+    // sendBeacon can't set headers, so pk may travel as ?key=; never accept sk here.
     const pk = bearer || (c.req.query("key") ?? "").trim();
 
     if (!pk) return unauthorized(c, "missing_api_key", "missing_api_key");

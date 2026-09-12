@@ -43,16 +43,14 @@ const FORM_TYPES = new Set([
 function prettyRawType(type: string): string {
   const words = type.replace(/[_-]+/g, " ").trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return type;
-  return words
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(" ");
+  return words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
 }
 
-function typeMeta(type: string): { label: string; dot: string } {
+export function typeMeta(type: string): { label: string; dot: string } {
   return TYPE_META[type] ?? { label: prettyRawType(type), dot: "bg-neutral-400" };
 }
 
-function displayName(e: EventsFeedEvent): string | null {
+export function displayName(e: EventsFeedEvent): string | null {
   const formName = e.formName?.trim();
   if (formName) return formName;
   const formId = e.formId?.trim();
@@ -93,9 +91,7 @@ export function EventsFeed({ events, slug }: EventsFeedProps) {
     <section className="flex flex-col overflow-hidden rounded-lg border border-trell-line bg-white dark:border-white/10 dark:bg-neutral-900">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-trell-line px-4 dark:border-white/10">
         <span className="whitespace-nowrap py-3 text-sm font-medium text-trell-ink">
-          <span className="border-b border-dotted border-neutral-300 pb-0.5 dark:border-white/20">
-            Recent events
-          </span>
+          <span className="border-b border-dotted border-neutral-300 pb-0.5 dark:border-white/20">Recent events</span>
         </span>
         <Link
           href={`/${slug}/events`}
@@ -113,20 +109,12 @@ export function EventsFeed({ events, slug }: EventsFeedProps) {
               const meta = typeMeta(e.type);
               const name = displayName(e);
               return (
-                <li
-                  key={`${e.ts}-${e.type}-${i}`}
-                  className="flex items-center gap-3 px-2 py-2.5"
-                  title={e.ts}
-                >
+                <li key={`${e.ts}-${e.type}-${i}`} className="flex items-center gap-3 px-2 py-2.5" title={e.ts}>
                   <div className="min-w-0 flex-1">
                     {name ? (
-                      <p className="truncate text-[13px] font-medium leading-5 text-trell-ink">
-                        {name}
-                      </p>
+                      <p className="truncate text-[13px] font-medium leading-5 text-trell-ink">{name}</p>
                     ) : (
-                      <p className="truncate text-[13px] leading-5 text-neutral-300 dark:text-neutral-600">
-                        —
-                      </p>
+                      <p className="truncate text-[13px] leading-5 text-neutral-300 dark:text-neutral-600">—</p>
                     )}
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs leading-4 text-trell-ink-muted">
                       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${meta.dot}`} />

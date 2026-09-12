@@ -137,7 +137,12 @@ export class MemoryRepo implements Repo {
     this.webhooks = this.webhooks.filter((w) => w.meta.id !== id);
   }
 
-  async createApiKey(input: { projectId: string; name: string; keyHash: string; keyPrefix: string }): Promise<ApiKeyMeta> {
+  async createApiKey(input: {
+    projectId: string;
+    name: string;
+    keyHash: string;
+    keyPrefix: string;
+  }): Promise<ApiKeyMeta> {
     const meta: ApiKeyMeta = {
       id: `ak_${++this.seq}`,
       name: input.name,
@@ -212,9 +217,7 @@ export class MemoryRepo implements Repo {
   }
 
   async listMemberships(userId: string): Promise<{ projectId: string; role: string }[]> {
-    return this.memberships
-      .filter((m) => m.userId === userId)
-      .map((m) => ({ projectId: m.projectId, role: m.role }));
+    return this.memberships.filter((m) => m.userId === userId).map((m) => ({ projectId: m.projectId, role: m.role }));
   }
 
   async createOrganizationAndProject(input: CreateProjectInput): Promise<ProjectRecord> {
@@ -287,7 +290,10 @@ export class MemoryRepo implements Repo {
 
   async listFunnels(projectId: string): Promise<FunnelRecord[]> {
     const ids = this.funnelsByProject.get(projectId) ?? new Set();
-    return [...ids].map((id) => this.funnels.get(id)!).filter(Boolean).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return [...ids]
+      .map((id) => this.funnels.get(id)!)
+      .filter(Boolean)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   async getFunnel(id: string): Promise<FunnelRecord | null> {
@@ -349,7 +355,10 @@ export class MemoryRepo implements Repo {
 
   async listSavedViews(projectId: string): Promise<SavedViewRecord[]> {
     const ids = this.savedViewsByProject.get(projectId) ?? new Set();
-    return [...ids].map((id) => this.savedViews.get(id)!).filter(Boolean).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return [...ids]
+      .map((id) => this.savedViews.get(id)!)
+      .filter(Boolean)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   async getSavedView(id: string): Promise<SavedViewRecord | null> {

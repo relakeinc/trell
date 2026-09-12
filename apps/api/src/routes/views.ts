@@ -18,12 +18,15 @@ export function makeViews(repo: Repo) {
         return badRequest(c, "name, type, and config required", "invalid_body");
       }
 
-      // Validate config via Zod discriminated union
       let validated;
       try {
         validated = validateSavedViewConfig(body.type, body.config);
       } catch (e) {
-        return badRequest(c, `invalid config for type "${body.type}": ${e instanceof Error ? e.message : String(e)}`, "invalid_config");
+        return badRequest(
+          c,
+          `invalid config for type "${body.type}": ${e instanceof Error ? e.message : String(e)}`,
+          "invalid_config",
+        );
       }
 
       const view = await repo.createSavedView({

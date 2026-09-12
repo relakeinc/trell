@@ -186,8 +186,12 @@ export function createMcpServer(deps: McpServerDeps): McpServer {
     createFunnel(store, config, args),
   );
 
-  server.tool("update_funnel", "Rename a funnel or replace its steps", updateFunnelShape, WRITE_ANNOTATIONS, async (args) =>
-    updateFunnel(store, config, args),
+  server.tool(
+    "update_funnel",
+    "Rename a funnel or replace its steps",
+    updateFunnelShape,
+    WRITE_ANNOTATIONS,
+    async (args) => updateFunnel(store, config, args),
   );
 
   server.tool("delete_funnel", "Delete a funnel", deleteFunnelShape, WRITE_ANNOTATIONS, async (args) =>
@@ -206,45 +210,71 @@ export function createMcpServer(deps: McpServerDeps): McpServer {
     deleteUtmTemplate(store, config, args),
   );
 
-  server.tool("add_domain", "Add a hostname to the tracking allowlist", addDomainShape, WRITE_ANNOTATIONS, async (args) =>
-    addDomain(store, config, args),
+  server.tool(
+    "add_domain",
+    "Add a hostname to the tracking allowlist",
+    addDomainShape,
+    WRITE_ANNOTATIONS,
+    async (args) => addDomain(store, config, args),
   );
 
-  server.tool("remove_domain", "Remove a hostname from the tracking allowlist", removeDomainShape, WRITE_ANNOTATIONS, async (args) =>
-    removeDomain(store, config, args),
+  server.tool(
+    "remove_domain",
+    "Remove a hostname from the tracking allowlist",
+    removeDomainShape,
+    WRITE_ANNOTATIONS,
+    async (args) => removeDomain(store, config, args),
   );
 
-  server.tool("create_webhook", "Create a webhook (URL + subscribed events)", createWebhookShape, WRITE_ANNOTATIONS, async (args) =>
-    createWebhook(store, config, args),
+  server.tool(
+    "create_webhook",
+    "Create a webhook (URL + subscribed events)",
+    createWebhookShape,
+    WRITE_ANNOTATIONS,
+    async (args) => createWebhook(store, config, args),
   );
 
   server.tool("delete_webhook", "Delete a webhook", deleteWebhookShape, WRITE_ANNOTATIONS, async (args) =>
     deleteWebhook(store, config, args),
   );
 
-  server.tool("create_api_key", "Create a server key (secret shown ONCE — store it in .env, never in the browser)", createApiKeyShape, WRITE_ANNOTATIONS, async (args) =>
-    createApiKey(store, config, args),
+  server.tool(
+    "create_api_key",
+    "Create a server key (secret shown ONCE — store it in .env, never in the browser)",
+    createApiKeyShape,
+    WRITE_ANNOTATIONS,
+    async (args) => createApiKey(store, config, args),
   );
 
   // ── Destructive (owner + MCP_ALLOW_DESTRUCTIVE + confirm) ──
-  server.tool("revoke_api_key", "Revoke a server key immediately", revokeApiKeyShape, DESTRUCTIVE_ANNOTATIONS, async (args) =>
-    revokeApiKey(store, config, args),
+  server.tool(
+    "revoke_api_key",
+    "Revoke a server key immediately",
+    revokeApiKeyShape,
+    DESTRUCTIVE_ANNOTATIONS,
+    async (args) => revokeApiKey(store, config, args),
   );
 
-  server.tool("delete_project", "PERMANENTLY delete a workspace and everything in it", deleteProjectShape, DESTRUCTIVE_ANNOTATIONS, async (args) =>
-    deleteProject(store, config, args),
+  server.tool(
+    "delete_project",
+    "PERMANENTLY delete a workspace and everything in it",
+    deleteProjectShape,
+    DESTRUCTIVE_ANNOTATIONS,
+    async (args) => deleteProject(store, config, args),
   );
 
-  server.tool("rotate_project_secret", "Rotate the project-level secret (invalidates the old sk)", rotateProjectSecretShape, DESTRUCTIVE_ANNOTATIONS, async (args) =>
-    rotateProjectSecret(store, config, args),
+  server.tool(
+    "rotate_project_secret",
+    "Rotate the project-level secret (invalidates the old sk)",
+    rotateProjectSecretShape,
+    DESTRUCTIVE_ANNOTATIONS,
+    async (args) => rotateProjectSecret(store, config, args),
   );
 
   // ── Resources ──────────────────────────────────────────────
   server.resource("projects", "trell://projects", async (uri) => {
     const all = await store.listProjects();
-    const allowed = config.allowedSlugs
-      ? all.filter((p) => config.allowedSlugs!.includes(p.slug.toLowerCase()))
-      : all;
+    const allowed = config.allowedSlugs ? all.filter((p) => config.allowedSlugs!.includes(p.slug.toLowerCase())) : all;
     return {
       contents: [
         {

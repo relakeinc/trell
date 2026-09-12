@@ -70,10 +70,7 @@ export function computeMetricsComparison(
   };
 }
 
-export function computeFunnelComparison(
-  baselineResult: FunnelResult,
-  compareResult: FunnelResult,
-): FunnelComparison {
+export function computeFunnelComparison(baselineResult: FunnelResult, compareResult: FunnelResult): FunnelComparison {
   const maxLen = Math.max(baselineResult.steps.length, compareResult.steps.length);
   const stepDeltas: FunnelComparison["stepDeltas"] = [];
 

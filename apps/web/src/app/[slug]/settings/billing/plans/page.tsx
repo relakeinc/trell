@@ -33,13 +33,15 @@ const PLANS: Plan[] = [
     name: "Free",
     priceMonthly: "US$ 0",
     priceYearly: "US$ 0",
-    features: [
-      { label: "Trell Analytics", icon: "analytics" },
-    ],
+    features: [{ label: "Trell Analytics", icon: "analytics" }],
   },
 ];
 
-const FEATURE_ROWS: { section: string; icon: string; rows: { name: string; free: string; pro: string; proHigh?: boolean }[] }[] = [
+const FEATURE_ROWS: {
+  section: string;
+  icon: string;
+  rows: { name: string; free: string; pro: string; proHigh?: boolean }[];
+}[] = [
   {
     section: "Analytics",
     icon: "analytics",
@@ -87,8 +89,7 @@ export default function BillingPlansPage() {
       });
       const data = await res.json();
       if (data.url) {
-        // Full-screen loader BEFORE leaving: the handoff to Polar can take
-        // a moment and the page would otherwise look frozen.
+        // Show loader before leaving: the Polar handoff can take a moment.
         setRedirecting(true);
         window.location.href = data.url;
       } else {
@@ -107,19 +108,8 @@ export default function BillingPlansPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {redirecting && (
-        <RedirectOverlay
-          title="Redirecting to secure payment…"
-          subtitle="Do not close this window."
-        />
-      )}
-      {managing && (
-        <RedirectOverlay
-          title="Opening customer portal…"
-          subtitle="Do not close this window."
-        />
-      )}
-      {/* Breadcrumb + cycle toggle */}
+      {redirecting && <RedirectOverlay title="Redirecting to secure payment…" subtitle="Do not close this window." />}
+      {managing && <RedirectOverlay title="Opening customer portal…" subtitle="Do not close this window." />}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm">
           <Link href={`/${project.slug}/settings/billing`} className="text-lg font-semibold text-trell-ink">
@@ -146,33 +136,40 @@ export default function BillingPlansPage() {
         </div>
       </div>
 
-      {/* Plan cards */}
       <div className="flex flex-col overflow-hidden rounded-xl border border-neutral-200">
         {error && (
           <div role="alert" className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
-        {/* Header accent bars */}
         <div className="grid grid-cols-1 sm:grid-cols-2">
           {PLANS.map((plan) => (
-            <div key={plan.id} className={`border-b border-neutral-200 px-5 pt-5 pb-4 ${plan.recommended ? "bg-blue-50/50" : "bg-white"} sm:border-b-0`}>
+            <div
+              key={plan.id}
+              className={`border-b border-neutral-200 px-5 pt-5 pb-4 ${plan.recommended ? "bg-blue-50/50" : "bg-white"} sm:border-b-0`}
+            >
               <div className={`h-0.5 w-full rounded-full ${plan.recommended ? "bg-blue-500" : "bg-neutral-200"}`} />
               <div className="mt-3 flex items-start justify-between">
                 <div>
                   <div className="text-base font-medium text-neutral-900">{plan.name}</div>
                   <div className="mt-1 text-sm text-neutral-600">
-                    {cycle === "monthly" ? plan.priceMonthly : plan.priceYearly} <span className="text-neutral-400">per {cycle === "monthly" ? "month" : "year"}</span>
+                    {cycle === "monthly" ? plan.priceMonthly : plan.priceYearly}{" "}
+                    <span className="text-neutral-400">per {cycle === "monthly" ? "month" : "year"}</span>
                   </div>
                 </div>
                 {plan.recommended && (
-                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600">Recommended</span>
+                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600">
+                    Recommended
+                  </span>
                 )}
               </div>
               <div className="mt-4 text-xs font-medium text-neutral-400 uppercase tracking-wide">Includes</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {plan.features.map((f) => (
-                  <div key={f.label} className="flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2 py-1">
+                  <div
+                    key={f.label}
+                    className="flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2 py-1"
+                  >
                     <Icon name={f.icon} size={13} className="text-neutral-600" />
                     <span className="text-xs text-neutral-600">{f.label}</span>
                   </div>
@@ -226,7 +223,6 @@ export default function BillingPlansPage() {
         </div>
       </div>
 
-      {/* Feature comparison */}
       <div className="overflow-hidden rounded-xl border border-neutral-200">
         {FEATURE_ROWS.map((group) => (
           <div key={group.section} className="border-b border-neutral-200 last:border-b-0">
@@ -235,7 +231,10 @@ export default function BillingPlansPage() {
                 <Icon name={group.icon} size={16} className="text-neutral-500" />
                 {group.section}
               </div>
-              <Link href={`/${project.slug}/settings/general`} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors">
+              <Link
+                href={`/${project.slug}/settings/general`}
+                className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
+              >
                 Learn more ↗
               </Link>
             </div>
@@ -244,7 +243,9 @@ export default function BillingPlansPage() {
                 <div key={row.name} className="grid grid-cols-[1fr_85px_85px] items-center px-5 py-2">
                   <div className="text-sm text-neutral-700">{row.name}</div>
                   <div className="pr-4 text-right text-sm text-neutral-500">{row.free}</div>
-                  <div className="rounded-md bg-blue-50/60 px-3 py-1.5 text-center text-sm text-neutral-700">{row.pro}</div>
+                  <div className="rounded-md bg-blue-50/60 px-3 py-1.5 text-center text-sm text-neutral-700">
+                    {row.pro}
+                  </div>
                 </div>
               ))}
             </div>

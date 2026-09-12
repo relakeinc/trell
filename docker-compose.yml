@@ -51,7 +51,13 @@ services:
     ports:
       - "8787:8787"
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:8787/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:8787/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -62,6 +68,13 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      # NEXT_PUBLIC_* vars are baked into the Next.js build. Defaults serve
+      # local testing; public deployments MUST override the SDK/ingest URLs
+      # with their own API origin (see .env.example).
+      args:
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_SDK_URL: ${NEXT_PUBLIC_SDK_URL:-http://localhost:8787/sdk/trell.js}
+        NEXT_PUBLIC_INGEST_URL: ${NEXT_PUBLIC_INGEST_URL:-http://localhost:8787/v1/events}
     environment:
       DATABASE_URL: ${DATABASE_URL}
       AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}
@@ -79,7 +92,13 @@ services:
     ports:
       - "3000:3000"
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/signin').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000/signin').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10

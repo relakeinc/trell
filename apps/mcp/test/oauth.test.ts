@@ -121,20 +121,30 @@ describe("callback + token", () => {
     expect(unverified.redirect).toBeDefined();
     const badGoogle = { exchange: async () => "t", userinfo: async () => ({ email: "x@y.z", verified: false }) };
     const auth = beginAuthorize(CONFIG, {
-      client_id: "c", redirect_uri: "http://127.0.0.1:1/", code_challenge: CHALLENGE,
-      code_challenge_method: "S256", response_type: "code",
+      client_id: "c",
+      redirect_uri: "http://127.0.0.1:1/",
+      code_challenge: CHALLENGE,
+      code_challenge_method: "S256",
+      response_type: "code",
     });
     const state = new URL(auth.redirect!).searchParams.get("state")!;
     const out = await handleCallback(CONFIG, { code: "c", state }, badGoogle);
     expect(out.redirect).toContain("error=");
 
     const locked = mcpConfigFromEnv({
-      MCP_API_KEY: "k", MCP_OAUTH_SECRET: CONFIG.oauthSecret, GOOGLE_CLIENT_ID: "g",
-      GOOGLE_CLIENT_SECRET: "s", MCP_PUBLIC_URL: "https://mcp.test", MCP_ALLOWED_EMAILS: "other@x.y",
+      MCP_API_KEY: "k",
+      MCP_OAUTH_SECRET: CONFIG.oauthSecret,
+      GOOGLE_CLIENT_ID: "g",
+      GOOGLE_CLIENT_SECRET: "s",
+      MCP_PUBLIC_URL: "https://mcp.test",
+      MCP_ALLOWED_EMAILS: "other@x.y",
     } as NodeJS.ProcessEnv);
     const auth2 = beginAuthorize(locked, {
-      client_id: "c", redirect_uri: "http://127.0.0.1:1/", code_challenge: CHALLENGE,
-      code_challenge_method: "S256", response_type: "code",
+      client_id: "c",
+      redirect_uri: "http://127.0.0.1:1/",
+      code_challenge: CHALLENGE,
+      code_challenge_method: "S256",
+      response_type: "code",
     });
     const state2 = new URL(auth2.redirect!).searchParams.get("state")!;
     const out2 = await handleCallback(locked, { code: "c", state: state2 }, google);
@@ -161,8 +171,10 @@ describe("callback + token", () => {
     const done = await login();
     const code = new URL(done.redirect!).searchParams.get("code")!;
     const bad = handleToken(CONFIG, {
-      grant_type: "authorization_code", code,
-      redirect_uri: "http://127.0.0.1:33418/", code_verifier: "wrong",
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: "http://127.0.0.1:33418/",
+      code_verifier: "wrong",
     });
     expect(bad.status).toBe(400);
 
@@ -172,8 +184,10 @@ describe("callback + token", () => {
       -1,
     );
     const gone = handleToken(CONFIG, {
-      grant_type: "authorization_code", code: expired,
-      redirect_uri: "http://127.0.0.1:1/", code_verifier: VERIFIER,
+      grant_type: "authorization_code",
+      code: expired,
+      redirect_uri: "http://127.0.0.1:1/",
+      code_verifier: VERIFIER,
     });
     expect(gone.status).toBe(400);
   });
@@ -182,8 +196,10 @@ describe("callback + token", () => {
     const done = await login();
     const code = new URL(done.redirect!).searchParams.get("code")!;
     const first = handleToken(CONFIG, {
-      grant_type: "authorization_code", code,
-      redirect_uri: "http://127.0.0.1:33418/", code_verifier: VERIFIER,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: "http://127.0.0.1:33418/",
+      code_verifier: VERIFIER,
     });
     const refresh = (first.json as { refresh_token: string }).refresh_token;
     const second = handleToken(CONFIG, { grant_type: "refresh_token", refresh_token: refresh });

@@ -1,9 +1,4 @@
-import type {
-  EventPayload,
-  FormContext,
-  TrackOptions,
-  Utm,
-} from "@trell/shared";
+import type { EventPayload, FormContext, TrackOptions, Utm } from "@trell/shared";
 import type { Context } from "./context";
 import { randomUUID } from "./rng";
 

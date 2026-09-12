@@ -21,9 +21,7 @@ export function FormsRanking({ forms, slug }: FormsRankingProps) {
     <section className="flex flex-col overflow-hidden rounded-lg border border-trell-line bg-white dark:border-white/10 dark:bg-neutral-900">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-trell-line px-4 dark:border-white/10">
         <span className="whitespace-nowrap py-3 text-sm font-medium text-trell-ink">
-          <span className="border-b border-dotted border-neutral-300 pb-0.5 dark:border-white/20">
-            Forms
-          </span>
+          <span className="border-b border-dotted border-neutral-300 pb-0.5 dark:border-white/20">Forms</span>
         </span>
         <a
           href={`/${slug}/submissions`}
@@ -41,15 +39,9 @@ export function FormsRanking({ forms, slug }: FormsRankingProps) {
               const hasCompletion = f.conversionRate != null && f.events > 0;
               const name = f.name?.trim() || f.id;
               return (
-                <li
-                  key={f.id}
-                  className="flex items-center gap-3 px-2 py-2.5"
-                  title={f.name ?? f.id}
-                >
+                <li key={f.id} className="flex items-center gap-3 px-2 py-2.5" title={f.name ?? f.id}>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium leading-5 text-trell-ink">
-                      {name}
-                    </p>
+                    <p className="truncate text-[13px] font-medium leading-5 text-trell-ink">{name}</p>
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs leading-4 text-trell-ink-muted">
                       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />
                       <span className="truncate">

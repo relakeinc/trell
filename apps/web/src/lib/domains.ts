@@ -1,6 +1,5 @@
 /** Domain allowlist validation. Accepts `example.com`, `sub.example.com`, `*.example.com`, `localhost`. */
-const DOMAIN_RE =
-  /^(\*\.)?([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?$/i;
+const DOMAIN_RE = /^(\*\.)?([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?$/i;
 
 export function normalizeDomain(d: string): string {
   return d.trim().toLowerCase().replace(/\/$/, "");
@@ -32,5 +31,8 @@ export function sanitizeDomains(list: string[]): string[] {
 
 /** Split the stored comma-separated allowlist into an array. */
 export function parseDomains(stored: string): string[] {
-  return stored.split(",").map((d) => d.trim()).filter(Boolean);
+  return stored
+    .split(",")
+    .map((d) => d.trim())
+    .filter(Boolean);
 }

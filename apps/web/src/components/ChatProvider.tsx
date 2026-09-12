@@ -29,9 +29,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [askHover, setAskHover] = useState(false);
   const openChat = useCallback(() => setOpen(true), []);
   const closeChat = useCallback(() => setOpen(false), []);
-  const value = useMemo(
-    () => ({ open, setOpen, openChat, closeChat, askHover, setAskHover }),
-    [open, askHover],
-  );
+  const value = useMemo(() => ({ open, setOpen, openChat, closeChat, askHover, setAskHover }), [open, askHover]);
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 }

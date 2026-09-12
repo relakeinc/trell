@@ -4,11 +4,29 @@ import type { StoredEvent } from "../src/repositories/types";
 
 function e(overrides: Partial<StoredEvent>): StoredEvent {
   return {
-    eventId: "e1", type: "form_view", ts: new Date(), sessionId: "s1", visitorId: "v1",
-    url: "https://example.com", referrer: null, pagePath: "/", pageTitle: null,
-    utmSource: null, utmMedium: null, utmCampaign: null, utmTerm: null, utmContent: null,
-    deviceType: "desktop", os: null, browser: null, viewportWidth: null, viewportHeight: null,
-    formId: null, formName: null, properties: null, raw: null,
+    eventId: "e1",
+    type: "form_view",
+    ts: new Date(),
+    sessionId: "s1",
+    visitorId: "v1",
+    url: "https://example.com",
+    referrer: null,
+    pagePath: "/",
+    pageTitle: null,
+    utmSource: null,
+    utmMedium: null,
+    utmCampaign: null,
+    utmTerm: null,
+    utmContent: null,
+    deviceType: "desktop",
+    os: null,
+    browser: null,
+    viewportWidth: null,
+    viewportHeight: null,
+    formId: null,
+    formName: null,
+    properties: null,
+    raw: null,
     ...overrides,
   };
 }
@@ -47,10 +65,7 @@ describe("getSessionSegment", () => {
   });
 
   it("session segment: utm_source", () => {
-    const events = [
-      e({ sessionId: "s1", utmSource: "google" }),
-      e({ sessionId: "s2", utmSource: "facebook" }),
-    ];
+    const events = [e({ sessionId: "s1", utmSource: "google" }), e({ sessionId: "s2", utmSource: "facebook" })];
     const result = getSessionSegment(events, { utmSource: "google" });
     expect(result).toEqual(new Set(["s1"]));
   });

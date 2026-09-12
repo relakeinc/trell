@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Trell dashboard (Next.js + Auth.js). The secret key never reaches the browser.",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -27,7 +27,7 @@
     "cn": "^0.2.6",
     "lucide-react": "^1.33.0",
     "marked": "^18.0.12",
-    "next": "^15.1.6",
+    "next": "^15.5.25",
     "next-auth": "5.0.0-beta.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -46,11 +46,12 @@
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.28",
     "prisma": "^6.19.3",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vite": "^7.0.0",
+    "vitest": "^4.1.11"
   }
 }

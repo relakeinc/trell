@@ -6,8 +6,7 @@ import { McpError } from "./errors";
 export async function resolveProject(store: McpStore, config: McpConfig, ref: string): Promise<McpProject> {
   const trimmed = ref.trim();
   if (!trimmed) throw new McpError("invalid_input", "project is required (workspace slug or id)");
-  // Slug first: findProjectById throws on non-UUID strings (Prisma validates
-  // the column type client-side) instead of returning null.
+  // Slug first: findProjectById throws on non-UUID strings instead of returning null.
   const bySlug = await store.findProjectBySlug(trimmed).catch(() => null);
   let found = bySlug;
   if (!found) {

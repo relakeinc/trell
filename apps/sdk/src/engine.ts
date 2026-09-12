@@ -10,7 +10,14 @@ import {
   type TrellForm,
 } from "@trell/shared";
 import { attachAuto } from "./auto";
-import { getOrCreateSessionId, getOrCreateUtm, getOrCreateVisitorId, getUrlContext, detectDevice, type Context } from "./context";
+import {
+  getOrCreateSessionId,
+  getOrCreateUtm,
+  getOrCreateVisitorId,
+  getUrlContext,
+  detectDevice,
+  type Context,
+} from "./context";
 import { buildEvent } from "./payload";
 import { hashIdentity } from "./rng";
 import { resolveStore } from "./storage";

@@ -28,13 +28,7 @@ function pretty(v: string): string {
   return `${date}, ${time}`;
 }
 
-export function DateTimeField({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
+export function DateTimeField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
   const t = useMounted(open, 150);
   const ref = useRef<HTMLDivElement>(null);
@@ -57,7 +51,7 @@ export function DateTimeField({
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open ]);
+  }, [open]);
 
   // Sync the visible month when opened with a value from elsewhere.
   useEffect(() => {
@@ -68,11 +62,9 @@ export function DateTimeField({
         setViewMonth(d.getMonth());
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open ]);
+  }, [open]);
 
   const cells = useMemo(() => {
-    // Monday-first grid: leading blanks + days of month.
     const first = new Date(viewYear, viewMonth, 1);
     const lead = (first.getDay() + 6) % 7;
     const days = new Date(viewYear, viewMonth + 1, 0).getDate();
@@ -106,8 +98,7 @@ export function DateTimeField({
     onChange(toLocalInput(d));
   }
 
-  const selDay =
-    current.getFullYear() === viewYear && current.getMonth() === viewMonth ? current.getDate() : null;
+  const selDay = current.getFullYear() === viewYear && current.getMonth() === viewMonth ? current.getDate() : null;
   const today = new Date();
 
   return (
@@ -125,8 +116,9 @@ export function DateTimeField({
       </button>
 
       {t.mounted && (
-        <div className={`absolute inset-x-0 z-30 mt-1 rounded-xl border border-trell-line bg-white p-3 shadow-xl sm:left-auto sm:w-72 ${t.closing ? "trell-pop-out" : "trell-pop-in"}`}>
-          {/* Month nav */}
+        <div
+          className={`absolute inset-x-0 z-30 mt-1 rounded-xl border border-trell-line bg-white p-3 shadow-xl sm:left-auto sm:w-72 ${t.closing ? "trell-pop-out" : "trell-pop-in"}`}
+        >
           <div className="mb-2 flex items-center justify-between">
             <button
               type="button"
@@ -147,31 +139,27 @@ export function DateTimeField({
             </button>
           </div>
 
-          {/* Weekday header */}
           <div className="mb-1 grid grid-cols-7 text-center text-[10px] font-medium text-neutral-400">
             {WEEKDAYS.map((w) => (
-              <span key={w} className="py-0.5">{w}</span>
+              <span key={w} className="py-0.5">
+                {w}
+              </span>
             ))}
           </div>
 
-          {/* Day grid */}
           <div className="grid grid-cols-7 gap-0.5">
             {cells.map((day, i) => {
               if (day == null) return <span key={`b-${i}`} />;
               const isSel = day === selDay;
               const isToday =
-                day === today.getDate() &&
-                viewMonth === today.getMonth() &&
-                viewYear === today.getFullYear();
+                day === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
               return (
                 <button
                   key={day}
                   type="button"
                   onClick={() => pickDay(day)}
                   className={`flex h-8 items-center justify-center rounded-lg text-xs tabular-nums transition-colors ${
-                    isSel
-                      ? "bg-black font-semibold text-white"
-                      : "text-neutral-700 hover:bg-neutral-100"
+                    isSel ? "bg-black font-semibold text-white" : "text-neutral-700 hover:bg-neutral-100"
                   } ${!isSel && isToday ? "ring-1 ring-inset ring-neutral-300" : ""}`}
                 >
                   {day}
@@ -180,7 +168,6 @@ export function DateTimeField({
             })}
           </div>
 
-          {/* Time row */}
           <div className="mt-3 flex items-center gap-1.5 border-t border-trell-line pt-3">
             <span className="shrink-0 text-[11px] text-neutral-500">Time</span>
             <MiniSelect
@@ -241,11 +228,11 @@ function MiniSelect({
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open ]);
+  }, [open]);
 
   useEffect(() => {
     if (open) activeRef.current?.scrollIntoView({ block: "nearest" });
-  }, [open ]);
+  }, [open]);
 
   return (
     <div ref={ref} className="relative w-[68px] shrink-0">
@@ -259,10 +246,16 @@ function MiniSelect({
         }`}
       >
         <span className="text-trell-ink">{value}</span>
-        <Icon name="arrow-down-01" size={12} className={`text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`} />
+        <Icon
+          name="arrow-down-01"
+          size={12}
+          className={`text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
       {t.mounted && (
-        <div className={`absolute inset-x-0 bottom-full z-40 mb-1 max-h-44 overflow-auto rounded-xl border border-trell-line bg-white py-1 shadow-xl ${t.closing ? "trell-pop-up-out" : "trell-pop-up-in"}`}>
+        <div
+          className={`absolute inset-x-0 bottom-full z-40 mb-1 max-h-44 overflow-auto rounded-xl border border-trell-line bg-white py-1 shadow-xl ${t.closing ? "trell-pop-up-out" : "trell-pop-up-in"}`}
+        >
           {options.map((opt) => (
             <button
               key={opt}

@@ -39,10 +39,8 @@ export function metricLabel(key: string): string {
 
 /** Short contextual explanations for the two conversion-like metrics. */
 export const METRIC_HELP: Record<string, string> = {
-  conversionRate:
-    "Conversions ÷ form views. Of everyone who saw your form, how many completed it.",
-  startConversionRate:
-    "Conversions ÷ form starts. Of those who started filling the form, how many finished.",
+  conversionRate: "Conversions ÷ form views. Of everyone who saw your form, how many completed it.",
+  startConversionRate: "Conversions ÷ form starts. Of those who started filling the form, how many finished.",
   avgTimeToCompleteMs:
     "Average time from starting a form to a successful submission (incomplete sessions are ignored).",
   sessions: "A visit. One visitor can have several sessions.",

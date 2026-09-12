@@ -38,7 +38,7 @@ export type SavedViewConfig = z.infer<typeof SavedViewConfigSchema>;
 
 /** Validate config at write time. Throws ZodError on invalid. */
 export function validateSavedViewConfig(type: string, config: unknown): SavedViewConfig {
-  const obj = (typeof config === "object" && config !== null) ? config : {};
+  const obj = typeof config === "object" && config !== null ? config : {};
   return SavedViewConfigSchema.parse({ ...obj, type });
 }
 

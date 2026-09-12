@@ -17,7 +17,11 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: strin
 
   const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
   const role = await svc.roleOf(id, session.user.id);
-  if (role !== "owner") return NextResponse.json({ error: "forbidden", message: "only the project owner can rotate keys" }, { status: 403 });
+  if (role !== "owner")
+    return NextResponse.json(
+      { error: "forbidden", message: "only the project owner can rotate keys" },
+      { status: 403 },
+    );
 
   const encKey = process.env.TRELL_ENC_KEY;
   if (!encKey) return NextResponse.json({ error: "config", message: "TRELL_ENC_KEY is not set" }, { status: 500 });

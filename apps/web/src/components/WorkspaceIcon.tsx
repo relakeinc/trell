@@ -31,13 +31,5 @@ export function WorkspaceIcon({ name, variant, size = 64, className = "" }: Work
       ? Math.max(0, Math.min(WORKSPACE_ICON_COUNT - 1, Math.floor(variant)))
       : hashCode(name) % WORKSPACE_ICON_COUNT;
 
-  return (
-    <Image
-      src={`/icons/workspace-${idx}.svg`}
-      alt={name}
-      width={size}
-      height={size}
-      className={className}
-    />
-  );
+  return <Image src={`/icons/workspace-${idx}.svg`} alt={name} width={size} height={size} className={className} />;
 }

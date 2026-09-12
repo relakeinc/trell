@@ -121,6 +121,30 @@ describe("computeMetrics", () => {
     const m = computeMetrics([ev({ type: "form_submit", formId: "c" })]);
     expect(m.bounceRate).toBeNull();
   });
+
+  it("averages hesitation and gap from field interactions", () => {
+    const props = (extra: Record<string, unknown>) => JSON.stringify(extra);
+    const events = [
+      ev({
+        type: "field_interaction",
+        eventId: "i1",
+        formId: "c",
+        properties: props({ hesitationMs: 1000, gapMs: 500 }),
+      }),
+      ev({ type: "field_interaction", eventId: "i2", formId: "c", properties: props({ gapMs: 1500 }) }),
+      ev({ type: "field_interaction", eventId: "i3", formId: "c", properties: props({ hesitationMs: -5 }) }), // invalid → ignored
+    ];
+    const m = computeMetrics(events);
+    expect(m.fieldInteractions).toBe(3);
+    expect(m.avgHesitationMs).toBeCloseTo(1000);
+    expect(m.avgInteractionGapMs).toBeCloseTo(1000); // (500+1500)/2
+  });
+
+  it("returns null hesitation/gap when no timing data", () => {
+    const m = computeMetrics([ev({ type: "field_interaction", formId: "c" })]);
+    expect(m.avgHesitationMs).toBeNull();
+    expect(m.avgInteractionGapMs).toBeNull();
+  });
 });
 
 describe("computeSeries", () => {

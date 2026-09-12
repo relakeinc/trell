@@ -2,7 +2,7 @@
   "name": "@trell/sdk",
   "version": "0.0.0",
   "description": "Trell browser SDK — bring analytics and conversion tracking to the forms you already have.",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -19,7 +19,9 @@
     },
     "./global": "./dist/index.global.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": true,
   "scripts": {
     "dev": "tsup --watch",
@@ -36,6 +38,7 @@
     "jsdom": "^25.0.1",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vite": "^7.0.0",
+    "vitest": "^4.1.11"
   }
 }
