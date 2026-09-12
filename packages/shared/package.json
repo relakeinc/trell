@@ -2,7 +2,7 @@
   "name": "@trell/shared",
   "version": "0.0.0",
   "description": "Shared types, constants and schemas for Trell (SDK + API).",
-  "license": "AGPL-3.0-only",
+  "license": "AGPL-3.0-or-later",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

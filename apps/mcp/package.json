@@ -2,7 +2,7 @@
   "name": "@trell/mcp",
   "version": "0.0.0",
   "description": "Trell MCP server — analytics and actions for AI assistants and bots. Pure logic; runners live in @trell/api.",
-  "license": "AGPL-3.0-only",
+  "license": "AGPL-3.0-or-later",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

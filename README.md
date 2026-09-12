@@ -126,4 +126,4 @@ outside Docker, any dummy `DATABASE_URL` works (e.g.
 
 ## License
 
-AGPL-3.0-only — see [LICENSE](LICENSE).
+AGPL-3.0-or-later — see [LICENSE](LICENSE).
