@@ -73,7 +73,7 @@ function TemplateCardShell({ onClick, disabled, children }: { onClick: () => voi
   return (
     <div
       onClick={() => { if (!disabled) onClick(); }}
-      className={`group relative flex h-[317px] w-full cursor-pointer flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition-shadow hover:shadow-md sm:w-[356px] sm:shrink-0 ${disabled ? "pointer-events-none opacity-70" : ""}`}
+      className={`group relative flex h-[360px] w-full cursor-pointer flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition-shadow hover:shadow-md ${disabled ? "pointer-events-none opacity-70" : ""}`}
     >
       <div
         aria-hidden
@@ -92,7 +92,7 @@ function TemplateCardShell({ onClick, disabled, children }: { onClick: () => voi
 
 function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTemplate) => void; creating: boolean; onAskYoi: () => void }) {
   return (
-    <div className="flex flex-wrap gap-4">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {FUNNEL_TEMPLATES.map((t) => (
         <TemplateCardShell key={t.name} onClick={() => onUse(t)} disabled={creating}>
           <p className="text-[15px] font-semibold text-trell-ink">{creating ? "Creating…" : t.name}</p>
