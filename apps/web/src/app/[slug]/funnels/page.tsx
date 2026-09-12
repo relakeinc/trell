@@ -5,6 +5,7 @@ import { Icon } from "@/components/Icon";
 import { AskYoiButton } from "@/components/AskYoiButton";
 import { FunnelBuilder } from "@/components/FunnelBuilder";
 import { FunnelView } from "@/components/FunnelView";
+import { useChat } from "@/components/ChatProvider";
 import { useProjectId, useProjectFunnels, useFunnelLive, useFunnelMutations } from "@/lib/hooks";
 import { fmtShortDate, localInput } from "@/lib/format";
 
@@ -66,24 +67,14 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
       { eventType: "form_abandon", label: "Abandon", position: 1 },
     ],
   },
-  {
-    name: "Click to submit",
-    desc: "From CTA click to submission — does the button copy work.",
-    icon: "send",
-    steps: [
-      { eventType: "cta_click", label: "Click", position: 0 },
-      { eventType: "form_start", label: "Start", position: 1 },
-      { eventType: "form_submit", label: "Submit", position: 2 },
-    ],
-  },
 ];
 
-function TemplateGallery({ onUse, creating }: { onUse: (t: FunnelTemplate) => void; creating: boolean }) {
+function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTemplate) => void; creating: boolean; onAskYoi: () => void }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {FUNNEL_TEMPLATES.map((t) => (
         <div key={t.name} className="flex flex-col overflow-hidden rounded-xl border border-trell-line bg-white">
-          <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)]">
+          <div className="flex h-24 items-center justify-center bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)]">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/40 text-trell-ink backdrop-blur-sm">
               <Icon name={t.icon} size={24} />
             </div>
@@ -104,12 +95,33 @@ function TemplateGallery({ onUse, creating }: { onUse: (t: FunnelTemplate) => vo
           </div>
         </div>
       ))}
+      <div className="flex flex-col overflow-hidden rounded-xl border border-trell-line bg-white">
+        <div className="flex h-24 items-center justify-center bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/40 text-trell-ink backdrop-blur-sm">
+            <Icon name="magic-star" size={24} />
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col gap-1 p-4">
+          <h3 className="text-sm font-semibold text-trell-ink">Generate with Yoi</h3>
+          <p className="text-xs leading-relaxed text-trell-ink-subtle">Describe the funnel you want and Yoi builds it for you.</p>
+          <p className="mt-1 text-[11px] font-medium text-trell-ink-muted">
+            e.g. “track signup drop-off”
+          </p>
+          <button
+            onClick={onAskYoi}
+            className="trell-btn-secondary mt-3 h-9 justify-center text-xs"
+          >
+            Ask Yoi
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
 export default function FunnelsPage() {
   const { projectId } = useProjectId();
+  const { openChat } = useChat();
   const [activeFunnelId, setActiveFunnelId] = useState<string | null>(null);
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editingFunnel, setEditingFunnel] = useState<SavedFunnel | null>(null);
@@ -216,7 +228,7 @@ export default function FunnelsPage() {
       {showTemplates && !builderOpen && (
         <div className="mb-6">
           <h2 className="mb-3 text-sm font-semibold text-trell-ink">Start from a template</h2>
-          <TemplateGallery onUse={handleUseTemplate} creating={createFunnel.isPending} />
+          <TemplateGallery onUse={handleUseTemplate} creating={createFunnel.isPending} onAskYoi={openChat} />
         </div>
       )}
 
@@ -274,7 +286,7 @@ export default function FunnelsPage() {
           </div>
           <div>
             <h2 className="mb-3 text-sm font-semibold text-trell-ink">Or start from a template</h2>
-            <TemplateGallery onUse={handleUseTemplate} creating={createFunnel.isPending} />
+            <TemplateGallery onUse={handleUseTemplate} creating={createFunnel.isPending} onAskYoi={openChat} />
           </div>
         </div>
       )}
