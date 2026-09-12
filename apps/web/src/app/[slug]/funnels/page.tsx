@@ -69,6 +69,24 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
   },
 ];
 
+function TemplatePreview({ steps }: { steps: { label: string }[] }) {
+  return (
+    <div className="mx-4 mb-4 rounded-lg bg-white/85 p-3 shadow-sm backdrop-blur-sm">
+      {steps.map((s, i) => (
+        <div key={s.label} className="flex items-center gap-2 py-1">
+          <span className="w-14 shrink-0 truncate text-[10px] font-medium text-trell-ink-muted">{s.label}</span>
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100">
+            <div
+              className="h-full rounded-full bg-[linear-gradient(90deg,#2563eb,#7c3aed)]"
+              style={{ width: `${Math.max(18, 100 - i * 24)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTemplate) => void; creating: boolean; onAskYoi: () => void }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -76,50 +94,64 @@ function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTempl
         <div
           key={t.name}
           onClick={() => { if (!creating) onUse(t); }}
-          className="flex cursor-pointer flex-col overflow-hidden rounded-xl border border-trell-line bg-white transition-shadow hover:shadow-md"
+          className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-trell-line bg-white transition-shadow hover:shadow-md"
         >
-          <div className="flex h-36 items-center justify-center bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)]">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/40 text-trell-ink backdrop-blur-sm">
-              <Icon name={t.icon} size={24} />
-            </div>
+          <div className="bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)] px-4 pt-4">
+            <span className="inline-block rounded-md bg-white/70 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-trell-ink-muted backdrop-blur-sm">
+              Template
+            </span>
+            <h4 className="flex min-h-10 items-center justify-center px-2 py-3 text-center text-sm font-semibold leading-snug text-trell-ink">
+              {t.name}
+            </h4>
+            <TemplatePreview steps={t.steps} />
           </div>
-          <div className="flex flex-1 flex-col gap-1 p-5">
-            <h3 className="text-sm font-semibold text-trell-ink">{t.name}</h3>
-            <p className="min-h-12 text-xs leading-relaxed text-trell-ink-subtle">{t.desc}</p>
-            <p className="mt-1 pb-3 text-[11px] font-medium text-trell-ink-muted">
-              {t.steps.map((s) => s.label).join(" → ")}
-            </p>
-            <button
-              onClick={(e) => { e.stopPropagation(); onUse(t); }}
-              disabled={creating}
-              className="trell-btn-secondary mt-auto h-9 justify-center text-xs disabled:opacity-50"
-            >
-              {creating ? "Creating…" : "Use template"}
-            </button>
+          <div className="flex flex-1 flex-col justify-end px-3 pb-3">
+            <div className="-mt-8 flex items-center gap-3 rounded-xl border border-trell-line bg-white p-3 shadow-sm">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#dbeafe,#ede9fe)] text-trell-ink">
+                <Icon name={t.icon} size={20} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-semibold text-trell-ink">{t.name}</p>
+                <p className="line-clamp-2 text-xs leading-snug text-trell-ink-subtle">{t.desc}</p>
+              </div>
+              <span className="shrink-0 text-xs font-semibold text-blue-600">
+                {creating ? "…" : "Use →"}
+              </span>
+            </div>
           </div>
         </div>
       ))}
       <div
         onClick={onAskYoi}
-        className="flex cursor-pointer flex-col overflow-hidden rounded-xl border border-trell-line bg-white transition-shadow hover:shadow-md"
+        className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-trell-line bg-white transition-shadow hover:shadow-md"
       >
-        <div className="flex h-36 items-center justify-center bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)]">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/40 text-trell-ink backdrop-blur-sm">
-            <Icon name="magic-star" size={24} />
+        <div className="bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)] px-4 pt-4">
+          <span className="inline-block rounded-md bg-white/70 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-trell-ink-muted backdrop-blur-sm">
+            AI
+          </span>
+          <h4 className="flex min-h-10 items-center justify-center px-2 py-3 text-center text-sm font-semibold leading-snug text-trell-ink">
+            Generate with Yoi
+          </h4>
+          <div className="mx-4 mb-4 space-y-2 rounded-lg bg-white/85 p-3 shadow-sm backdrop-blur-sm">
+            <div className="ml-auto w-fit max-w-[90%] rounded-lg rounded-br-sm bg-blue-600 px-2.5 py-1.5 text-[11px] text-white">
+              track signup drop-off
+            </div>
+            <div className="w-fit max-w-[90%] rounded-lg rounded-bl-sm bg-neutral-100 px-2.5 py-1.5 text-[11px] text-trell-ink">
+              Done — funnel created ✓
+            </div>
           </div>
         </div>
-        <div className="flex flex-1 flex-col gap-1 p-4">
-          <h3 className="text-sm font-semibold text-trell-ink">Generate with Yoi</h3>
-          <p className="min-h-12 text-xs leading-relaxed text-trell-ink-subtle">Describe the funnel you want and Yoi builds it for you.</p>
-          <p className="mt-1 pb-3 text-[11px] font-medium text-trell-ink-muted">
-            e.g. “track signup drop-off”
-          </p>
-          <button
-            onClick={(e) => { e.stopPropagation(); onAskYoi(); }}
-            className="trell-btn-secondary mt-auto h-9 justify-center text-xs"
-          >
-            Ask Yoi
-          </button>
+        <div className="flex flex-1 flex-col justify-end px-3 pb-3">
+          <div className="-mt-8 flex items-center gap-3 rounded-xl border border-trell-line bg-white p-3 shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#dbeafe,#ede9fe)] text-trell-ink">
+              <Icon name="magic-star" size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-semibold text-trell-ink">Generate with Yoi</p>
+              <p className="line-clamp-2 text-xs leading-snug text-trell-ink-subtle">Describe the funnel you want and Yoi builds it for you.</p>
+            </div>
+            <span className="shrink-0 text-xs font-semibold text-blue-600">Ask →</span>
+          </div>
         </div>
       </div>
     </div>
