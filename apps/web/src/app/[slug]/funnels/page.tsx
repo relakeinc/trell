@@ -288,12 +288,14 @@ export default function FunnelsPage() {
           <h1 className="text-base font-semibold text-trell-ink">Funnels</h1>
         </div>
         <div className="flex items-center gap-2">
+        {savedFunnels.length > 0 && (
         <button
           onClick={() => setShowTemplates((v) => !v)}
           className="trell-btn-secondary h-10 px-4"
         >
           Templates
         </button>
+        )}
         <button
           onClick={() => { setEditingFunnel(null); setBuilderOpen(true); }}
           className="trell-btn-accent h-10 px-4"
