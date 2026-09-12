@@ -148,6 +148,34 @@ function TemplateCardShell({ onClick, disabled, glow, children }: { onClick: () 
   );
 }
 
+function FunnelSkeleton({ name, stepCount }: { name: string; stepCount: number }) {
+  return (
+    <div className="rounded-2xl border border-trell-line bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]" aria-busy="true" aria-label="Loading funnel">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-trell-ink">{name}</h3>
+          <div className="mt-2 h-3 w-44 animate-pulse rounded bg-neutral-100" />
+        </div>
+        <div className="h-8 w-20 animate-pulse rounded bg-neutral-100" />
+      </div>
+      <div className="mt-4 space-y-4">
+        {Array.from({ length: stepCount }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <span className="h-6 w-6 shrink-0 animate-pulse rounded-full bg-neutral-100" />
+            <div className="min-w-0 flex-1">
+              <div className="mb-1.5 flex items-baseline justify-between gap-3">
+                <span className="h-3.5 w-32 animate-pulse rounded bg-neutral-100" />
+                <span className="h-3.5 w-12 animate-pulse rounded bg-neutral-100" />
+              </div>
+              <div className="h-9 animate-pulse rounded-lg bg-neutral-100" style={{ width: `${Math.max(25, 100 - i * 22)}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTemplate) => void; creating: boolean; onAskYoi: () => void }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -188,13 +216,14 @@ export default function FunnelsPage() {
   const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000)));
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [pendingTemplate, setPendingTemplate] = useState<FunnelTemplate | null>(null);
 
   const qs = `from=${from}&to=${to}`;
 
   const { data: funnelsData } = useProjectFunnels(projectId);
   const savedFunnels = funnelsData?.funnels ?? [];
 
-  const { data: liveData } = useFunnelLive(projectId, activeFunnelId, qs);
+  const { data: liveData, isError: liveError } = useFunnelLive(projectId, activeFunnelId, qs);
 
   const { createFunnel, updateFunnel, deleteFunnel } = useFunnelMutations(projectId);
 
@@ -210,10 +239,9 @@ export default function FunnelsPage() {
     setConfirmDelete(false);
   }, [activeFunnelId]);
 
-  const activeFunnel = activeFunnelId
-    ? savedFunnels.find((f) => f.id === activeFunnelId) && liveData
-      ? { ...savedFunnels.find((f) => f.id === activeFunnelId)!, totalSessions: liveData.totalSessions, steps: liveData.steps }
-      : null
+  const savedActive = activeFunnelId ? (savedFunnels.find((f) => f.id === activeFunnelId) ?? null) : null;
+  const activeFunnel = savedActive && liveData
+    ? { ...savedActive, totalSessions: liveData.totalSessions, steps: liveData.steps }
     : null;
 
   function handleSave(data: { name: string; steps: { eventType: string; formId?: string; label?: string; position: number }[] }) {
@@ -225,14 +253,20 @@ export default function FunnelsPage() {
   }
 
   function handleUseTemplate(t: FunnelTemplate) {
+    if (createFunnel.isPending) return;
+    // Instant feedback: hide the gallery and show a skeleton right away,
+    // then swap in the real funnel as soon as the server answers.
+    setPendingTemplate(t);
+    setShowTemplates(false);
     createFunnel.mutate(
       { name: t.name, steps: t.steps.map((s) => ({ eventType: s.eventType, label: s.label, position: s.position })) },
       {
         onSuccess: (res: unknown) => {
           const id = (res as { funnel?: { id?: string } } | null)?.funnel?.id;
           if (id) setActiveFunnelId(id);
-          setShowTemplates(false);
+          setPendingTemplate(null);
         },
+        onError: () => setPendingTemplate(null),
       },
     );
   }
@@ -330,7 +364,13 @@ export default function FunnelsPage() {
         </div>
       )}
 
-      {!activeFunnel && !builderOpen && savedFunnels.length === 0 && (
+      {pendingTemplate && !activeFunnel && !builderOpen && (
+        <div className="space-y-3">
+          <FunnelSkeleton name={pendingTemplate.name} stepCount={pendingTemplate.steps.length} />
+        </div>
+      )}
+
+      {!activeFunnel && !builderOpen && !pendingTemplate && savedFunnels.length === 0 && (
         <div className="space-y-6">
           <div className="flex flex-col items-center justify-center rounded-xl border border-trell-line bg-white px-6 py-16 text-center">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-trell-line bg-white text-trell-ink-subtle">
@@ -350,8 +390,16 @@ export default function FunnelsPage() {
         </div>
       )}
 
-      {!activeFunnel && !builderOpen && savedFunnels.length > 0 && (
-        <p className="py-8 text-center text-sm text-trell-ink-muted">Select a funnel above to see its conversion.</p>
+      {!activeFunnel && !builderOpen && !pendingTemplate && savedFunnels.length > 0 && (
+        activeFunnelId && savedActive ? (
+          liveError ? (
+            <p className="py-8 text-center text-sm text-red-600">Couldn&apos;t load this funnel. Please try again.</p>
+          ) : (
+            <FunnelSkeleton name={savedActive.name} stepCount={savedActive.steps.length} />
+          )
+        ) : (
+          <p className="py-8 text-center text-sm text-trell-ink-muted">Select a funnel above to see its conversion.</p>
+        )
       )}
     </div>
   );
