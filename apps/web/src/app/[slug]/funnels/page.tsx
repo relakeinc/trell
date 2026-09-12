@@ -28,6 +28,86 @@ interface FunnelResult {
   steps: FunnelStep[];
 }
 
+interface FunnelTemplate {
+  name: string;
+  desc: string;
+  icon: string;
+  steps: { eventType: string; label: string; position: number }[];
+}
+
+const FUNNEL_TEMPLATES: FunnelTemplate[] = [
+  {
+    name: "Complete journey",
+    desc: "From first view to success — the full picture of every form.",
+    icon: "funnels",
+    steps: [
+      { eventType: "form_view", label: "View", position: 0 },
+      { eventType: "form_start", label: "Start", position: 1 },
+      { eventType: "form_submit", label: "Submit", position: 2 },
+      { eventType: "form_success", label: "Success", position: 3 },
+    ],
+  },
+  {
+    name: "Starter conversion",
+    desc: "How many visitors who start filling the form make it to success.",
+    icon: "flash",
+    steps: [
+      { eventType: "form_start", label: "Start", position: 0 },
+      { eventType: "form_submit", label: "Submit", position: 1 },
+      { eventType: "form_success", label: "Success", position: 2 },
+    ],
+  },
+  {
+    name: "Abandonment check",
+    desc: "Spot where engaged visitors give up before finishing.",
+    icon: "target",
+    steps: [
+      { eventType: "form_start", label: "Start", position: 0 },
+      { eventType: "form_abandon", label: "Abandon", position: 1 },
+    ],
+  },
+  {
+    name: "Click to submit",
+    desc: "From CTA click to submission — does the button copy work.",
+    icon: "send",
+    steps: [
+      { eventType: "cta_click", label: "Click", position: 0 },
+      { eventType: "form_start", label: "Start", position: 1 },
+      { eventType: "form_submit", label: "Submit", position: 2 },
+    ],
+  },
+];
+
+function TemplateGallery({ onUse, creating }: { onUse: (t: FunnelTemplate) => void; creating: boolean }) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {FUNNEL_TEMPLATES.map((t) => (
+        <div key={t.name} className="flex flex-col overflow-hidden rounded-xl border border-trell-line bg-white">
+          <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/40 text-trell-ink backdrop-blur-sm">
+              <Icon name={t.icon} size={24} />
+            </div>
+          </div>
+          <div className="flex flex-1 flex-col gap-1 p-4">
+            <h3 className="text-sm font-semibold text-trell-ink">{t.name}</h3>
+            <p className="text-xs leading-relaxed text-trell-ink-subtle">{t.desc}</p>
+            <p className="mt-1 text-[11px] font-medium text-trell-ink-muted">
+              {t.steps.map((s) => s.label).join(" → ")}
+            </p>
+            <button
+              onClick={() => onUse(t)}
+              disabled={creating}
+              className="trell-btn-secondary mt-3 h-9 justify-center text-xs disabled:opacity-50"
+            >
+              {creating ? "Creating…" : "Use template"}
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function FunnelsPage() {
   const { projectId } = useProjectId();
   const [activeFunnelId, setActiveFunnelId] = useState<string | null>(null);
@@ -36,6 +116,7 @@ export default function FunnelsPage() {
   const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
   const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000)));
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const qs = `from=${from}&to=${to}`;
 
@@ -72,6 +153,19 @@ export default function FunnelsPage() {
     }
   }
 
+  function handleUseTemplate(t: FunnelTemplate) {
+    createFunnel.mutate(
+      { name: t.name, steps: t.steps.map((s) => ({ eventType: s.eventType, label: s.label, position: s.position })) },
+      {
+        onSuccess: (res: unknown) => {
+          const id = (res as { funnel?: { id?: string } } | null)?.funnel?.id;
+          if (id) setActiveFunnelId(id);
+          setShowTemplates(false);
+        },
+      },
+    );
+  }
+
   function handleDelete(id: string) {
     if (!confirmDelete) {
       setConfirmDelete(true);
@@ -89,6 +183,12 @@ export default function FunnelsPage() {
           <h1 className="text-base font-semibold text-trell-ink">Funnels</h1>
         </div>
         <div className="flex items-center gap-2">
+        <button
+          onClick={() => setShowTemplates((v) => !v)}
+          className="trell-btn-secondary h-10 px-4"
+        >
+          Templates
+        </button>
         <button
           onClick={() => { setEditingFunnel(null); setBuilderOpen(true); }}
           className="trell-btn-accent h-10 px-4"
@@ -113,7 +213,14 @@ export default function FunnelsPage() {
         </div>
       )}
 
-      {!builderOpen && savedFunnels.length > 0 && (
+      {showTemplates && !builderOpen && (
+        <div className="mb-6">
+          <h2 className="mb-3 text-sm font-semibold text-trell-ink">Start from a template</h2>
+          <TemplateGallery onUse={handleUseTemplate} creating={createFunnel.isPending} />
+        </div>
+      )}
+
+      {!builderOpen && !showTemplates && savedFunnels.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-lg bg-neutral-100 p-0.5">
             {savedFunnels.map((f) => (
@@ -153,16 +260,22 @@ export default function FunnelsPage() {
       )}
 
       {!activeFunnel && !builderOpen && savedFunnels.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-trell-line bg-white px-6 py-16 text-center">
-          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-trell-line bg-white text-trell-ink-subtle">
-            <Icon name="filter-square" size={24} />
+        <div className="space-y-6">
+          <div className="flex flex-col items-center justify-center rounded-xl border border-trell-line bg-white px-6 py-16 text-center">
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-trell-line bg-white text-trell-ink-subtle">
+              <Icon name="filter-square" size={24} />
+            </div>
+            <h2 className="text-base font-semibold text-trell-ink">No funnels yet</h2>
+            <p className="mt-1.5 max-w-sm text-sm text-trell-ink-subtle">
+              Funnels show how many visitors complete each step — and where the rest drop off.
+              Start with view → start → success.
+            </p>
+            <button onClick={() => setBuilderOpen(true)} className="trell-btn-accent mt-4 h-10 px-6">Create funnel</button>
           </div>
-          <h2 className="text-base font-semibold text-trell-ink">No funnels yet</h2>
-          <p className="mt-1.5 max-w-sm text-sm text-trell-ink-subtle">
-            Funnels show how many visitors complete each step — and where the rest drop off.
-            Start with view → start → success.
-          </p>
-          <button onClick={() => setBuilderOpen(true)} className="trell-btn-accent mt-4 h-10 px-6">Create funnel</button>
+          <div>
+            <h2 className="mb-3 text-sm font-semibold text-trell-ink">Or start from a template</h2>
+            <TemplateGallery onUse={handleUseTemplate} creating={createFunnel.isPending} />
+          </div>
         </div>
       )}
 
