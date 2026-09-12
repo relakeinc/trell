@@ -33,6 +33,8 @@ interface FunnelTemplate {
   name: string;
   desc: string;
   icon: string;
+  glow: string;
+  accent: string;
   steps: { eventType: string; label: string; position: number }[];
 }
 
@@ -41,6 +43,8 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
     name: "Complete journey",
     desc: "From first view to success — the full picture of every form.",
     icon: "funnels",
+    glow: "bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(37,99,235,0.28),transparent_70%)]",
+    accent: "text-blue-600",
     steps: [
       { eventType: "form_view", label: "View", position: 0 },
       { eventType: "form_start", label: "Start", position: 1 },
@@ -52,6 +56,8 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
     name: "Starter conversion",
     desc: "How many visitors who start filling the form make it to success.",
     icon: "flash",
+    glow: "bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(22,163,74,0.28),transparent_70%)]",
+    accent: "text-green-600",
     steps: [
       { eventType: "form_start", label: "Start", position: 0 },
       { eventType: "form_submit", label: "Submit", position: 1 },
@@ -62,6 +68,8 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
     name: "Abandonment check",
     desc: "Spot where engaged visitors give up before finishing.",
     icon: "target",
+    glow: "bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(234,88,12,0.30),transparent_70%)]",
+    accent: "text-orange-600",
     steps: [
       { eventType: "form_start", label: "Start", position: 0 },
       { eventType: "form_abandon", label: "Abandon", position: 1 },
@@ -69,7 +77,7 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
   },
 ];
 
-function TemplateCardShell({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+function TemplateCardShell({ onClick, disabled, glow, children }: { onClick: () => void; disabled?: boolean; glow: string; children: React.ReactNode }) {
   return (
     <div
       onClick={() => { if (!disabled) onClick(); }}
@@ -81,7 +89,7 @@ function TemplateCardShell({ onClick, disabled, children }: { onClick: () => voi
       />
       <div
         aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(37,99,235,0.28),transparent_70%)]"
+        className={`absolute inset-0 ${glow}`}
       />
       <div className="relative flex flex-1 flex-col justify-end p-5">
         {children}
@@ -94,16 +102,16 @@ function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTempl
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {FUNNEL_TEMPLATES.map((t) => (
-        <TemplateCardShell key={t.name} onClick={() => onUse(t)} disabled={creating}>
+        <TemplateCardShell key={t.name} onClick={() => onUse(t)} disabled={creating} glow={t.glow}>
           <p className="text-[15px] font-semibold text-trell-ink">{creating ? "Creating…" : t.name}</p>
           <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-trell-ink-subtle">{t.desc}</p>
-          <p className="mt-2 text-xs font-semibold text-blue-600">Use template →</p>
+          <p className={`mt-2 text-xs font-semibold ${t.accent}`}>Use template →</p>
         </TemplateCardShell>
       ))}
-      <TemplateCardShell onClick={onAskYoi}>
+      <TemplateCardShell onClick={onAskYoi} glow="bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(124,58,237,0.30),transparent_70%)]">
         <p className="text-[15px] font-semibold text-trell-ink">Generate with Yoi</p>
         <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-trell-ink-subtle">Describe the funnel you want and Yoi builds it for you.</p>
-        <p className="mt-2 text-xs font-semibold text-blue-600">Ask Yoi →</p>
+        <p className="mt-2 text-xs font-semibold text-violet-600">Ask Yoi →</p>
       </TemplateCardShell>
     </div>
   );
