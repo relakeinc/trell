@@ -189,7 +189,7 @@ formato de respuestas (idioma, resúmenes) y hosting. El MCP no cambia por esto.
   `openssl rand -hex 32`), `MCP_ALLOWED_SLUGS=*`,
   `MCP_ALLOW_DESTRUCTIVE=false`.
 - nginx: `mcp.example.com` → `127.0.0.1:8788`. Actualizar:
-  `cd <APP_DIR> && git pull && docker compose up -d --build mcp`.
+  `cd <APP_DIR> && git pull && docker compose -f docker-compose.mcp.yml up -d --build mcp`.
 - ✅ TLS: el `A mcp.example.com` debe resolver a tu servidor; cert
   expandido para cubrir el subdominio. Smoke público OK: sin-auth→401,
   `get_stats` con datos reales por `https://mcp.example.com`.

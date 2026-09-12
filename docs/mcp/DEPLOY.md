@@ -21,7 +21,7 @@
 Update:
 
 ```bash
-cd <APP_DIR> && git pull && docker compose up -d --build mcp
+cd <APP_DIR> && git pull && docker compose -f docker-compose.mcp.yml up -d --build mcp
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8788/  # 405 = alive
 ```
 
