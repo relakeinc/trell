@@ -35,7 +35,51 @@ interface FunnelTemplate {
   icon: string;
   glow: string;
   accent: string;
+  from: string;
+  to: string;
   steps: { eventType: string; label: string; position: number }[];
+}
+
+const SLOT_X = [25, 215, 215, 65, 65, 180];
+const SLOT_Y = [30, 30, 90, 90, 150, 150];
+
+function JourneyVisual({ steps, from, to, id }: { steps: { label: string }[]; from: string; to: string; id: string }) {
+  const n = steps.length;
+  const idx = steps.map((_, i) => Math.round((i * (SLOT_X.length - 1)) / Math.max(1, n - 1)));
+  return (
+    <svg viewBox="0 0 280 175" className="h-full w-full" role="img" aria-hidden>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={from} />
+          <stop offset="100%" stopColor={to} />
+        </linearGradient>
+      </defs>
+      <path
+        d="M 25 30 H 215 A 30 30 0 0 1 215 90 H 65 A 30 30 0 0 0 65 150 H 180"
+        fill="none"
+        stroke={`url(#${id})`}
+        strokeWidth="10"
+        strokeLinecap="round"
+        opacity="0.85"
+      />
+      {idx.map((s, i) => (
+        <g key={i}>
+          <circle cx={SLOT_X[s] ?? 0} cy={SLOT_Y[s] ?? 0} r="9" fill="#fff" stroke={`url(#${id})`} strokeWidth="3" />
+          <circle cx={SLOT_X[s] ?? 0} cy={SLOT_Y[s] ?? 0} r="3" fill={from} />
+          <text
+            x={SLOT_X[s] ?? 0}
+            y={(SLOT_Y[s] ?? 0) + 22}
+            textAnchor="middle"
+            fontSize="9"
+            fontWeight="600"
+            fill="#71717a"
+          >
+            {steps[i]!.label}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
 }
 
 const FUNNEL_TEMPLATES: FunnelTemplate[] = [
@@ -45,6 +89,8 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
     icon: "funnels",
     glow: "bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(37,99,235,0.28),transparent_70%)]",
     accent: "text-blue-600",
+    from: "#2563eb",
+    to: "#93c5fd",
     steps: [
       { eventType: "form_view", label: "View", position: 0 },
       { eventType: "form_start", label: "Start", position: 1 },
@@ -58,6 +104,8 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
     icon: "flash",
     glow: "bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(22,163,74,0.28),transparent_70%)]",
     accent: "text-green-600",
+    from: "#16a34a",
+    to: "#86efac",
     steps: [
       { eventType: "form_start", label: "Start", position: 0 },
       { eventType: "form_submit", label: "Submit", position: 1 },
@@ -70,6 +118,8 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
     icon: "target",
     glow: "bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(234,88,12,0.30),transparent_70%)]",
     accent: "text-orange-600",
+    from: "#ea580c",
+    to: "#fdba74",
     steps: [
       { eventType: "form_start", label: "Start", position: 0 },
       { eventType: "form_abandon", label: "Abandon", position: 1 },
@@ -103,12 +153,23 @@ function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTempl
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {FUNNEL_TEMPLATES.map((t) => (
         <TemplateCardShell key={t.name} onClick={() => onUse(t)} disabled={creating} glow={t.glow}>
+          <div className="min-h-0 flex-1 px-1 pb-1">
+            <JourneyVisual steps={t.steps} from={t.from} to={t.to} id={`j-${t.name.replace(/\s+/g, "-").toLowerCase()}`} />
+          </div>
           <p className="text-[15px] font-semibold text-trell-ink">{creating ? "Creating…" : t.name}</p>
           <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-trell-ink-subtle">{t.desc}</p>
           <p className={`mt-2 text-xs font-semibold ${t.accent}`}>Use template →</p>
         </TemplateCardShell>
       ))}
       <TemplateCardShell onClick={onAskYoi} glow="bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(124,58,237,0.30),transparent_70%)]">
+        <div className="min-h-0 flex-1 px-1 pb-1">
+          <JourneyVisual
+            steps={[{ label: "Ask" }, { label: "Build" }, { label: "Done" }]}
+            from="#7c3aed"
+            to="#c4b5fd"
+            id="j-yoi"
+          />
+        </div>
         <p className="text-[15px] font-semibold text-trell-ink">Generate with Yoi</p>
         <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-trell-ink-subtle">Describe the funnel you want and Yoi builds it for you.</p>
         <p className="mt-2 text-xs font-semibold text-violet-600">Ask Yoi →</p>
@@ -273,7 +334,7 @@ export default function FunnelsPage() {
         <div className="space-y-6">
           <div className="flex flex-col items-center justify-center rounded-xl border border-trell-line bg-white px-6 py-16 text-center">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-trell-line bg-white text-trell-ink-subtle">
-              <Icon name="filter-square" size={24} />
+              <Icon name="funnels" size={24} />
             </div>
             <h2 className="text-base font-semibold text-trell-ink">No funnels yet</h2>
             <p className="mt-1.5 max-w-sm text-sm text-trell-ink-subtle">
