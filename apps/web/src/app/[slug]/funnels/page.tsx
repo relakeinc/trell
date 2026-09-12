@@ -69,13 +69,13 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
   },
 ];
 
-function TemplatePreview({ steps }: { steps: { label: string }[] }) {
+function TemplateShot({ steps }: { steps: { label: string }[] }) {
   return (
-    <div className="mx-4 mb-4 rounded-lg bg-white/85 p-3 shadow-sm backdrop-blur-sm">
+    <div className="flex h-full flex-col justify-center gap-2 bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)] p-4">
       {steps.map((s, i) => (
-        <div key={s.label} className="flex items-center gap-2 py-1">
+        <div key={s.label} className="flex items-center gap-2 rounded-md bg-white/85 px-2.5 py-1.5 shadow-sm backdrop-blur-sm">
           <span className="w-14 shrink-0 truncate text-[10px] font-medium text-trell-ink-muted">{s.label}</span>
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-100">
             <div
               className="h-full rounded-full bg-[linear-gradient(90deg,#2563eb,#7c3aed)]"
               style={{ width: `${Math.max(18, 100 - i * 24)}%` }}
@@ -87,6 +87,19 @@ function TemplatePreview({ steps }: { steps: { label: string }[] }) {
   );
 }
 
+function YoiShot() {
+  return (
+    <div className="flex h-full flex-col justify-center gap-2 bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)] p-4">
+      <div className="ml-auto w-fit max-w-[85%] rounded-lg rounded-br-sm bg-blue-600 px-2.5 py-1.5 text-[11px] text-white shadow-sm">
+        track signup drop-off
+      </div>
+      <div className="w-fit max-w-[85%] rounded-lg rounded-bl-sm bg-white/85 px-2.5 py-1.5 text-[11px] text-trell-ink shadow-sm backdrop-blur-sm">
+        Done — funnel created ✓
+      </div>
+    </div>
+  );
+}
+
 function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTemplate) => void; creating: boolean; onAskYoi: () => void }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -94,63 +107,50 @@ function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTempl
         <div
           key={t.name}
           onClick={() => { if (!creating) onUse(t); }}
-          className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-trell-line bg-white transition-shadow hover:shadow-md"
+          className={`group relative block cursor-pointer ${creating ? "pointer-events-none opacity-70" : ""}`}
         >
-          <div className="bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)] px-4 pt-4">
-            <span className="inline-block rounded-md bg-white/70 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-trell-ink-muted backdrop-blur-sm">
-              Template
-            </span>
-            <h4 className="flex min-h-10 items-center justify-center px-2 py-3 text-center text-sm font-semibold leading-snug text-trell-ink">
-              {t.name}
-            </h4>
-            <TemplatePreview steps={t.steps} />
+          <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+            <div className="aspect-[900/580] w-full overflow-hidden [mask-image:linear-gradient(black_90%,transparent)]">
+              <TemplateShot steps={t.steps} />
+            </div>
           </div>
-          <div className="flex flex-1 flex-col justify-end px-3 pb-3">
-            <div className="-mt-8 flex items-center gap-3 rounded-xl border border-trell-line bg-white p-3 shadow-sm">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#dbeafe,#ede9fe)] text-trell-ink">
-                <Icon name={t.icon} size={20} />
+          <div className="absolute left-4 top-4 rounded bg-white px-2 py-1 text-[0.625rem] font-semibold uppercase text-neutral-800 shadow-[0_2px_2px_0_#00000014]">
+            Template
+          </div>
+          <div className="absolute inset-x-4 bottom-4 flex items-center gap-3 rounded-lg bg-white p-3 shadow-sm transition-all duration-100 group-hover:drop-shadow-md">
+            <div className="shrink-0">
+              <div className="flex size-12 items-center justify-center rounded-md bg-[linear-gradient(135deg,#dbeafe,#ede9fe)] text-trell-ink">
+                <Icon name={t.icon} size={24} />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-semibold text-trell-ink">{t.name}</p>
-                <p className="line-clamp-2 text-xs leading-snug text-trell-ink-subtle">{t.desc}</p>
-              </div>
-              <span className="shrink-0 text-xs font-semibold text-blue-600">
-                {creating ? "…" : "Use →"}
-              </span>
+            </div>
+            <div className="flex min-w-0 flex-col">
+              <span className="text-base font-medium text-neutral-900">{creating ? "Creating…" : t.name}</span>
+              <p className="line-clamp-2 text-sm font-medium text-neutral-700">{t.desc}</p>
             </div>
           </div>
         </div>
       ))}
       <div
         onClick={onAskYoi}
-        className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-trell-line bg-white transition-shadow hover:shadow-md"
+        className="group relative block cursor-pointer"
       >
-        <div className="bg-[linear-gradient(135deg,#dbeafe_0%,#e0e7ff_45%,#ede9fe_70%,#f3e8ff_100%)] px-4 pt-4">
-          <span className="inline-block rounded-md bg-white/70 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-trell-ink-muted backdrop-blur-sm">
-            AI
-          </span>
-          <h4 className="flex min-h-10 items-center justify-center px-2 py-3 text-center text-sm font-semibold leading-snug text-trell-ink">
-            Generate with Yoi
-          </h4>
-          <div className="mx-4 mb-4 space-y-2 rounded-lg bg-white/85 p-3 shadow-sm backdrop-blur-sm">
-            <div className="ml-auto w-fit max-w-[90%] rounded-lg rounded-br-sm bg-blue-600 px-2.5 py-1.5 text-[11px] text-white">
-              track signup drop-off
-            </div>
-            <div className="w-fit max-w-[90%] rounded-lg rounded-bl-sm bg-neutral-100 px-2.5 py-1.5 text-[11px] text-trell-ink">
-              Done — funnel created ✓
-            </div>
+        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+          <div className="aspect-[900/580] w-full overflow-hidden [mask-image:linear-gradient(black_90%,transparent)]">
+            <YoiShot />
           </div>
         </div>
-        <div className="flex flex-1 flex-col justify-end px-3 pb-3">
-          <div className="-mt-8 flex items-center gap-3 rounded-xl border border-trell-line bg-white p-3 shadow-sm">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#dbeafe,#ede9fe)] text-trell-ink">
-              <Icon name="magic-star" size={20} />
+        <div className="absolute left-4 top-4 rounded bg-white px-2 py-1 text-[0.625rem] font-semibold uppercase text-neutral-800 shadow-[0_2px_2px_0_#00000014]">
+          AI
+        </div>
+        <div className="absolute inset-x-4 bottom-4 flex items-center gap-3 rounded-lg bg-white p-3 shadow-sm transition-all duration-100 group-hover:drop-shadow-md">
+          <div className="shrink-0">
+            <div className="flex size-12 items-center justify-center rounded-md bg-[linear-gradient(135deg,#dbeafe,#ede9fe)] text-trell-ink">
+              <Icon name="magic-star" size={24} />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-semibold text-trell-ink">Generate with Yoi</p>
-              <p className="line-clamp-2 text-xs leading-snug text-trell-ink-subtle">Describe the funnel you want and Yoi builds it for you.</p>
-            </div>
-            <span className="shrink-0 text-xs font-semibold text-blue-600">Ask →</span>
+          </div>
+          <div className="flex min-w-0 flex-col">
+            <span className="text-base font-medium text-neutral-900">Generate with Yoi</span>
+            <p className="line-clamp-2 text-sm font-medium text-neutral-700">Describe the funnel you want and Yoi builds it for you.</p>
           </div>
         </div>
       </div>
