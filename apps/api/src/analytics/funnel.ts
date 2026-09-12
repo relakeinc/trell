@@ -9,7 +9,7 @@ export interface FunnelStepResult {
   label: string;
   count: number;
   conversionFromPrevious: number | null; // count / previous step count
-  dropOff: number | null;                // (previous - current) / previous
+  dropOff: number | null; // (previous - current) / previous
 }
 
 export interface FunnelResult {
@@ -26,7 +26,6 @@ export function computeFunnel(events: StoredEvent[], steps: FunnelRecord["steps"
   const sorted = [...steps].sort((a, b) => a.position - b.position);
   if (sorted.length === 0) return { totalSessions: 0, steps: [] };
 
-  // Group events by session, ordered by timestamp
   const sessionEvents = new Map<string, StoredEvent[]>();
   for (const e of events) {
     let list = sessionEvents.get(e.sessionId);
@@ -36,23 +35,17 @@ export function computeFunnel(events: StoredEvent[], steps: FunnelRecord["steps"
     }
     list.push(e);
   }
-  // Sort each session's events by ts
   for (const list of sessionEvents.values()) {
     list.sort((a, b) => a.ts.getTime() - b.ts.getTime());
   }
 
-  // For each session, walk the funnel steps in order
   const stepCounts: number[] = new Array(sorted.length).fill(0);
 
   for (const sessionEvts of sessionEvents.values()) {
     let prevTs = -Infinity;
     for (let si = 0; si < sorted.length; si++) {
       const step = sorted[si]!;
-      const match = sessionEvts.find(
-        (e) =>
-          e.ts.getTime() > prevTs &&
-          stepMatches(e, step.eventType, step.formId),
-      );
+      const match = sessionEvts.find((e) => e.ts.getTime() > prevTs && stepMatches(e, step.eventType, step.formId));
       if (!match) break; // session dropped
       stepCounts[si]!++;
       prevTs = match.ts.getTime();
@@ -102,7 +95,6 @@ export async function computeFunnelSql(
     })
     .join(", ");
 
-  // Build date filter
   let dateFilter = "";
   if (filter.from) {
     dateFilter += ` AND e.ts >= $${paramIdx++}`;
@@ -161,7 +153,6 @@ ORDER BY step_idx;
   // Total sessions: count distinct session_ids in the date range (all events, not just funnel)
   const totalSessions = await countDistinctSessions(prisma, projectId, filter);
 
-  // Build result matching in-memory output format
   const countMap = new Map<number, number>();
   for (const row of rows) {
     countMap.set(row.step_idx, Number(row.session_count));
@@ -240,9 +231,7 @@ export class FunnelTooLargeError extends Error {
     public readonly eventCount: number,
     public readonly limit: number,
   ) {
-    super(
-      `Funnel computation requires ${eventCount} events, exceeding limit of ${limit}. Try a narrower date range.`,
-    );
+    super(`Funnel computation requires ${eventCount} events, exceeding limit of ${limit}. Try a narrower date range.`);
     this.name = "FunnelTooLargeError";
   }
 }

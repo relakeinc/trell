@@ -27,7 +27,13 @@ export function OnboardingFlow({ initialStep }: { initialStep: number }) {
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name, domains: domains.split(",").map((d) => d.trim()).filter(Boolean) }),
+        body: JSON.stringify({
+          name,
+          domains: domains
+            .split(",")
+            .map((d) => d.trim())
+            .filter(Boolean),
+        }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body?.message ?? body?.error ?? "Failed to create project");
@@ -63,13 +69,14 @@ export function OnboardingFlow({ initialStep }: { initialStep: number }) {
       </header>
 
       <div className="flex w-full max-w-[520px] flex-1 flex-col items-center justify-center pb-16">
-        {/* Progress */}
         <div className="mb-8 flex w-full items-center justify-center gap-2">
           {["Project", "Install", "Done"].map((label, i) => (
             <div key={label} className="flex items-center gap-2">
-              <div className={`flex size-6 items-center justify-center rounded-full text-[11px] font-medium ${
-                i <= step ? "bg-blue-600 text-white" : "bg-neutral-100 text-neutral-400"
-              }`}>
+              <div
+                className={`flex size-6 items-center justify-center rounded-full text-[11px] font-medium ${
+                  i <= step ? "bg-blue-600 text-white" : "bg-neutral-100 text-neutral-400"
+                }`}
+              >
                 {i + 1}
               </div>
               <span className={`text-xs ${i <= step ? "text-neutral-800" : "text-neutral-400"}`}>{label}</span>
@@ -78,7 +85,6 @@ export function OnboardingFlow({ initialStep }: { initialStep: number }) {
           ))}
         </div>
 
-        {/* Step 0 — create the project */}
         {step === 0 && (
           <div className="w-full">
             <h1 className="text-center text-2xl font-semibold tracking-tight text-neutral-900">
@@ -121,15 +127,14 @@ export function OnboardingFlow({ initialStep }: { initialStep: number }) {
           </div>
         )}
 
-        {/* Step 1 — show keys once */}
         {step === 1 && keys && (
           <div className="w-full">
             <h1 className="text-center text-2xl font-semibold tracking-tight text-neutral-900">
               Your project is ready
             </h1>
             <p className="mt-2 text-center text-sm text-neutral-500">
-              Copy your keys. The secret key is shown <strong className="text-neutral-700">only once</strong> —
-              Trell stores a hash of it.
+              Copy your keys. The secret key is shown <strong className="text-neutral-700">only once</strong> — Trell
+              stores a hash of it.
             </p>
 
             <div className="mt-8 space-y-4">
@@ -138,11 +143,15 @@ export function OnboardingFlow({ initialStep }: { initialStep: number }) {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-neutral-500">Publishable key (pk) — safe for the SDK</label>
+                <label className="mb-1.5 block text-xs font-medium text-neutral-500">
+                  Publishable key (pk) — safe for the SDK
+                </label>
                 <CopyRow value={keys.pk} />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-neutral-500">Secret key (sk) — never send to the browser</label>
+                <label className="mb-1.5 block text-xs font-medium text-neutral-500">
+                  Secret key (sk) — never send to the browser
+                </label>
                 <CopyRow value={keys.sk} mono />
               </div>
 
@@ -160,7 +169,6 @@ export function OnboardingFlow({ initialStep }: { initialStep: number }) {
           </div>
         )}
 
-        {/* Step 2 — done */}
         {step === 2 && (
           <div className="w-full text-center">
             <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Welcome to Trell</h1>

@@ -46,7 +46,16 @@ export class PrismaMembershipRepo implements MembershipRepo {
       where: { projectId_userId: { projectId, userId } },
       include: { project: { select: { id: true, name: true, slug: true, logoVariant: true } } },
     });
-    return r ? { projectId: r.projectId, userId: r.userId, role: r.role, name: r.project.name, slug: r.project.slug, logoVariant: r.project.logoVariant } : null;
+    return r
+      ? {
+          projectId: r.projectId,
+          userId: r.userId,
+          role: r.role,
+          name: r.project.name,
+          slug: r.project.slug,
+          logoVariant: r.project.logoVariant,
+        }
+      : null;
   }
 }
 

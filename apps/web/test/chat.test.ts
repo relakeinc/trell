@@ -1,5 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { buildSystemPrompt, findPageMentions, parseChatBody, parseOpenAIChunk, parseSSEEvent, prettyToolName, toDisplayOutput, toFunctionDeclarations, toOpenAIMessages, toOpenAITools, CHAT_COMMANDS, CHAT_PAGES, answerLocalIntent } from "../src/lib/chatAgent";
+import {
+  buildSystemPrompt,
+  findPageMentions,
+  parseChatBody,
+  parseOpenAIChunk,
+  parseSSEEvent,
+  prettyToolName,
+  toDisplayOutput,
+  toFunctionDeclarations,
+  toOpenAIMessages,
+  toOpenAITools,
+  CHAT_COMMANDS,
+  CHAT_PAGES,
+  answerLocalIntent,
+} from "../src/lib/chatAgent";
 import { signIdentityJwt } from "../src/lib/chatIdentity";
 
 describe("chatAgent helpers", () => {
@@ -34,7 +48,9 @@ describe("chatAgent helpers", () => {
     const out = toFunctionDeclarations([
       { name: "list_projects", description: "List", inputSchema: { $schema: "x", type: "object", properties: {} } },
     ]);
-    expect(out).toEqual([{ name: "list_projects", description: "List", parameters: { type: "object", properties: {} } }]);
+    expect(out).toEqual([
+      { name: "list_projects", description: "List", parameters: { type: "object", properties: {} } },
+    ]);
   });
 
   it("parses and validates chat bodies", () => {

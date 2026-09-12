@@ -37,8 +37,12 @@ const ProjectContext = createContext<ProjectContextValue>({
   usage: null,
   loading: true,
   refresh: () => {},
-  saveProject: async () => { throw new Error("not loaded"); },
-  deleteProject: async () => { throw new Error("not loaded"); },
+  saveProject: async () => {
+    throw new Error("not loaded");
+  },
+  deleteProject: async () => {
+    throw new Error("not loaded");
+  },
   setProject: () => {},
 });
 
@@ -52,9 +56,7 @@ async function throwOnError(res: Response): Promise<void> {
   try {
     const err = (await res.json()) as { message?: string; error?: string };
     message = err.message || err.error || message;
-  } catch {
-    // keep default
-  }
+  } catch {}
   throw new Error(message);
 }
 
@@ -85,18 +87,21 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     }
   }, [slug]);
 
-  const saveProject = useCallback(async (updates: { name?: string; slug?: string; logoVariant?: number }): Promise<ProjectData> => {
-    if (!project) throw new Error("Workspace not loaded");
-    const res = await fetch(`/api/projects/${project.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updates),
-    });
-    await throwOnError(res);
-    const data = await res.json();
-    setProject(data.project);
-    return data.project as ProjectData;
-  }, [project]);
+  const saveProject = useCallback(
+    async (updates: { name?: string; slug?: string; logoVariant?: number }): Promise<ProjectData> => {
+      if (!project) throw new Error("Workspace not loaded");
+      const res = await fetch(`/api/projects/${project.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      await throwOnError(res);
+      const data = await res.json();
+      setProject(data.project);
+      return data.project as ProjectData;
+    },
+    [project],
+  );
 
   const deleteProject = useCallback(async (): Promise<void> => {
     if (!project) throw new Error("Workspace not loaded");
@@ -111,7 +116,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   }, [fetchData]);
 
   return (
-    <ProjectContext.Provider value={{ project, usage, loading, refresh: () => void fetchData(), saveProject, deleteProject, setProject }}>
+    <ProjectContext.Provider
+      value={{ project, usage, loading, refresh: () => void fetchData(), saveProject, deleteProject, setProject }}
+    >
       {children}
     </ProjectContext.Provider>
   );

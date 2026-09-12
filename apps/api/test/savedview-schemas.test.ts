@@ -49,7 +49,10 @@ describe("SavedView config schemas", () => {
 
   describe("parseSavedViewConfig", () => {
     it("parses valid JSON", () => {
-      const result = parseSavedViewConfig("funnel", JSON.stringify({ funnelId: "550e8400-e29b-41d4-a716-446655440000" }));
+      const result = parseSavedViewConfig(
+        "funnel",
+        JSON.stringify({ funnelId: "550e8400-e29b-41d4-a716-446655440000" }),
+      );
       expect(result).not.toBeNull();
       expect(result!.type).toBe("funnel");
     });

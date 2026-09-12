@@ -2,7 +2,7 @@
   "name": "@trell/shared",
   "version": "0.0.0",
   "description": "Shared types, constants and schemas for Trell (SDK + API).",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -21,7 +21,9 @@
       "default": "./dist/schemas.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",

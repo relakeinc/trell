@@ -42,11 +42,7 @@ export const deleteProjectShape = {
 };
 
 /** Delete a workspace and everything in it. Owner-only + flag + confirm. */
-export async function deleteProject(
-  store: McpStore,
-  config: McpConfig,
-  args: { project: string; confirm?: boolean },
-) {
+export async function deleteProject(store: McpStore, config: McpConfig, args: { project: string; confirm?: boolean }) {
   return runTool(async () => {
     const p = await resolveProject(store, config, args.project);
     await requireOwner(store, config, p);

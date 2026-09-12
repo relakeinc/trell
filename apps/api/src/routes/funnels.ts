@@ -15,7 +15,10 @@ export function makeFunnels(repo: Repo) {
 
     create: async (c: Context): Promise<Response> => {
       const projectId = c.get("projectId");
-      const body = await c.req.json<{ name?: string; steps?: { eventType: string; formId?: string; label?: string; position: number }[] }>();
+      const body = await c.req.json<{
+        name?: string;
+        steps?: { eventType: string; formId?: string; label?: string; position: number }[];
+      }>();
       if (!body.name || !body.steps || body.steps.length === 0) {
         return badRequest(c, "name and at least one step required", "invalid_body");
       }
@@ -46,7 +49,10 @@ export function makeFunnels(repo: Repo) {
       const existing = await repo.getFunnel(funnelId);
       if (!existing) return sendError(c, 404, "not_found", "funnel not found");
 
-      const body = await c.req.json<{ name?: string; steps?: { eventType: string; formId?: string; label?: string; position: number }[] }>();
+      const body = await c.req.json<{
+        name?: string;
+        steps?: { eventType: string; formId?: string; label?: string; position: number }[];
+      }>();
       const funnel = await repo.updateFunnel(funnelId, {
         name: body.name,
         steps: body.steps?.map((s, i) => ({
@@ -70,7 +76,9 @@ export function makeFunnels(repo: Repo) {
 
     compute: async (c: Context): Promise<Response> => {
       const projectId = c.get("projectId");
-      const body = await c.req.json<{ steps: { eventType: string; formId?: string; label?: string; position: number }[] }>();
+      const body = await c.req.json<{
+        steps: { eventType: string; formId?: string; label?: string; position: number }[];
+      }>();
       if (!body.steps || body.steps.length === 0) {
         return badRequest(c, "at least one step required", "invalid_body");
       }
@@ -83,7 +91,11 @@ export function makeFunnels(repo: Repo) {
       const segmentRaw = c.req.query("segment");
       let segment: Record<string, string> | undefined;
       if (segmentRaw) {
-        try { segment = JSON.parse(segmentRaw); } catch { /* ignore */ }
+        try {
+          segment = JSON.parse(segmentRaw);
+        } catch {
+          /* ignore */
+        }
       }
 
       let events = await repo.getEventsForAnalytics(projectId, filter);
@@ -102,7 +114,13 @@ export function makeFunnels(repo: Repo) {
       }));
 
       try {
-        const result = await computeFunnelHybrid(null, projectId, { id: "tmp", projectId, name: "adhoc", steps, createdAt: new Date(), updatedAt: new Date() }, events, filter);
+        const result = await computeFunnelHybrid(
+          null,
+          projectId,
+          { id: "tmp", projectId, name: "adhoc", steps, createdAt: new Date(), updatedAt: new Date() },
+          events,
+          filter,
+        );
         return sendOk(c, 200, result);
       } catch (e) {
         if (e instanceof FunnelTooLargeError) {

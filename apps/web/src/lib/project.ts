@@ -24,13 +24,11 @@ export async function getProjectBySlug(slug: string): Promise<ProjectData> {
   const projects = await svc.listAccessibleProjects(session.user.id);
 
   if (projects.length === 0) {
-    // No projects — stay on a page that lets them create one
     redirect("/");
   }
 
   const project = projects.find((p) => p.slug === slug);
   if (!project) {
-    // Slug doesn't match any accessible project — go to first
     redirect(`/${projects[0]!.slug}/analytics`);
   }
 

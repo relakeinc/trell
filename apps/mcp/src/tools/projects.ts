@@ -7,9 +7,7 @@ import { identityProjectIds, parseDomains, resolveProject } from "../projects";
 export async function listProjects(store: McpStore, config: McpConfig) {
   return runTool(async () => {
     const all = await store.listProjects();
-    let allowed = config.allowedSlugs
-      ? all.filter((p) => config.allowedSlugs!.includes(p.slug.toLowerCase()))
-      : all;
+    let allowed = config.allowedSlugs ? all.filter((p) => config.allowedSlugs!.includes(p.slug.toLowerCase())) : all;
     const ids = await identityProjectIds(store, config);
     if (ids) allowed = allowed.filter((p) => ids.has(p.id));
     return {

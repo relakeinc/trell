@@ -127,30 +127,41 @@ const FUNNEL_TEMPLATES: FunnelTemplate[] = [
   },
 ];
 
-function TemplateCardShell({ onClick, disabled, glow, children }: { onClick: () => void; disabled?: boolean; glow: string; children: React.ReactNode }) {
+function TemplateCardShell({
+  onClick,
+  disabled,
+  glow,
+  children,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  glow: string;
+  children: React.ReactNode;
+}) {
   return (
     <div
-      onClick={() => { if (!disabled) onClick(); }}
+      onClick={() => {
+        if (!disabled) onClick();
+      }}
       className={`group relative flex h-[360px] w-full cursor-pointer flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition-shadow hover:shadow-md ${disabled ? "pointer-events-none opacity-70" : ""}`}
     >
       <div
         aria-hidden
         className="absolute inset-0 [background-image:linear-gradient(#e9ebf1_1px,transparent_1px),linear-gradient(90deg,#e9ebf1_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_90%_90%_at_50%_40%,black_30%,transparent_100%)]"
       />
-      <div
-        aria-hidden
-        className={`absolute inset-0 ${glow}`}
-      />
-      <div className="relative flex flex-1 flex-col justify-end p-5">
-        {children}
-      </div>
+      <div aria-hidden className={`absolute inset-0 ${glow}`} />
+      <div className="relative flex flex-1 flex-col justify-end p-5">{children}</div>
     </div>
   );
 }
 
 function FunnelSkeleton({ name, stepCount }: { name: string; stepCount: number }) {
   return (
-    <div className="rounded-2xl border border-trell-line bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]" aria-busy="true" aria-label="Loading funnel">
+    <div
+      className="rounded-2xl border border-trell-line bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+      aria-busy="true"
+      aria-label="Loading funnel"
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-trell-ink">{name}</h3>
@@ -167,7 +178,10 @@ function FunnelSkeleton({ name, stepCount }: { name: string; stepCount: number }
                 <span className="h-3.5 w-32 animate-pulse rounded bg-neutral-100" />
                 <span className="h-3.5 w-12 animate-pulse rounded bg-neutral-100" />
               </div>
-              <div className="h-9 animate-pulse rounded-lg bg-neutral-100" style={{ width: `${Math.max(25, 100 - i * 22)}%` }} />
+              <div
+                className="h-9 animate-pulse rounded-lg bg-neutral-100"
+                style={{ width: `${Math.max(25, 100 - i * 22)}%` }}
+              />
             </div>
           </div>
         ))}
@@ -176,20 +190,36 @@ function FunnelSkeleton({ name, stepCount }: { name: string; stepCount: number }
   );
 }
 
-function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTemplate) => void; creating: boolean; onAskYoi: () => void }) {
+function TemplateGallery({
+  onUse,
+  creating,
+  onAskYoi,
+}: {
+  onUse: (t: FunnelTemplate) => void;
+  creating: boolean;
+  onAskYoi: () => void;
+}) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {FUNNEL_TEMPLATES.map((t) => (
         <TemplateCardShell key={t.name} onClick={() => onUse(t)} disabled={creating} glow={t.glow}>
           <div className="min-h-0 flex-1 px-1 pb-1">
-            <JourneyVisual steps={t.steps} from={t.from} to={t.to} id={`j-${t.name.replace(/\s+/g, "-").toLowerCase()}`} />
+            <JourneyVisual
+              steps={t.steps}
+              from={t.from}
+              to={t.to}
+              id={`j-${t.name.replace(/\s+/g, "-").toLowerCase()}`}
+            />
           </div>
           <p className="text-[15px] font-semibold text-trell-ink">{creating ? "Creating…" : t.name}</p>
           <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-trell-ink-subtle">{t.desc}</p>
           <p className={`mt-2 text-xs font-semibold ${t.accent}`}>Use template →</p>
         </TemplateCardShell>
       ))}
-      <TemplateCardShell onClick={onAskYoi} glow="bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(124,58,237,0.30),transparent_70%)]">
+      <TemplateCardShell
+        onClick={onAskYoi}
+        glow="bg-[radial-gradient(ellipse_90%_55%_at_50%_108%,rgba(124,58,237,0.30),transparent_70%)]"
+      >
         <div className="min-h-0 flex-1 px-1 pb-1">
           <JourneyVisual
             steps={[{ label: "Ask" }, { label: "Build" }, { label: "Done" }]}
@@ -199,7 +229,9 @@ function TemplateGallery({ onUse, creating, onAskYoi }: { onUse: (t: FunnelTempl
           />
         </div>
         <p className="text-[15px] font-semibold text-trell-ink">Generate with Yoi</p>
-        <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-trell-ink-subtle">Describe the funnel you want and Yoi builds it for you.</p>
+        <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-trell-ink-subtle">
+          Describe the funnel you want and Yoi builds it for you.
+        </p>
         <p className="mt-2 text-xs font-semibold text-violet-600">Ask Yoi →</p>
       </TemplateCardShell>
     </div>
@@ -227,35 +259,47 @@ export default function FunnelsPage() {
 
   const { createFunnel, updateFunnel, deleteFunnel } = useFunnelMutations(projectId);
 
-  // Auto-select first funnel
   useEffect(() => {
     if (savedFunnels.length > 0 && !activeFunnelId) {
       setActiveFunnelId(savedFunnels[0]!.id);
     }
   }, [savedFunnels, activeFunnelId]);
 
-  // Reset the delete confirmation whenever the selection changes
   useEffect(() => {
     setConfirmDelete(false);
   }, [activeFunnelId]);
 
   const savedActive = activeFunnelId ? (savedFunnels.find((f) => f.id === activeFunnelId) ?? null) : null;
-  const activeFunnel = savedActive && liveData
-    ? { ...savedActive, totalSessions: liveData.totalSessions, steps: liveData.steps }
-    : null;
+  const activeFunnel =
+    savedActive && liveData ? { ...savedActive, totalSessions: liveData.totalSessions, steps: liveData.steps } : null;
 
-  function handleSave(data: { name: string; steps: { eventType: string; formId?: string; label?: string; position: number }[] }) {
+  function handleSave(data: {
+    name: string;
+    steps: { eventType: string; formId?: string; label?: string; position: number }[];
+  }) {
     if (editingFunnel) {
-      updateFunnel.mutate({ id: editingFunnel.id, ...data }, { onSuccess: () => { setBuilderOpen(false); setEditingFunnel(null); } });
+      updateFunnel.mutate(
+        { id: editingFunnel.id, ...data },
+        {
+          onSuccess: () => {
+            setBuilderOpen(false);
+            setEditingFunnel(null);
+          },
+        },
+      );
     } else {
-      createFunnel.mutate(data, { onSuccess: () => { setBuilderOpen(false); setEditingFunnel(null); } });
+      createFunnel.mutate(data, {
+        onSuccess: () => {
+          setBuilderOpen(false);
+          setEditingFunnel(null);
+        },
+      });
     }
   }
 
   function handleUseTemplate(t: FunnelTemplate) {
     if (createFunnel.isPending) return;
-    // Instant feedback: hide the gallery and show a skeleton right away,
-    // then swap in the real funnel as soon as the server answers.
+    // Instant feedback: hide gallery, show skeleton, then swap in the real funnel.
     setPendingTemplate(t);
     setShowTemplates(false);
     createFunnel.mutate(
@@ -278,7 +322,11 @@ export default function FunnelsPage() {
       return;
     }
     setConfirmDelete(false);
-    deleteFunnel.mutate(id, { onSuccess: () => { if (activeFunnelId === id) setActiveFunnelId(null); } });
+    deleteFunnel.mutate(id, {
+      onSuccess: () => {
+        if (activeFunnelId === id) setActiveFunnelId(null);
+      },
+    });
   }
 
   return (
@@ -288,34 +336,46 @@ export default function FunnelsPage() {
           <h1 className="text-base font-semibold text-trell-ink">Funnels</h1>
         </div>
         <div className="flex items-center gap-2">
-        {savedFunnels.length > 0 && (
-        <button
-          onClick={() => setShowTemplates((v) => !v)}
-          className="trell-btn-secondary h-10 px-4"
-        >
-          Templates
-        </button>
-        )}
-        <button
-          onClick={() => { setEditingFunnel(null); setBuilderOpen(true); }}
-          className="trell-btn-accent h-10 px-4"
-        >
-          + New funnel
-        </button>
-        <AskYoiButton />
+          {savedFunnels.length > 0 && (
+            <button onClick={() => setShowTemplates((v) => !v)} className="trell-btn-secondary h-10 px-4">
+              Templates
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setEditingFunnel(null);
+              setBuilderOpen(true);
+            }}
+            className="trell-btn-accent h-10 px-4"
+          >
+            + New funnel
+          </button>
+          <AskYoiButton />
         </div>
       </header>
 
       {builderOpen && (
         <div className="mb-4">
           <FunnelBuilder
-            initial={editingFunnel ? {
-              id: editingFunnel.id,
-              name: editingFunnel.name,
-              steps: editingFunnel.steps.map((s) => ({ eventType: s.eventType ?? "", formId: s.formId ?? undefined, label: s.label ?? undefined, position: s.position })),
-            } : undefined}
+            initial={
+              editingFunnel
+                ? {
+                    id: editingFunnel.id,
+                    name: editingFunnel.name,
+                    steps: editingFunnel.steps.map((s) => ({
+                      eventType: s.eventType ?? "",
+                      formId: s.formId ?? undefined,
+                      label: s.label ?? undefined,
+                      position: s.position,
+                    })),
+                  }
+                : undefined
+            }
             onSave={(data) => void handleSave(data)}
-            onCancel={() => { setBuilderOpen(false); setEditingFunnel(null); }}
+            onCancel={() => {
+              setBuilderOpen(false);
+              setEditingFunnel(null);
+            }}
           />
         </div>
       )}
@@ -355,7 +415,15 @@ export default function FunnelsPage() {
         <div className="space-y-3">
           <FunnelView funnel={activeFunnel} onDrillDown={() => {}} />
           <div className="flex items-center gap-2">
-            <button onClick={() => { setEditingFunnel(activeFunnel as unknown as SavedFunnel); setBuilderOpen(true); }} className="trell-btn-secondary h-9">Edit funnel</button>
+            <button
+              onClick={() => {
+                setEditingFunnel(activeFunnel as unknown as SavedFunnel);
+                setBuilderOpen(true);
+              }}
+              className="trell-btn-secondary h-9"
+            >
+              Edit funnel
+            </button>
             <button
               onClick={() => activeFunnelId && handleDelete(activeFunnelId)}
               className={`${confirmDelete ? "trell-btn-danger" : "trell-btn-outline"} h-9 gap-1.5 text-xs`}
@@ -380,10 +448,12 @@ export default function FunnelsPage() {
             </div>
             <h2 className="text-base font-semibold text-trell-ink">No funnels yet</h2>
             <p className="mt-1.5 max-w-sm text-sm text-trell-ink-subtle">
-              Funnels show how many visitors complete each step — and where the rest drop off.
-              Start with view → start → success.
+              Funnels show how many visitors complete each step — and where the rest drop off. Start with view → start →
+              success.
             </p>
-            <button onClick={() => setBuilderOpen(true)} className="trell-btn-accent mt-4 h-10 px-6">Create funnel</button>
+            <button onClick={() => setBuilderOpen(true)} className="trell-btn-accent mt-4 h-10 px-6">
+              Create funnel
+            </button>
           </div>
           <div>
             <h2 className="mb-3 text-sm font-semibold text-trell-ink">Or start from a template</h2>
@@ -392,8 +462,11 @@ export default function FunnelsPage() {
         </div>
       )}
 
-      {!activeFunnel && !builderOpen && !pendingTemplate && savedFunnels.length > 0 && (
-        activeFunnelId && savedActive ? (
+      {!activeFunnel &&
+        !builderOpen &&
+        !pendingTemplate &&
+        savedFunnels.length > 0 &&
+        (activeFunnelId && savedActive ? (
           liveError ? (
             <p className="py-8 text-center text-sm text-red-600">Couldn&apos;t load this funnel. Please try again.</p>
           ) : (
@@ -401,8 +474,7 @@ export default function FunnelsPage() {
           )
         ) : (
           <p className="py-8 text-center text-sm text-trell-ink-muted">Select a funnel above to see its conversion.</p>
-        )
-      )}
+        ))}
     </div>
   );
 }

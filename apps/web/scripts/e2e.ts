@@ -188,7 +188,10 @@ async function main() {
   } catch {
     check("create project → 201 + pk + sk", false, "non-JSON response");
   }
-  check("create project → 201 + pk + sk (shown once)", created.status === 201 && createdBody.keys?.pk?.startsWith("pk_") && createdBody.keys?.sk?.startsWith("sk_"));
+  check(
+    "create project → 201 + pk + sk (shown once)",
+    created.status === 201 && createdBody.keys?.pk?.startsWith("pk_") && createdBody.keys?.sk?.startsWith("sk_"),
+  );
   if (!createdBody?.keys) {
     console.error("\n--- WEB LOG ---\n" + tailLog(LOG_WEB));
     return;
@@ -205,7 +208,11 @@ async function main() {
   // 3) installation status (waiting)
   const status0 = await A.fetch(`http://localhost:${WEB_PORT}/api/projects/${projectId}`);
   const statusBody0 = await status0.json();
-  check("installation → waiting for first event", statusBody0.installation?.connected === false, JSON.stringify(statusBody0.installation));
+  check(
+    "installation → waiting for first event",
+    statusBody0.installation?.connected === false,
+    JSON.stringify(statusBody0.installation),
+  );
   assertNoSecret(JSON.stringify(statusBody0), sk, "project status");
 
   // 4) ingestion (allowed origin)
@@ -231,21 +238,32 @@ async function main() {
   assertNoSecret(statsText, sk, "relay stats");
   assertNoSecret(statsText, pk, "relay stats (pk)");
   const statsBody = JSON.parse(statsText);
-  check("relay reflects the ingested submit (submits=1, views=0)", statsBody.metrics?.submits === 1 && statsBody.metrics?.views === 0, `submits=${statsBody.metrics?.submits} views=${statsBody.metrics?.views}`);
+  check(
+    "relay reflects the ingested submit (submits=1, views=0)",
+    statsBody.metrics?.submits === 1 && statsBody.metrics?.views === 0,
+    `submits=${statsBody.metrics?.submits} views=${statsBody.metrics?.views}`,
+  );
 
   // 7) installation now connected
   const status1 = await A.fetch(`http://localhost:${WEB_PORT}/api/projects/${projectId}`);
   const statusBody1 = await status1.json();
-  check("installation → connected + lastEventAt", statusBody1.installation?.connected === true && !!statusBody1.installation?.lastEventAt);
+  check(
+    "installation → connected + lastEventAt",
+    statusBody1.installation?.connected === true && !!statusBody1.installation?.lastEventAt,
+  );
 
   // 8) rotate secret: old sk invalidated, new sk works (direct Hono auth check)
   const rot = await A.fetch(`http://localhost:${WEB_PORT}/api/projects/${projectId}/rotate-secret`, { method: "POST" });
   const rotBody = await rot.json();
   const sk2 = rotBody?.keys?.sk as string;
   check("rotate secret → new sk, owner only", rot.status === 200 && sk2?.startsWith("sk_"));
-  const oldStats = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/stats`, { headers: { authorization: `Bearer ${sk}` } });
+  const oldStats = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/stats`, {
+    headers: { authorization: `Bearer ${sk}` },
+  });
   check("old sk invalidated after rotate → 401", oldStats.status === 401, `got ${oldStats.status}`);
-  const newStats = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/stats`, { headers: { authorization: `Bearer ${sk2}` } });
+  const newStats = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/stats`, {
+    headers: { authorization: `Bearer ${sk2}` },
+  });
   check("new sk works after rotate → 200", newStats.status === 200, `got ${newStats.status}`);
 
   // 9) allowlist edit + validation
@@ -255,7 +273,11 @@ async function main() {
     body: JSON.stringify({ addDomain: "Evil.com " }),
   });
   const patchBody = await patch.json();
-  check("PATCH addDomain (normalized + deduped)", patch.status === 200 && patchBody.project.domains.includes("evil.com"), JSON.stringify(patchBody.project.domains));
+  check(
+    "PATCH addDomain (normalized + deduped)",
+    patch.status === 200 && patchBody.project.domains.includes("evil.com"),
+    JSON.stringify(patchBody.project.domains),
+  );
   const bad = await A.fetch(`http://localhost:${WEB_PORT}/api/projects/${projectId}`, {
     method: "PATCH",
     headers: { "content-type": "application/json" },
@@ -276,26 +298,40 @@ async function main() {
   const createFunnel = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/funnels`, {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${sk2}` },
-    body: JSON.stringify({ name: "E2E Funnel", steps: [
-      { eventType: "form_view", position: 0 },
-      { eventType: "form_start", position: 1 },
-      { eventType: "form_success", position: 2 },
-    ]}),
+    body: JSON.stringify({
+      name: "E2E Funnel",
+      steps: [
+        { eventType: "form_view", position: 0 },
+        { eventType: "form_start", position: 1 },
+        { eventType: "form_success", position: 2 },
+      ],
+    }),
   });
   const funnelBody = await createFunnel.json();
   const funnelId = funnelBody?.funnel?.id as string;
   check("create funnel → 201 + id", createFunnel.status === 201 && funnelId?.length > 0);
 
-  const listFunnels = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/funnels`, { headers: { authorization: `Bearer ${sk2}` } });
+  const listFunnels = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/funnels`, {
+    headers: { authorization: `Bearer ${sk2}` },
+  });
   check("list funnels → 200 + 1 funnel", listFunnels.status === 200, `got ${listFunnels.status}`);
 
-  const getFunnel = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/funnels/${funnelId}`, { headers: { authorization: `Bearer ${sk2}` } });
+  const getFunnel = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/funnels/${funnelId}`, {
+    headers: { authorization: `Bearer ${sk2}` },
+  });
   check("get funnel → 200 + correct name", getFunnel.status === 200, `got ${getFunnel.status}`);
 
   // 11) funnel-live computation
-  const funnelLive = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/funnel-live?funnelId=${funnelId}`, { headers: { authorization: `Bearer ${sk2}` } });
+  const funnelLive = await fetch(
+    `http://localhost:${API_PORT}/v1/projects/${projectId}/funnel-live?funnelId=${funnelId}`,
+    { headers: { authorization: `Bearer ${sk2}` } },
+  );
   const funnelLiveBody = await funnelLive.json();
-  check("funnel-live → 200 + steps array", funnelLive.status === 200 && Array.isArray(funnelLiveBody?.steps), `got ${funnelLive.status}`);
+  check(
+    "funnel-live → 200 + steps array",
+    funnelLive.status === 200 && Array.isArray(funnelLiveBody?.steps),
+    `got ${funnelLive.status}`,
+  );
 
   // 12) saved views CRUD
   const createView = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/views`, {
@@ -307,21 +343,34 @@ async function main() {
   const viewId = viewBody?.view?.id as string;
   check("create saved view → 201 + id", createView.status === 201 && viewId?.length > 0);
 
-  const listViews = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/views`, { headers: { authorization: `Bearer ${sk2}` } });
+  const listViews = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/views`, {
+    headers: { authorization: `Bearer ${sk2}` },
+  });
   check("list views → 200 + 1 view", listViews.status === 200, `got ${listViews.status}`);
 
   // 13) drill-down: events with funnelId
-  const drilldown = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/events?funnelId=${funnelId}&limit=5`, { headers: { authorization: `Bearer ${sk2}` } });
+  const drilldown = await fetch(
+    `http://localhost:${API_PORT}/v1/projects/${projectId}/events?funnelId=${funnelId}&limit=5`,
+    { headers: { authorization: `Bearer ${sk2}` } },
+  );
   check("drill-down events → 200", drilldown.status === 200, `got ${drilldown.status}`);
 
   // 14) segmentation on stats
-  const segStats = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/stats?device=desktop`, { headers: { authorization: `Bearer ${sk2}` } });
+  const segStats = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/stats?device=desktop`, {
+    headers: { authorization: `Bearer ${sk2}` },
+  });
   check("segmented stats → 200", segStats.status === 200, `got ${segStats.status}`);
 
   // 15) cleanup: delete view, delete funnel
-  const delView = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/views/${viewId}`, { method: "DELETE", headers: { authorization: `Bearer ${sk2}` } });
+  const delView = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/views/${viewId}`, {
+    method: "DELETE",
+    headers: { authorization: `Bearer ${sk2}` },
+  });
   check("delete view → 200", delView.status === 200, `got ${delView.status}`);
-  const delFunnel = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/funnels/${funnelId}`, { method: "DELETE", headers: { authorization: `Bearer ${sk2}` } });
+  const delFunnel = await fetch(`http://localhost:${API_PORT}/v1/projects/${projectId}/funnels/${funnelId}`, {
+    method: "DELETE",
+    headers: { authorization: `Bearer ${sk2}` },
+  });
   check("delete funnel → 200", delFunnel.status === 200, `got ${delFunnel.status}`);
 
   // 16) dashboard HTML does not embed sk

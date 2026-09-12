@@ -69,12 +69,7 @@ export default function BillingSettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {portalBusy && (
-        <RedirectOverlay
-          title="Opening customer portal…"
-          subtitle="Do not close this window."
-        />
-      )}
+      {portalBusy && <RedirectOverlay title="Opening customer portal…" subtitle="Do not close this window." />}
       <Suspense fallback={null}>
         <UpgradedBanner />
       </Suspense>
@@ -82,32 +77,43 @@ export default function BillingSettingsPage() {
         <h1 className="text-lg font-semibold text-trell-ink">Billing</h1>
       </div>
 
-      {/* Current Plan */}
       <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
         <div className="p-5 pb-0">
           <div className="text-sm font-semibold text-trell-ink">Current Plan</div>
-          <div className="mt-1 text-sm text-trell-ink-muted">Your workspace is on the {isFree ? "Free" : "Pro"} plan.</div>
+          <div className="mt-1 text-sm text-trell-ink-muted">
+            Your workspace is on the {isFree ? "Free" : "Pro"} plan.
+          </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-trell-line bg-neutral-50/80 px-5 py-3">
           <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${isFree ? "bg-neutral-100 text-neutral-600" : "bg-blue-100 text-blue-600"}`}>
+            <span
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${isFree ? "bg-neutral-100 text-neutral-600" : "bg-blue-100 text-blue-600"}`}
+            >
               {isFree ? "Free" : "Pro"}
             </span>
-            <span className="text-xs text-trell-ink-muted">{usage.events.toLocaleString()} of {usage.limit.toLocaleString()} events used</span>
+            <span className="text-xs text-trell-ink-muted">
+              {usage.events.toLocaleString()} of {usage.limit.toLocaleString()} events used
+            </span>
           </div>
           {isFree ? (
-            <Link href={`/${project.slug}/settings/billing/plans`} className="trell-btn-accent h-8 cursor-pointer px-3 text-xs">
+            <Link
+              href={`/${project.slug}/settings/billing/plans`}
+              className="trell-btn-accent h-8 cursor-pointer px-3 text-xs"
+            >
               Upgrade to Pro
             </Link>
           ) : (
-            <a href={`/api/portal?project=${project.id}`} onClick={() => setPortalBusy(true)} className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
+            <a
+              href={`/api/portal?project=${project.id}`}
+              onClick={() => setPortalBusy(true)}
+              className="trell-btn-outline h-8 cursor-pointer px-3 text-xs"
+            >
               {portalBusy ? "Opening…" : "Manage subscription"}
             </a>
           )}
         </div>
       </div>
 
-      {/* Events Usage */}
       <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
         <div className="p-5 pb-0">
           <div className="text-sm font-semibold text-trell-ink">Events</div>
@@ -118,7 +124,8 @@ export default function BillingSettingsPage() {
             <div className="flex items-center justify-between text-sm">
               <span className="text-trell-ink-muted">Events used</span>
               <span className="tabular-nums text-trell-ink">
-                {usage.events.toLocaleString()} <span className="text-trell-ink-muted">of {usage.limit.toLocaleString()}</span>
+                {usage.events.toLocaleString()}{" "}
+                <span className="text-trell-ink-muted">of {usage.limit.toLocaleString()}</span>
               </span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200">
@@ -138,7 +145,6 @@ export default function BillingSettingsPage() {
         </div>
       </div>
 
-      {/* Domains Usage */}
       <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
         <div className="p-5 pb-0">
           <div className="text-sm font-semibold text-trell-ink">Domains</div>

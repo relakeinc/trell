@@ -6,8 +6,7 @@ import { prisma } from "./prisma";
 
 const devModeRequested = process.env.AUTH_DEV_MODE === "true";
 
-// Fail closed: the dev bypass must NEVER be active in production, even if the
-// flag leaks into a production environment (e.g. a copied .env file).
+// Fail closed: dev bypass must NEVER run in production, even if the flag leaks via .env.
 if (devModeRequested && process.env.NODE_ENV === "production") {
   throw new Error("AUTH_DEV_MODE must never be enabled in production");
 }
@@ -47,7 +46,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             async authorize(credentials) {
               const email = credentials?.email;
               if (!email || typeof email !== "string") return null;
-              // Auto-create or find user
               let user = await prisma.user.findUnique({ where: { email } });
               if (!user) {
                 user = await prisma.user.create({ data: { email, name: email.split("@")[0] } });

@@ -2,7 +2,9 @@ import { prisma } from "./prisma";
 import { getPlanLimits, type PlanLimits } from "@/lib/plans";
 
 /** Resolve the effective (account-level) plan for a project's owner. */
-export async function getProjectOwnerPlan(projectId: string): Promise<{ plan: string; limits: PlanLimits; billingPeriodStart: Date }> {
+export async function getProjectOwnerPlan(
+  projectId: string,
+): Promise<{ plan: string; limits: PlanLimits; billingPeriodStart: Date }> {
   const member = await prisma.projectUser.findFirst({
     where: { projectId, role: "owner" },
     include: {
@@ -11,8 +13,7 @@ export async function getProjectOwnerPlan(projectId: string): Promise<{ plan: st
     },
   });
 
-  // Prefer the user-level plan. If empty, fall back to the project-level plan
-  // (legacy data from before the account-level migration).
+  // Prefer user-level plan, fallback to project-level (pre-migration legacy).
   const plan = member?.user.plan || member?.project.plan || "free";
 
   return {

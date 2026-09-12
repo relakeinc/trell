@@ -18,8 +18,15 @@ interface Event {
 
 function fmtTime(iso: string): string {
   try {
-    return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-  } catch { return ""; }
+    return new Date(iso).toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
 }
 
 export function DrilldownDrawer({
@@ -47,7 +54,9 @@ export function DrilldownDrawer({
             <h2 className="text-sm font-semibold">{title}</h2>
             <p className="text-xs text-trell-muted">{total} events</p>
           </div>
-          <button onClick={onClose} className="text-trell-muted hover:text-trell-ink">✕</button>
+          <button onClick={onClose} className="text-trell-muted hover:text-trell-ink">
+            ✕
+          </button>
         </div>
         <div className="mt-4 space-y-1">
           {events.map((e) => (
@@ -57,7 +66,8 @@ export function DrilldownDrawer({
                 <span className="text-trell-muted">{fmtTime(e.ts)}</span>
               </div>
               <div className="mt-1 text-trell-muted">
-                {e.pagePath} · {e.deviceType}{e.browser ? ` · ${e.browser}` : ""}
+                {e.pagePath} · {e.deviceType}
+                {e.browser ? ` · ${e.browser}` : ""}
                 {e.formId ? ` · form ${e.formId}` : ""}
               </div>
               <div className="mt-0.5 text-[10px] text-trell-muted/70">

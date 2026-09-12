@@ -1,9 +1,11 @@
 # UTM Templates
 
 ## Descripción
+
 Crear un sistema de plantillas UTM类似于 Dub.co (app.dub.co/chenii/links/utm). Permite a los usuarios guardar combinaciones frecuentes de parámetros UTM para reutilizarlas al crear links de tracking.
 
 ## Funcionalidades
+
 - **Crear template**: nombre + parámetros (source, medium, campaign, term, content, referral)
 - **Listar templates**: tabla con todos los templates guardados
 - **Editar template**: modificar cualquier parámetro
@@ -11,6 +13,7 @@ Crear un sistema de plantillas UTM类似于 Dub.co (app.dub.co/chenii/links/utm)
 - **Aplicar template**: autollenar los campos UTM al crear un link o campaña
 
 ## UI (referencia Dub.co)
+
 ```
 ┌─────────────────────────────┐
 │  Create UTM Template        │
@@ -31,6 +34,7 @@ Crear un sistema de plantillas UTM类似于 Dub.co (app.dub.co/chenii/links/utm)
 ```
 
 ## Schema (Prisma)
+
 ```prisma
 model UtmTemplate {
   id          String   @id @default(uuid()) @db.Uuid
@@ -51,12 +55,14 @@ model UtmTemplate {
 ```
 
 ## API Routes
+
 - `GET    /api/projects/[id]/utm-templates` — listar
 - `POST   /api/projects/[id]/utm-templates` — crear
 - `PATCH  /api/projects/[id]/utm-templates/[tid]` — actualizar
 - `DELETE /api/projects/[id]/utm-templates/[tid]` — eliminar
 
 ## Archivos a crear/modificar
+
 - `apps/api/prisma/schema.prisma` — agregar modelo UtmTemplate
 - `apps/api/prisma/migrations/` — migración
 - `apps/web/src/app/api/projects/[id]/utm-templates/route.ts` — GET + POST
@@ -66,6 +72,7 @@ model UtmTemplate {
 - Docker compose — rebuild + migrate
 
 ## Notas
+
 - Las UTMs se capturan automáticamente con el SDK (ya funciona)
 - El template es solo para facilitar la creación de links con UTMs predefinidos
 - No afecta el tracking existente

@@ -1,9 +1,20 @@
 import type { StoredEvent } from "../repositories/types";
 
 export type Interval = "hour" | "day" | "week";
-export type Dimension = "page" | "utm_source" | "utm_medium" | "utm_campaign" | "device" | "browser" | "os" | "form" | "type";
+export type Dimension =
+  "page" | "utm_source" | "utm_medium" | "utm_campaign" | "device" | "browser" | "os" | "form" | "type";
 
-export const DIMENSIONS: Dimension[] = ["page", "utm_source", "utm_medium", "utm_campaign", "device", "browser", "os", "form", "type"];
+export const DIMENSIONS: Dimension[] = [
+  "page",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "device",
+  "browser",
+  "os",
+  "form",
+  "type",
+];
 export const INTERVALS: Interval[] = ["hour", "day", "week"];
 
 export interface MetricsSummary {
@@ -61,9 +72,7 @@ function parseProps(raw: string | null): Record<string, unknown> | null {
   if (!raw) return null;
   try {
     const value: unknown = JSON.parse(raw);
-    return typeof value === "object" && value !== null
-      ? (value as Record<string, unknown>)
-      : null;
+    return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
   } catch {
     return null;
   }
@@ -118,12 +127,24 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
     visitors.add(e.visitorId);
 
     switch (e.type) {
-      case "form_view": m.views++; break;
-      case "form_start": m.starts++; break;
-      case "form_submit": m.submits++; break;
-      case "form_success": m.successes++; break;
-      case "form_abandon": m.abandons++; break;
-      case "cta_click": m.ctaClicks++; break;
+      case "form_view":
+        m.views++;
+        break;
+      case "form_start":
+        m.starts++;
+        break;
+      case "form_submit":
+        m.submits++;
+        break;
+      case "form_success":
+        m.successes++;
+        break;
+      case "form_abandon":
+        m.abandons++;
+        break;
+      case "cta_click":
+        m.ctaClicks++;
+        break;
       case "field_interaction": {
         m.fieldInteractions++;
         const props = parseProps(e.properties);
@@ -134,15 +155,11 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
         break;
       }
       case "scroll_depth": {
-        // Milestones fire repeatedly per page — keep the max per session+page
-        // so the average reflects deepest reach, not event volume.
+        // Milestones fire per page: keep max per session+page so avg reflects deepest reach.
         const props = parseProps(e.properties);
         const depth = props?.depth;
         const maxDepth = props?.maxDepth;
-        const best = Math.max(
-          typeof depth === "number" ? depth : 0,
-          typeof maxDepth === "number" ? maxDepth : 0,
-        );
+        const best = Math.max(typeof depth === "number" ? depth : 0, typeof maxDepth === "number" ? maxDepth : 0);
         if (best > 0) {
           const key = `${e.sessionId}|${e.pagePath}`;
           scrollMaxByPage.set(key, Math.max(scrollMaxByPage.get(key) ?? 0, best));
@@ -159,7 +176,8 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
         pageviewCounts.set(e.sessionId, prev + 1);
         break;
       }
-      default: break;
+      default:
+        break;
     }
 
     if (e.type === "form_start" || e.type === "form_success") {
@@ -171,8 +189,7 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
       }
       const t = e.ts.getTime();
       if (e.type === "form_start") g.start = g.start == null ? t : Math.min(g.start, t);
-      // Latest success: pairs earliest start with completion even when events
-      // arrive out of order, and never yields a negative duration (guarded below).
+      // Latest success pairs earliest start with completion even out of order; never negative.
       else g.success = g.success == null ? t : Math.max(g.success, t);
     }
   }
@@ -192,8 +209,7 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
   }
   m.avgTimeToCompleteMs = count > 0 ? sum / count : null;
 
-  // Bounce rate: sessions with ≤1 pageview over sessions WITH pageviews
-  // (sessions without any pageview can neither bounce nor stay).
+  // Bounce rate: ≤1-pageview sessions over sessions WITH pageviews (others can't bounce).
   let bounceCount = 0;
   for (const pvCount of pageviewCounts.values()) {
     if (pvCount <= 1) bounceCount++;
@@ -201,26 +217,22 @@ export function computeMetrics(events: StoredEvent[]): MetricsSummary {
   const sessionsWithPageviews = pageviewCounts.size;
   m.bounceRate = sessionsWithPageviews > 0 ? bounceCount / sessionsWithPageviews : null;
 
-  // Pages per session
   let totalPageviews = 0;
   for (const pvCount of pageviewCounts.values()) {
     totalPageviews += pvCount;
   }
   m.pagesPerSession = sessions.size > 0 ? totalPageviews / sessions.size : null;
 
-  // Avg scroll depth: mean of per-page maximums
   if (scrollMaxByPage.size > 0) {
     let depthSum = 0;
     for (const d of scrollMaxByPage.values()) depthSum += d;
     m.avgScrollDepth = depthSum / scrollMaxByPage.size;
   }
 
-  // Avg time on page
   if (pageExitDurations.length > 0) {
     m.avgTimeOnPageMs = pageExitDurations.reduce((a, b) => a + b, 0) / pageExitDurations.length;
   }
 
-  // Avg hesitation (focus → first change) and interaction gap
   if (hesitations.length > 0) {
     m.avgHesitationMs = hesitations.reduce((a, b) => a + b, 0) / hesitations.length;
   }
@@ -277,19 +289,33 @@ export function computeSeries(events: StoredEvent[], interval: Interval, range?:
     p.v.add(e.visitorId);
 
     switch (e.type) {
-      case "form_view": p.views++; break;
-      case "form_start": p.starts++; break;
-      case "form_submit": p.submits++; break;
-      case "form_success": p.successes++; break;
-      case "form_abandon": p.abandons++; break;
-      case "cta_click": p.ctaClicks++; break;
-      case "field_interaction": p.fieldInteractions++; break;
-      default: break;
+      case "form_view":
+        p.views++;
+        break;
+      case "form_start":
+        p.starts++;
+        break;
+      case "form_submit":
+        p.submits++;
+        break;
+      case "form_success":
+        p.successes++;
+        break;
+      case "form_abandon":
+        p.abandons++;
+        break;
+      case "cta_click":
+        p.ctaClicks++;
+        break;
+      case "field_interaction":
+        p.fieldInteractions++;
+        break;
+      default:
+        break;
     }
   }
 
-  // Zero-fill the requested range so charts render the full selected period
-  // (not just buckets that happen to contain events).
+  // Zero-fill range so charts render the full period, not just buckets with events.
   if (range?.from && range?.to && range.to.getTime() > range.from.getTime()) {
     const stepMs = INTERVAL_MS[interval];
     let t = bucketStart(range.from, interval);
@@ -306,17 +332,17 @@ export function computeSeries(events: StoredEvent[], interval: Interval, range?:
 
 function stripSeriesPoint(p: TimelinePoint & { s?: Set<string>; v?: Set<string> }): TimelinePoint {
   return {
-      bucket: p.bucket,
-      date: p.date,
-      views: p.views,
-      starts: p.starts,
-      submits: p.submits,
-      successes: p.successes,
-      abandons: p.abandons,
-      ctaClicks: p.ctaClicks,
-      fieldInteractions: p.fieldInteractions,
-      sessions: p.s?.size ?? p.sessions,
-      visitors: p.v?.size ?? p.visitors,
+    bucket: p.bucket,
+    date: p.date,
+    views: p.views,
+    starts: p.starts,
+    submits: p.submits,
+    successes: p.successes,
+    abandons: p.abandons,
+    ctaClicks: p.ctaClicks,
+    fieldInteractions: p.fieldInteractions,
+    sessions: p.s?.size ?? p.sessions,
+    visitors: p.v?.size ?? p.visitors,
   };
 }
 
@@ -352,7 +378,12 @@ export function computeBreakdown(events: StoredEvent[], dimension: Dimension, to
     .slice(0, topN);
 }
 
-export function buildFilter(query: { from?: string; to?: string; type?: string; form?: string }): { from?: Date; to?: Date; type?: string[]; form?: string } {
+export function buildFilter(query: { from?: string; to?: string; type?: string; form?: string }): {
+  from?: Date;
+  to?: Date;
+  type?: string[];
+  form?: string;
+} {
   const filter: { from?: Date; to?: Date; type?: string[]; form?: string } = {};
   if (query.from) {
     const d = new Date(query.from);
@@ -363,7 +394,10 @@ export function buildFilter(query: { from?: string; to?: string; type?: string; 
     if (!Number.isNaN(d.getTime())) filter.to = d;
   }
   if (query.type) {
-    const types = query.type.split(",").map((t) => t.trim()).filter(Boolean);
+    const types = query.type
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
     if (types.length) filter.type = types;
   }
   if (query.form) filter.form = query.form;

@@ -11,13 +11,7 @@ const PLANS = [
     price: "$0",
     period: "forever",
     description: "For personal projects and testing",
-    features: [
-      "5,000 events / month",
-      "1 project",
-      "1 domain",
-      "Basic analytics",
-      "7-day data retention",
-    ],
+    features: ["5,000 events / month", "1 project", "1 domain", "Basic analytics", "7-day data retention"],
     cta: "Get started",
     href: "/register",
     polarProductId: null,
@@ -75,7 +69,6 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-dvh bg-white">
-      {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 lg:px-12">
         <Link href="/">
           <TrellLogo className="h-6 w-auto" />
@@ -84,23 +77,20 @@ export default function PricingPage() {
           <Link href="/signin" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
             Log in
           </Link>
-          <Link href="/register" className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800">
+          <Link
+            href="/register"
+            className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+          >
             Sign up
           </Link>
         </div>
       </header>
 
-      {/* Hero */}
       <div className="px-6 pt-16 pb-12 text-center lg:px-12">
-        <h1 className="text-4xl font-bold tracking-tight text-neutral-900 lg:text-5xl">
-          Simple, transparent pricing
-        </h1>
-        <p className="mt-4 text-lg text-neutral-500">
-          Start free, upgrade when you need more. No hidden fees.
-        </p>
+        <h1 className="text-4xl font-bold tracking-tight text-neutral-900 lg:text-5xl">Simple, transparent pricing</h1>
+        <p className="mt-4 text-lg text-neutral-500">Start free, upgrade when you need more. No hidden fees.</p>
       </div>
 
-      {/* Plans */}
       <div className="mx-auto max-w-4xl px-6 pb-24 lg:px-12">
         {error && (
           <div role="alert" className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -112,9 +102,7 @@ export default function PricingPage() {
             <div
               key={plan.id}
               className={`relative flex flex-col rounded-2xl border p-8 ${
-                plan.popular
-                  ? "border-blue-500 shadow-lg shadow-blue-500/10"
-                  : "border-neutral-200"
+                plan.popular ? "border-blue-500 shadow-lg shadow-blue-500/10" : "border-neutral-200"
               }`}
             >
               {plan.popular && (
@@ -133,7 +121,13 @@ export default function PricingPage() {
               <ul className="mb-8 flex flex-1 flex-col gap-3">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-neutral-600">
-                    <svg className="mt-0.5 size-4 shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg
+                      className="mt-0.5 size-4 shrink-0 text-blue-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                     {f}

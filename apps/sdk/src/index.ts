@@ -25,8 +25,7 @@ export function init(config: TrellConfig, opts?: EngineOptions): Trell {
   return engine;
 }
 
-// Auto-init from the classic <script> snippet, driven by data-* attributes.
-// Only runs when loaded as a non-module script (document.currentScript is present).
+// Auto-init from classic <script> snippet (data-* attrs); only for non-module scripts.
 function autoInitFromSnippet(): void {
   if (typeof document === "undefined") return;
   const script = document.currentScript;

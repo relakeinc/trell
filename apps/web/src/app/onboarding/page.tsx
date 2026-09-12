@@ -15,8 +15,7 @@ export default async function OnboardingPage() {
 
   const userId = session.user.id;
 
-  // If the user already has one or more projects AND completed onboarding,
-  // there is nothing to configure — go straight to the dashboard.
+  // Configured users with projects go straight to the dashboard.
   const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
   const projects = await svc.listAccessibleProjects(userId);
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { onboardingStep: true } });

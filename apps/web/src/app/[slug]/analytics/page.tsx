@@ -14,7 +14,15 @@ import { AreaChart } from "@/components/AreaChart";
 import { AskYoiButton } from "@/components/AskYoiButton";
 import { EventsFeed } from "@/components/analytics/EventsFeed";
 import { FormsRanking } from "@/components/analytics/FormsRanking";
-import { useProjectId, useProjectStats, useProjectSeries, useProjectBreakdown, useProjectForms, useProjectEvents, fetchBreakdown } from "@/lib/hooks";
+import {
+  useProjectId,
+  useProjectStats,
+  useProjectSeries,
+  useProjectBreakdown,
+  useProjectForms,
+  useProjectEvents,
+  fetchBreakdown,
+} from "@/lib/hooks";
 import { localInput, pct, humanMs, fmtShortDate, rangeQs } from "@/lib/format";
 
 const DIMS = ["page", "utm_source", "utm_medium", "device", "browser", "os"] as const;
@@ -71,7 +79,12 @@ export default function AnalyticsPage() {
     return rangeQs(localInput(new Date(f - dur)), localInput(new Date(f)));
   }, [from, to]);
 
-  const { data: statsData, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useProjectStats(projectId, qs);
+  const {
+    data: statsData,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useProjectStats(projectId, qs);
   const { data: seriesData, isLoading: seriesLoading } = useProjectSeries(projectId, interval, qs);
   const { data: prevSeriesData } = useProjectSeries(projectId, interval, prevQs || null);
   const { data: breakdownData } = useProjectBreakdown(projectId, dim, qs);
@@ -99,108 +112,166 @@ export default function AnalyticsPage() {
   const events = eventsData?.events ?? [];
 
   const loading = projectLoading || statsLoading;
-  const error = statsError ? "Failed to load analytics" : statsData?.error?.message ?? null;
+  const error = statsError ? "Failed to load analytics" : (statsData?.error?.message ?? null);
 
   const totalBreakdown = breakdown.reduce((a, r) => a + r.count, 0);
 
   return (
     <div className="trell-content">
-      {/* Header */}
       <header className="trell-header -mx-6 -mt-3 mb-6 px-6 pt-6">
         <h1 className="text-base font-semibold text-trell-ink">Analytics</h1>
         <div className="flex items-center gap-2">
-        <div ref={filtersRef} className="relative">
-          <button
-            onClick={() => setFiltersOpen((o) => !o)}
-            className="trell-btn-outline h-9 gap-1.5"
-            aria-expanded={filtersOpen}
-          >
-            <Icon name="filter-square" size={16} />
-            <span className="hidden text-xs text-trell-ink-muted sm:inline">
-              {fmtShortDate(from)} – {fmtShortDate(to)} · {interval === "hour" ? "Hourly" : interval === "week" ? "Weekly" : "Daily"}
-            </span>
-            <span className="sm:hidden">Filters</span>
-            <Icon name="arrow-down-01" size={14} className={`transition-transform ${filtersOpen ? "rotate-180" : ""}`} />
-          </button>
+          <div ref={filtersRef} className="relative">
+            <button
+              onClick={() => setFiltersOpen((o) => !o)}
+              className="trell-btn-outline h-9 gap-1.5"
+              aria-expanded={filtersOpen}
+            >
+              <Icon name="filter-square" size={16} />
+              <span className="hidden text-xs text-trell-ink-muted sm:inline">
+                {fmtShortDate(from)} – {fmtShortDate(to)} ·{" "}
+                {interval === "hour" ? "Hourly" : interval === "week" ? "Weekly" : "Daily"}
+              </span>
+              <span className="sm:hidden">Filters</span>
+              <Icon
+                name="arrow-down-01"
+                size={14}
+                className={`transition-transform ${filtersOpen ? "rotate-180" : ""}`}
+              />
+            </button>
 
-          {filtersT.mounted && (
-            <div className={`absolute right-0 z-30 mt-2 w-72 rounded-xl border border-trell-line bg-white p-4 shadow-xl ${filtersT.closing ? "trell-pop-out" : "trell-pop-in"}`}>
-              <div className="mb-3 text-xs font-medium text-trell-ink-muted">Range</div>
-              <div className="mb-3 flex rounded-lg bg-neutral-100 p-0.5">
-                {[{ d: 7, label: "7D" }, { d: 30, label: "30D" }, { d: 90, label: "90D" }].map((p) => (
-                  <button
-                    key={p.d}
-                    onClick={() => setPreset(p.d)}
-                    className="flex-1 rounded-md px-2.5 py-1 text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-              <label className="mb-1 block text-xs text-trell-ink-muted">From</label>
-              <div className="mb-3">
-                <DateTimeField value={from} onChange={setFrom} />
-              </div>
-              <label className="mb-1 block text-xs text-trell-ink-muted">To</label>
-              <div className="mb-3">
-                <DateTimeField value={to} onChange={setTo} />
-              </div>
-              <label className="mb-1 block text-xs text-trell-ink-muted">Bucket interval</label>
-              <div className="mb-4">
-                <SelectField
-                  value={interval}
-                  ariaLabel="Bucket interval"
-                  onChange={setInterval}
-                  options={[
-                    { value: "hour", label: "Hourly", hint: "One bar per hour" },
-                    { value: "day", label: "Daily", hint: "One bar per day" },
-                    { value: "week", label: "Weekly", hint: "One bar per week" },
-                  ]}
-                />
-              </div>
-              <button
-                onClick={() => {
-                  void refetchStats();
-                  setFiltersOpen(false);
-                }}
-                className="trell-btn-outline h-9 w-full justify-center gap-1.5"
+            {filtersT.mounted && (
+              <div
+                className={`absolute right-0 z-30 mt-2 w-72 rounded-xl border border-trell-line bg-white p-4 shadow-xl ${filtersT.closing ? "trell-pop-out" : "trell-pop-in"}`}
               >
-                <Icon name="refresh-right" size={16} className={statsLoading ? "animate-spin" : ""} />
-                Refresh
-              </button>
-            </div>
-          )}
-        </div>
-        <AskYoiButton />
+                <div className="mb-3 text-xs font-medium text-trell-ink-muted">Range</div>
+                <div className="mb-3 flex rounded-lg bg-neutral-100 p-0.5">
+                  {[
+                    { d: 7, label: "7D" },
+                    { d: 30, label: "30D" },
+                    { d: 90, label: "90D" },
+                  ].map((p) => (
+                    <button
+                      key={p.d}
+                      onClick={() => setPreset(p.d)}
+                      className="flex-1 rounded-md px-2.5 py-1 text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                <label className="mb-1 block text-xs text-trell-ink-muted">From</label>
+                <div className="mb-3">
+                  <DateTimeField value={from} onChange={setFrom} />
+                </div>
+                <label className="mb-1 block text-xs text-trell-ink-muted">To</label>
+                <div className="mb-3">
+                  <DateTimeField value={to} onChange={setTo} />
+                </div>
+                <label className="mb-1 block text-xs text-trell-ink-muted">Bucket interval</label>
+                <div className="mb-4">
+                  <SelectField
+                    value={interval}
+                    ariaLabel="Bucket interval"
+                    onChange={setInterval}
+                    options={[
+                      { value: "hour", label: "Hourly", hint: "One bar per hour" },
+                      { value: "day", label: "Daily", hint: "One bar per day" },
+                      { value: "week", label: "Weekly", hint: "One bar per week" },
+                    ]}
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    void refetchStats();
+                    setFiltersOpen(false);
+                  }}
+                  className="trell-btn-outline h-9 w-full justify-center gap-1.5"
+                >
+                  <Icon name="refresh-right" size={16} className={statsLoading ? "animate-spin" : ""} />
+                  Refresh
+                </button>
+              </div>
+            )}
+          </div>
+          <AskYoiButton />
         </div>
       </header>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       )}
 
-      {/* KPI cards */}
       <div className="mb-6 grid grid-cols-2 divide-x divide-trell-line overflow-hidden rounded-xl border border-trell-line bg-white sm:grid-cols-4">
-        <MetricCell label="Form views" value={metrics?.views ?? 0} loading={loading} color="text-blue-500" hint="Times a tracked form was seen" />
-        <MetricCell label="Conversions" value={metrics?.successes ?? 0} loading={loading} color="text-green-600" dividerHint hint="Forms completed successfully" />
-        <MetricCell label="Conversion rate" value={pct(metrics?.conversionRate ?? null)} loading={loading} color="text-blue-500" dividerHint hint="Successes ÷ form views" />
-        <MetricCell label="Avg time" value={humanMs(metrics?.avgTimeToCompleteMs ?? null)} loading={loading} color="text-green-600" dividerHint hint="Average time from form start to success" />
+        <MetricCell
+          label="Form views"
+          value={metrics?.views ?? 0}
+          loading={loading}
+          color="text-blue-500"
+          hint="Times a tracked form was seen"
+        />
+        <MetricCell
+          label="Conversions"
+          value={metrics?.successes ?? 0}
+          loading={loading}
+          color="text-green-600"
+          dividerHint
+          hint="Forms completed successfully"
+        />
+        <MetricCell
+          label="Conversion rate"
+          value={pct(metrics?.conversionRate ?? null)}
+          loading={loading}
+          color="text-blue-500"
+          dividerHint
+          hint="Successes ÷ form views"
+        />
+        <MetricCell
+          label="Avg time"
+          value={humanMs(metrics?.avgTimeToCompleteMs ?? null)}
+          loading={loading}
+          color="text-green-600"
+          dividerHint
+          hint="Average time from form start to success"
+        />
       </div>
 
-      {/* Secondary KPIs */}
       <div className="mb-6 grid grid-cols-2 divide-x divide-trell-line overflow-hidden rounded-xl border border-trell-line bg-white sm:grid-cols-4">
-        <MetricCell label="Bounce rate" value={pct(metrics?.bounceRate ?? null)} loading={loading} color="text-orange-500" hint="Sessions with a single pageview" />
-        <MetricCell label="Pages/session" value={(metrics?.pagesPerSession ?? 0).toFixed(1)} loading={loading} color="text-purple-500" dividerHint hint="Average pageviews per session" />
-        <MetricCell label="Avg scroll" value={metrics?.avgScrollDepth != null ? Math.round(metrics.avgScrollDepth) + "%" : "\u2014"} loading={loading} color="text-cyan-600" dividerHint hint="Average deepest scroll per page" />
-        <MetricCell label="Avg time on page" value={humanMs(metrics?.avgTimeOnPageMs ?? null)} loading={loading} color="text-teal-600" dividerHint hint="Average time before leaving a page" />
+        <MetricCell
+          label="Bounce rate"
+          value={pct(metrics?.bounceRate ?? null)}
+          loading={loading}
+          color="text-orange-500"
+          hint="Sessions with a single pageview"
+        />
+        <MetricCell
+          label="Pages/session"
+          value={(metrics?.pagesPerSession ?? 0).toFixed(1)}
+          loading={loading}
+          color="text-purple-500"
+          dividerHint
+          hint="Average pageviews per session"
+        />
+        <MetricCell
+          label="Avg scroll"
+          value={metrics?.avgScrollDepth != null ? Math.round(metrics.avgScrollDepth) + "%" : "\u2014"}
+          loading={loading}
+          color="text-cyan-600"
+          dividerHint
+          hint="Average deepest scroll per page"
+        />
+        <MetricCell
+          label="Avg time on page"
+          value={humanMs(metrics?.avgTimeOnPageMs ?? null)}
+          loading={loading}
+          color="text-teal-600"
+          dividerHint
+          hint="Average time before leaving a page"
+        />
       </div>
 
-      {/* Area chart */}
       <AreaChart series={series} comparison={prevSeriesData?.series} loading={seriesLoading} />
 
-      {/* 2x2 panels — uniform 400px cards, inner scroll when content overflows */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <EventsFeed events={events.slice(0, 6)} slug={slug ?? ""} />
         <FormsRanking forms={forms.slice(0, 6)} slug={slug ?? ""} />
@@ -215,11 +286,7 @@ export default function AnalyticsPage() {
           fade={false}
           cardClass="rounded-lg border border-[#e1e4eb] shadow-[0_1px_2px_0_rgba(24,24,27,0.05)] dark:border-white/10"
         >
-          <BarList
-            dim={dim}
-            rows={breakdown.map((r) => ({ k: r.key, n: r.count }))}
-            total={totalBreakdown}
-          />
+          <BarList dim={dim} rows={breakdown.map((r) => ({ k: r.key, n: r.count }))} total={totalBreakdown} />
         </PanelCard>
 
         <PanelCard title="Metrics" flush auto>
@@ -227,7 +294,12 @@ export default function AnalyticsPage() {
             <MetricTile color="bg-blue-500" label="Starts" value={metrics?.starts ?? 0} loading={loading} />
             <MetricTile color="bg-green-600" label="Submits" value={metrics?.submits ?? 0} loading={loading} />
             <MetricTile color="bg-orange-500" label="Abandons" value={metrics?.abandons ?? 0} loading={loading} />
-            <MetricTile color="bg-teal-600" label="Completion" value={pct(metrics?.startConversionRate ?? null)} loading={loading} />
+            <MetricTile
+              color="bg-teal-600"
+              label="Completion"
+              value={pct(metrics?.startConversionRate ?? null)}
+              loading={loading}
+            />
           </div>
         </PanelCard>
       </div>
@@ -237,7 +309,21 @@ export default function AnalyticsPage() {
 
 // ── Shared sub-components ──────────────────────────────────
 
-function MetricCell({ label, value, loading, color, dividerHint, hint }: { label: string; value: string | number; loading: boolean; color: string; dividerHint?: boolean; hint?: string }) {
+function MetricCell({
+  label,
+  value,
+  loading,
+  color,
+  dividerHint,
+  hint,
+}: {
+  label: string;
+  value: string | number;
+  loading: boolean;
+  color: string;
+  dividerHint?: boolean;
+  hint?: string;
+}) {
   const isNumeric = typeof value === "number";
   return (
     <div className="relative flex h-full min-w-0 flex-col px-4 py-3 sm:px-8 sm:py-6">
@@ -275,7 +361,19 @@ function MetricCell({ label, value, loading, color, dividerHint, hint }: { label
   );
 }
 
-function PanelCard({ title, metric, tabs, selectedTab, onSelectTab, flush, auto, heightClass, fade = true, cardClass, children }: {
+function PanelCard({
+  title,
+  metric,
+  tabs,
+  selectedTab,
+  onSelectTab,
+  flush,
+  auto,
+  heightClass,
+  fade = true,
+  cardClass,
+  children,
+}: {
   title: string;
   metric?: string;
   tabs?: { id: string; label: string }[];
@@ -289,7 +387,9 @@ function PanelCard({ title, metric, tabs, selectedTab, onSelectTab, flush, auto,
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${auto ? "" : `flex ${heightClass ?? "h-[400px]"} flex-col `}${cardClass ?? "rounded-lg border border-trell-line"} overflow-hidden bg-white`}>
+    <div
+      className={`${auto ? "" : `flex ${heightClass ?? "h-[400px]"} flex-col `}${cardClass ?? "rounded-lg border border-trell-line"} overflow-hidden bg-white`}
+    >
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-trell-line px-4">
         <span className="whitespace-nowrap py-3 text-sm font-medium text-trell-ink">
           <span className="border-b border-dotted border-neutral-300 pb-0.5">{title}</span>
@@ -314,7 +414,15 @@ function PanelCard({ title, metric, tabs, selectedTab, onSelectTab, flush, auto,
           )}
         </div>
       </div>
-      <div className={flush ? "min-h-0 flex-1 overflow-hidden" : `min-h-0 flex-1 overflow-y-auto p-4${fade ? " [mask-image:linear-gradient(to_bottom,black_calc(100%-3rem),transparent)]" : ""}`}>{children}</div>
+      <div
+        className={
+          flush
+            ? "min-h-0 flex-1 overflow-hidden"
+            : `min-h-0 flex-1 overflow-y-auto p-4${fade ? " [mask-image:linear-gradient(to_bottom,black_calc(100%-3rem),transparent)]" : ""}`
+        }
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -348,7 +456,17 @@ function BarList({ dim, rows, total }: { dim: string; rows: { k: string; n: numb
   );
 }
 
-function MetricTile({ color, label, value, loading }: { color: string; label: string; value: string | number; loading?: boolean }) {
+function MetricTile({
+  color,
+  label,
+  value,
+  loading,
+}: {
+  color: string;
+  label: string;
+  value: string | number;
+  loading?: boolean;
+}) {
   const isNumeric = typeof value === "number";
   return (
     <div className="flex min-h-[112px] min-w-0 flex-col justify-center bg-white p-5 dark:bg-neutral-900">

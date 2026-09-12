@@ -95,7 +95,7 @@ describe("Transport", () => {
 
     expect(fetchFn.mock.calls.length).toBeGreaterThan(1);
     const sum = fetchFn.mock.calls.reduce((acc, call) => {
-      const body = JSON.parse((call[1]!.body as string)) as unknown[];
+      const body = JSON.parse(call[1]!.body as string) as unknown[];
       return acc + body.length;
     }, 0);
     expect(sum).toBe(total);
@@ -119,10 +119,7 @@ describe("Transport", () => {
 
   it("respects Retry-After on 429", async () => {
     vi.useFakeTimers();
-    const fetchFn = vi
-      .fn()
-      .mockResolvedValueOnce(fakeRes(429, "50"))
-      .mockResolvedValue(fakeRes(204));
+    const fetchFn = vi.fn().mockResolvedValueOnce(fakeRes(429, "50")).mockResolvedValue(fakeRes(204));
     const { transport } = makeTransport(fetchFn as unknown as typeof fetch);
     transport.enqueue(ev());
     const p = transport.flushNow();

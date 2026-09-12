@@ -115,8 +115,7 @@ export interface McpStore {
   listMemberships(userId: string): Promise<McpMembership[]>;
 
   // ── Writes ─────────────────────────────────────────────────
-  // Contract: callers (tools) verify project access FIRST via resolveProject;
-  // unscoped-by-id methods below assume that check happened.
+  // Contract: callers verify project access FIRST via resolveProject.
   getFunnel(id: string): Promise<McpFunnel | null>;
   createFunnel(input: {
     projectId: string;

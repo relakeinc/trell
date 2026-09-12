@@ -37,10 +37,15 @@ export function Toast({ message, type = "success", duration = 3000, onDone }: To
   }, [duration, onDone]);
 
   return (
-    <div className={`trell-check-animate flex items-center gap-3 rounded-xl border ${s.border} ${s.bg} px-4 py-3 shadow-lg`}>
+    <div
+      className={`trell-check-animate flex items-center gap-3 rounded-xl border ${s.border} ${s.bg} px-4 py-3 shadow-lg`}
+    >
       <Icon name={s.icon} size={18} className={s.iconColor} />
       <span className="text-sm font-medium text-trell-ink">{message}</span>
-      <div className="absolute bottom-0 left-0 h-0.5 rounded-b-xl bg-current opacity-20" style={{ width: `${progress}%` }} />
+      <div
+        className="absolute bottom-0 left-0 h-0.5 rounded-b-xl bg-current opacity-20"
+        style={{ width: `${progress}%` }}
+      />
     </div>
   );
 }

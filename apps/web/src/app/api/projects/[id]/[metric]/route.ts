@@ -8,9 +8,25 @@ const METRICS = ["stats", "series", "breakdown", "forms", "events", "funnel-live
 type Metric = (typeof METRICS)[number];
 
 const FORWARD_PARAMS = [
-  "from", "to", "interval", "dimension", "limit", "form", "type",
-  "page", "device", "browser", "os", "utmSource", "utmMedium", "utmCampaign",
-  "compareFrom", "compareTo", "funnelId", "cursor", "segment",
+  "from",
+  "to",
+  "interval",
+  "dimension",
+  "limit",
+  "form",
+  "type",
+  "page",
+  "device",
+  "browser",
+  "os",
+  "utmSource",
+  "utmMedium",
+  "utmCampaign",
+  "compareFrom",
+  "compareTo",
+  "funnelId",
+  "cursor",
+  "segment",
 ] as const;
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string; metric: string }> }) {

@@ -22,18 +22,69 @@ export function CommandPalette() {
   const router = useRouter();
   const { slug } = useParams<{ slug: string }>();
 
-  const commands: Command[] = useMemo(() => [
-    { id: "analytics", label: "Analytics", hint: "g a", icon: "analytics", action: () => router.push(`/${slug}/analytics`) },
-    { id: "events", label: "Events", hint: "g e", icon: "events", action: () => router.push(`/${slug}/events`) },
-    { id: "submissions", label: "Submissions", hint: "g s", icon: "send", action: () => router.push(`/${slug}/submissions`) },
-    { id: "funnels", label: "Funnels", hint: "g f", icon: "funnels", action: () => router.push(`/${slug}/funnels`) },
-    { id: "comparison", label: "Comparison", hint: "g c", icon: "comparison", action: () => router.push(`/${slug}/comparison`) },
-    { id: "tracking", label: "Tracking Settings", hint: "g t", icon: "setting-2", action: () => router.push(`/${slug}/settings/tracking`) },
-    { id: "webhooks", label: "Webhooks", hint: "g w", icon: "webhooks", action: () => router.push(`/${slug}/settings/webhooks`) },
-    { id: "domains", label: "Domains", hint: "g d", icon: "globe", action: () => router.push(`/${slug}/settings/domains`) },
-    { id: "billing", label: "Billing", hint: "g b", icon: "setting-2", action: () => router.push(`/${slug}/settings/billing`) },
-    { id: "general", label: "General Settings", hint: "g n", icon: "setting-2", action: () => router.push(`/${slug}/settings/general`) },
-  ], [router, slug]);
+  const commands: Command[] = useMemo(
+    () => [
+      {
+        id: "analytics",
+        label: "Analytics",
+        hint: "g a",
+        icon: "analytics",
+        action: () => router.push(`/${slug}/analytics`),
+      },
+      { id: "events", label: "Events", hint: "g e", icon: "events", action: () => router.push(`/${slug}/events`) },
+      {
+        id: "submissions",
+        label: "Submissions",
+        hint: "g s",
+        icon: "send",
+        action: () => router.push(`/${slug}/submissions`),
+      },
+      { id: "funnels", label: "Funnels", hint: "g f", icon: "funnels", action: () => router.push(`/${slug}/funnels`) },
+      {
+        id: "comparison",
+        label: "Comparison",
+        hint: "g c",
+        icon: "comparison",
+        action: () => router.push(`/${slug}/comparison`),
+      },
+      {
+        id: "tracking",
+        label: "Tracking Settings",
+        hint: "g t",
+        icon: "setting-2",
+        action: () => router.push(`/${slug}/settings/tracking`),
+      },
+      {
+        id: "webhooks",
+        label: "Webhooks",
+        hint: "g w",
+        icon: "webhooks",
+        action: () => router.push(`/${slug}/settings/webhooks`),
+      },
+      {
+        id: "domains",
+        label: "Domains",
+        hint: "g d",
+        icon: "globe",
+        action: () => router.push(`/${slug}/settings/domains`),
+      },
+      {
+        id: "billing",
+        label: "Billing",
+        hint: "g b",
+        icon: "setting-2",
+        action: () => router.push(`/${slug}/settings/billing`),
+      },
+      {
+        id: "general",
+        label: "General Settings",
+        hint: "g n",
+        icon: "setting-2",
+        action: () => router.push(`/${slug}/settings/general`),
+      },
+    ],
+    [router, slug],
+  );
 
   const filtered = useMemo(() => {
     if (!query) return commands;
@@ -83,11 +134,14 @@ export function CommandPalette() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh] sm:pt-[20vh]">
-      {/* Backdrop */}
-      <div className={`absolute inset-0 bg-black/40 backdrop-blur-sm ${t.closing ? "trell-fade-out" : "trell-fade-in"}`} onClick={() => setOpen(false)} />
+      <div
+        className={`absolute inset-0 bg-black/40 backdrop-blur-sm ${t.closing ? "trell-fade-out" : "trell-fade-in"}`}
+        onClick={() => setOpen(false)}
+      />
 
-      {/* Palette */}
-      <div className={`relative w-full max-w-lg overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-800 ${t.closing ? "trell-modal-out" : "trell-modal-in"}`}>
+      <div
+        className={`relative w-full max-w-lg overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-800 ${t.closing ? "trell-modal-out" : "trell-modal-in"}`}
+      >
         <div className="flex items-center gap-3 border-b border-neutral-200 px-4 dark:border-neutral-700">
           <Icon name="search" size={18} className="shrink-0 text-neutral-400" />
           <input
@@ -104,13 +158,14 @@ export function CommandPalette() {
         </div>
 
         <div className="max-h-80 overflow-y-auto p-1.5">
-          {filtered.length === 0 && (
-            <p className="py-8 text-center text-sm text-neutral-400">No results found</p>
-          )}
+          {filtered.length === 0 && <p className="py-8 text-center text-sm text-neutral-400">No results found</p>}
           {filtered.map((cmd, i) => (
             <button
               key={cmd.id}
-              onClick={() => { cmd.action(); setOpen(false); }}
+              onClick={() => {
+                cmd.action();
+                setOpen(false);
+              }}
               onMouseEnter={() => setSelectedIdx(i)}
               className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
                 i === selectedIdx
@@ -130,9 +185,24 @@ export function CommandPalette() {
         </div>
 
         <div className="flex items-center gap-4 border-t border-neutral-200 px-4 py-2 text-2xs text-neutral-400 dark:border-neutral-700">
-          <span className="flex items-center gap-1"><kbd className="rounded border border-neutral-200 bg-neutral-100 px-1 py-0.5 dark:border-neutral-600 dark:bg-neutral-700">↑↓</kbd> navigate</span>
-          <span className="flex items-center gap-1"><kbd className="rounded border border-neutral-200 bg-neutral-100 px-1 py-0.5 dark:border-neutral-600 dark:bg-neutral-700">↵</kbd> select</span>
-          <span className="flex items-center gap-1"><kbd className="rounded border border-neutral-200 bg-neutral-100 px-1 py-0.5 dark:border-neutral-600 dark:bg-neutral-700">esc</kbd> close</span>
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border border-neutral-200 bg-neutral-100 px-1 py-0.5 dark:border-neutral-600 dark:bg-neutral-700">
+              ↑↓
+            </kbd>{" "}
+            navigate
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border border-neutral-200 bg-neutral-100 px-1 py-0.5 dark:border-neutral-600 dark:bg-neutral-700">
+              ↵
+            </kbd>{" "}
+            select
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border border-neutral-200 bg-neutral-100 px-1 py-0.5 dark:border-neutral-600 dark:bg-neutral-700">
+              esc
+            </kbd>{" "}
+            close
+          </span>
         </div>
       </div>
     </div>

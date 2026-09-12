@@ -9,10 +9,7 @@ async function canAccess(projectId: string, userId: string): Promise<boolean> {
   return svc.canAccessProject(userId, projectId);
 }
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
@@ -28,10 +25,7 @@ export async function GET(
   return NextResponse.json({ keys });
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
@@ -41,10 +35,13 @@ export async function POST(
   const body = (await req.json()) as { name?: string };
   const name = body.name?.trim();
   if (!name) return NextResponse.json({ error: "name is required", message: "Give the key a name" }, { status: 400 });
-  if (name.length > 64) return NextResponse.json({ error: "name too long", message: "Name must be 64 characters or less" }, { status: 400 });
+  if (name.length > 64)
+    return NextResponse.json(
+      { error: "name too long", message: "Name must be 64 characters or less" },
+      { status: 400 },
+    );
 
-  // Server key: secret-only credential for backend use (.env).
-  // The pk (browser snippet) is per-project and shown in Tracking.
+  // Server key: secret-only backend credential (.env); pk lives in Tracking.
   const sk = `sk_${randomBytes(32).toString("hex")}`;
   const keyHash = createHash("sha256").update(sk).digest("hex");
   const keyPrefix = sk.slice(0, 11);
@@ -59,8 +56,11 @@ export async function POST(
   });
 
   // The secret is shown once — the browser never stores it
-  return NextResponse.json({
-    key: { id: apiKey.id, name: apiKey.name, keyPrefix, createdAt: apiKey.createdAt },
-    secret: sk, // shown once, never stored in plaintext
-  }, { status: 201 });
+  return NextResponse.json(
+    {
+      key: { id: apiKey.id, name: apiKey.name, keyPrefix, createdAt: apiKey.createdAt },
+      secret: sk, // shown once, never stored in plaintext
+    },
+    { status: 201 },
+  );
 }

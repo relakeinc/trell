@@ -33,7 +33,6 @@ export function FunnelView({
 
   return (
     <div className="rounded-2xl border border-trell-line bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-      {/* Header: name + sessions, big overall conversion */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-trell-ink">
@@ -45,15 +44,12 @@ export function FunnelView({
         </div>
         {overall != null && (
           <div className="text-right">
-            <div className="text-[28px] font-semibold tabular-nums leading-8 text-trell-ink">
-              {pct(overall)}
-            </div>
+            <div className="text-[28px] font-semibold tabular-nums leading-8 text-trell-ink">{pct(overall)}</div>
             <div className="mt-0.5 text-xs text-neutral-500">overall conversion</div>
           </div>
         )}
       </div>
 
-      {/* Steps */}
       <div className="mt-4 space-y-4">
         {funnel.steps.map((step, i) => {
           const width = first > 0 ? (step.count / first) * 100 : 0;
@@ -65,9 +61,7 @@ export function FunnelView({
                     ↓ {pct(step.conversionFromPrevious)} continue
                   </span>
                   {step.dropOff != null && step.dropOff > 0 && (
-                    <span className="text-xs tabular-nums text-red-500">
-                      {pct(step.dropOff)} drop off
-                    </span>
+                    <span className="text-xs tabular-nums text-red-500">{pct(step.dropOff)} drop off</span>
                   )}
                 </div>
               )}
@@ -92,7 +86,10 @@ export function FunnelView({
                   <div className="h-3.5 w-full overflow-hidden">
                     <div
                       className="h-full rounded-l-none rounded-r-full transition-all duration-500 group-hover:brightness-110"
-                      style={{ width: `${Math.max(step.count > 0 ? 2 : 0, width)}%`, background: "var(--accent, #2563eb)" }}
+                      style={{
+                        width: `${Math.max(step.count > 0 ? 2 : 0, width)}%`,
+                        background: "var(--accent, #2563eb)",
+                      }}
                     />
                   </div>
                 </div>

@@ -3,7 +3,7 @@ const PLAN_LIMITS = {
   pro: { events: 50000, domains: 100, projects: 999, retentionDays: 1095 },
 } as const;
 
-export type PlanLimits = typeof PLAN_LIMITS[keyof typeof PLAN_LIMITS];
+export type PlanLimits = (typeof PLAN_LIMITS)[keyof typeof PLAN_LIMITS];
 
 export function getPlanLimits(plan: string): PlanLimits {
   return PLAN_LIMITS[plan as keyof typeof PLAN_LIMITS] ?? PLAN_LIMITS.free;

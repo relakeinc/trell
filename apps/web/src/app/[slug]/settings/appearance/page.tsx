@@ -20,7 +20,10 @@ const THEMES = [
 
 const SECTIONS = [
   { label: "Modes", ids: ["light", "dark"] },
-  { label: "Accents", ids: ["blue", "sky", "lavender", "mint", "netflix", "spotify", "coinbase", "airbnb", "discord", "rabbit"] },
+  {
+    label: "Accents",
+    ids: ["blue", "sky", "lavender", "mint", "netflix", "spotify", "coinbase", "airbnb", "discord", "rabbit"],
+  },
 ];
 
 export default function AppearanceSettingsPage() {
@@ -34,15 +37,20 @@ export default function AppearanceSettingsPage() {
         <p className="mt-1 text-sm text-trell-ink-muted">Customize how Trell looks on your device.</p>
       </div>
 
-      {/* Color Theme */}
-      <div className={`overflow-hidden rounded-xl border ${isDark ? "border-[#2a2a29] bg-[#191918]" : "border-trell-line bg-white"}`}>
+      <div
+        className={`overflow-hidden rounded-xl border ${isDark ? "border-[#2a2a29] bg-[#191918]" : "border-trell-line bg-white"}`}
+      >
         <div className="p-5">
           <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Color Theme</div>
-          <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>Choose your accent color for the interface.</div>
+          <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>
+            Choose your accent color for the interface.
+          </div>
 
           {SECTIONS.map((section) => (
             <div key={section.label} className="mt-6">
-              <div className={`mb-3 text-xs font-medium uppercase tracking-wider ${isDark ? "text-[#656565]" : "text-neutral-400"}`}>
+              <div
+                className={`mb-3 text-xs font-medium uppercase tracking-wider ${isDark ? "text-[#656565]" : "text-neutral-400"}`}
+              >
                 {section.label}
               </div>
               <div className="grid grid-cols-6 gap-x-2 gap-y-4">
@@ -60,13 +68,13 @@ export default function AppearanceSettingsPage() {
                         className={`size-10 transition-all duration-200 ${
                           isMode ? "rounded-xl shadow-sm" : "rounded-full bg-gradient-to-br"
                         } ${isMode ? "" : t.dot} ${
-                          isSelected
-                            ? "ring-2 ring-offset-2 ring-offset-[#191918]"
-                            : "hover:scale-110"
+                          isSelected ? "ring-2 ring-offset-2 ring-offset-[#191918]" : "hover:scale-110"
                         } ${isMode ? (id === "light" ? "bg-gradient-to-br from-white to-neutral-300" : "bg-gradient-to-br from-[#111111] to-[#262626]") : ""}`}
                         style={isSelected ? { boxShadow: `0 0 0 2px ${t.ring}` } : undefined}
                       />
-                      <span className={`text-xs ${isSelected ? "font-medium" : isDark ? "text-[#656565]" : "text-neutral-500"}`}>
+                      <span
+                        className={`text-xs ${isSelected ? "font-medium" : isDark ? "text-[#656565]" : "text-neutral-500"}`}
+                      >
                         {t.label}
                       </span>
                     </button>
@@ -78,18 +86,25 @@ export default function AppearanceSettingsPage() {
         </div>
       </div>
 
-      {/* Preview */}
-      <div className={`overflow-hidden rounded-xl border ${isDark ? "border-[#2a2a29] bg-[#191918]" : "border-trell-line bg-white"}`}>
+      <div
+        className={`overflow-hidden rounded-xl border ${isDark ? "border-[#2a2a29] bg-[#191918]" : "border-trell-line bg-white"}`}
+      >
         <div className="p-5">
           <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Preview</div>
-          <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>See how your theme looks with sample content.</div>
-          <div className={`mt-4 rounded-lg border p-4 ${
-            isDark
-              ? "border-[#2a2a29] bg-[#111111] text-[#CDCCCC]"
-              : "border-neutral-200 bg-neutral-50 text-neutral-900"
-          }`}>
+          <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>
+            See how your theme looks with sample content.
+          </div>
+          <div
+            className={`mt-4 rounded-lg border p-4 ${
+              isDark
+                ? "border-[#2a2a29] bg-[#111111] text-[#CDCCCC]"
+                : "border-neutral-200 bg-neutral-50 text-neutral-900"
+            }`}
+          >
             <div className="flex items-center gap-3">
-              <div className={`flex size-10 items-center justify-center rounded-xl ${isDark ? "bg-[#1e1e1d]" : "bg-white shadow-sm"}`}>
+              <div
+                className={`flex size-10 items-center justify-center rounded-xl ${isDark ? "bg-[#1e1e1d]" : "bg-white shadow-sm"}`}
+              >
                 <Icon name="chart-2" size={20} className={isDark ? "text-[#CDCCCC]" : "text-neutral-400"} />
               </div>
               <div>

@@ -24,7 +24,11 @@ async function makeEnv(): Promise<{ app: ReturnType<typeof createApp>; repo: Rep
   return { app, repo, projectId: project.id };
 }
 
-async function stats(app: ReturnType<typeof createApp>, projectId: string, qs = ""): Promise<Record<string, number | null>> {
+async function stats(
+  app: ReturnType<typeof createApp>,
+  projectId: string,
+  qs = "",
+): Promise<Record<string, number | null>> {
   const res = await app.request(`/v1/projects/${projectId}/stats${qs}`, { headers: auth });
   expect(res.status).toBe(200);
   return (await res.json()).metrics as Record<string, number | null>;
@@ -70,10 +74,29 @@ describe("Form A scenario (exact numbers)", () => {
     // 25 matched start/success pairs (10s each) => avg 10_000
     for (let i = 0; i < 25; i++) {
       const s = new Date(Date.now() - (i + 1) * 60_000);
-      events.push(ev({ type: "form_start", formId: "form-a", formName: "Formulario A", sessionId: "sp" + i, visitorId: "vp" + i, ts: s }));
-      events.push(ev({ type: "form_success", formId: "form-a", formName: "Formulario A", sessionId: "sp" + i, visitorId: "vp" + i, ts: new Date(s.getTime() + 10_000) }));
+      events.push(
+        ev({
+          type: "form_start",
+          formId: "form-a",
+          formName: "Formulario A",
+          sessionId: "sp" + i,
+          visitorId: "vp" + i,
+          ts: s,
+        }),
+      );
+      events.push(
+        ev({
+          type: "form_success",
+          formId: "form-a",
+          formName: "Formulario A",
+          sessionId: "sp" + i,
+          visitorId: "vp" + i,
+          ts: new Date(s.getTime() + 10_000),
+        }),
+      );
     }
-    for (let i = 25; i < 60; i++) events.push(ev({ type: "form_start", ...formA, sessionId: "si" + i, visitorId: "vi" + i }));
+    for (let i = 25; i < 60; i++)
+      events.push(ev({ type: "form_start", ...formA, sessionId: "si" + i, visitorId: "vi" + i }));
     for (let i = 0; i < 100; i++) events.push(ev({ type: "form_view", ...formA }));
     for (let i = 0; i < 40; i++) events.push(ev({ type: "form_submit", ...formA }));
     for (let i = 0; i < 15; i++) events.push(ev({ type: "form_abandon", ...formA }));
@@ -120,7 +143,12 @@ describe("metric edge cases", () => {
   it("events outside the date range are excluded", async () => {
     const { app, repo, projectId } = await makeEnv();
     const inRange = ev({ type: "form_success", formId: "form-a" });
-    const out = ev({ type: "form_success", formId: "form-a", eventId: "out", ts: new Date(Date.now() - 200 * 86_400_000) });
+    const out = ev({
+      type: "form_success",
+      formId: "form-a",
+      eventId: "out",
+      ts: new Date(Date.now() - 200 * 86_400_000),
+    });
     await repo.insertEvents({ projectId, events: [inRange, out] });
     const from = new Date(Date.now() - 30 * 86_400_000).toISOString();
     const m = await stats(app, projectId, `?from=${encodeURIComponent(from)}`);

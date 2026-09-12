@@ -46,12 +46,12 @@ Transporte stdio: sin auth (proceso local del usuario, como Claude Desktop).
 
 ## Variables
 
-| Var | Uso |
-|-----|-----|
-| `MCP_API_KEY` | Bearer servicio/bots. Vacío = endpoint solo-OAuth |
-| `MCP_PUBLIC_URL` | issuer/base (def. `https://mcp.relake.co`) |
+| Var                                         | Uso                                                         |
+| ------------------------------------------- | ----------------------------------------------------------- |
+| `MCP_API_KEY`                               | Bearer servicio/bots. Vacío = endpoint solo-OAuth           |
+| `MCP_PUBLIC_URL`                            | issuer/base (def. `https://mcp.relake.co`)                  |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | mismo cliente que el dashboard; sin ellas el login da `503` |
-| `MCP_OAUTH_SECRET` | firma de codes/tokens (def: `MCP_API_KEY`) |
-| `MCP_ALLOWED_SLUGS` | filtro extra (`*` = todos) |
-| `MCP_ALLOWED_EMAILS` | login restringido (vacío = cualquiera verificado) |
-| `MCP_ALLOW_DESTRUCTIVE` | destructivas (Fase 3) |
+| `MCP_OAUTH_SECRET`                          | firma de codes/tokens (def: `MCP_API_KEY`)                  |
+| `MCP_ALLOWED_SLUGS`                         | filtro extra (`*` = todos)                                  |
+| `MCP_ALLOWED_EMAILS`                        | login restringido (vacío = cualquiera verificado)           |
+| `MCP_ALLOW_DESTRUCTIVE`                     | destructivas (Fase 3)                                       |

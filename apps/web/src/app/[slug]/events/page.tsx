@@ -10,7 +10,18 @@ import { useProjectId, useProjectEvents, type DrillEvent } from "@/lib/hooks";
 import { localInput, fmtTime } from "@/lib/format";
 import { eventLabel } from "@/lib/labels";
 
-function exportEventsCSV(events: { type: string; formId: string | null; pagePath: string; deviceType: string; browser: string | null; os: string | null; ts: string; visitorId: string }[]) {
+function exportEventsCSV(
+  events: {
+    type: string;
+    formId: string | null;
+    pagePath: string;
+    deviceType: string;
+    browser: string | null;
+    os: string | null;
+    ts: string;
+    visitorId: string;
+  }[],
+) {
   const rows = [["Type", "Form", "Page", "Device", "Browser", "OS", "Time", "Visitor ID"]];
   for (const e of events) {
     rows.push([
@@ -179,9 +190,7 @@ export default function EventsPage() {
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     const rows = q
-      ? groups.filter((g) =>
-          [g.name, g.formId ?? "", ...g.pages].join(" ").toLowerCase().includes(q),
-        )
+      ? groups.filter((g) => [g.name, g.formId ?? "", ...g.pages].join(" ").toLowerCase().includes(q))
       : [...groups];
     switch (sort) {
       case "az":
@@ -209,19 +218,18 @@ export default function EventsPage() {
           <h1 className="text-base font-semibold text-trell-ink">Events</h1>
         </div>
         <div className="flex items-center gap-2">
-        <button
-          onClick={() => events.length > 0 && exportEventsCSV(events)}
-          disabled={events.length === 0}
-          className="trell-btn-outline h-9 gap-1.5 disabled:opacity-40"
-        >
-          <Icon name="download" size={16} />
-          Export CSV
-        </button>
-        <AskYoiButton />
+          <button
+            onClick={() => events.length > 0 && exportEventsCSV(events)}
+            disabled={events.length === 0}
+            className="trell-btn-outline h-9 gap-1.5 disabled:opacity-40"
+          >
+            <Icon name="download" size={16} />
+            Export CSV
+          </button>
+          <AskYoiButton />
         </div>
       </header>
 
-      {/* Filters */}
       <div className="mb-4 rounded-2xl border border-trell-line bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block">
@@ -239,9 +247,7 @@ export default function EventsPage() {
               key={t.value}
               onClick={() => setType(t.value)}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                type === t.value
-                  ? "bg-white text-trell-ink shadow-sm"
-                  : "text-neutral-500 hover:text-neutral-700"
+                type === t.value ? "bg-white text-trell-ink shadow-sm" : "text-neutral-500 hover:text-neutral-700"
               }`}
             >
               {t.label}
@@ -250,7 +256,6 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* Toolbar — search + sort, same as Submissions */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <label className="flex h-9 w-full items-center gap-2 rounded-full border border-trell-line bg-white px-3.5 transition-all focus-within:border-neutral-400 focus-within:ring-4 focus-within:ring-neutral-100 sm:w-60">
           <Icon name="search" size={15} className="shrink-0 text-neutral-400" />
@@ -272,7 +277,10 @@ export default function EventsPage() {
               className="trell-btn-outline h-9 gap-1.5 rounded-full border border-trell-line bg-white px-3 text-[13px] font-normal shadow-sm"
             >
               {sortLabel}
-              <ChevronDown size={14} className={`text-neutral-400 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
+              <ChevronDown
+                size={14}
+                className={`text-neutral-400 transition-transform ${sortOpen ? "rotate-180" : ""}`}
+              />
             </button>
             {sortOpen && (
               <div className="trell-pop-in absolute right-0 z-30 mt-2 w-48 overflow-hidden rounded-xl border border-trell-line bg-white py-1 shadow-xl">
@@ -297,7 +305,6 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* Forms table — same layout as Submissions */}
       <div className="trell-card overflow-hidden">
         <table className="trell-table trell-table-plain w-full border-separate border-spacing-0 text-sm">
           <thead>
@@ -312,144 +319,165 @@ export default function EventsPage() {
             </tr>
           </thead>
           <tbody>
-            {isLoading ? (
-              [0, 1, 2, 3, 4].map((i) => (
-                <tr key={i} className="border-t border-trell-line">
-                  <td className="py-3.5 pl-4 sm:pl-5">
-                    <div className="flex items-center gap-3">
-                      <div className="trell-skeleton h-8 w-8 rounded-lg" />
-                      <div>
-                        <div className="trell-skeleton h-4 w-40" />
-                        <div className="trell-skeleton mt-1.5 h-3 w-24" />
+            {isLoading
+              ? [0, 1, 2, 3, 4].map((i) => (
+                  <tr key={i} className="border-t border-trell-line">
+                    <td className="py-3.5 pl-4 sm:pl-5">
+                      <div className="flex items-center gap-3">
+                        <div className="trell-skeleton h-8 w-8 rounded-lg" />
+                        <div>
+                          <div className="trell-skeleton h-4 w-40" />
+                          <div className="trell-skeleton mt-1.5 h-3 w-24" />
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="hidden py-3.5 sm:table-cell"><div className="trell-skeleton h-4 w-8" /></td>
-                  <td className="hidden py-3.5 md:table-cell"><div className="trell-skeleton h-4 w-24" /></td>
-                  <td className="hidden py-3.5 lg:table-cell"><div className="trell-skeleton h-4 w-24" /></td>
-                  <td className="py-3.5 pr-4 sm:pr-5" />
-                </tr>
-              ))
-            ) : (
-              visible.map((g) => {
-                const isOpen = expanded === g.key;
-                const menuForRow = openMenu === g.key;
-                return (
-                  <Fragment key={g.key}>
-                    <tr
-                      onClick={() => setExpanded(isOpen ? null : g.key)}
-                      className={`cursor-pointer border-t border-trell-line transition-colors hover:bg-neutral-50 ${isOpen ? "bg-neutral-50/60" : ""}`}
-                    >
-                      <td className="max-w-[220px] py-3 pl-4 sm:max-w-none sm:pl-5">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${FORM_TILE}`}>
-                            <Icon name="send" size={14} className={toneFor(g.key)} />
-                          </span>
-                          <div className="min-w-0">
-                            <div className="truncate text-[13px] font-medium text-trell-ink" title={g.name}>
-                              {g.name}
-                            </div>
-                            <div className="truncate text-xs text-neutral-400" title={g.pages[0] ?? g.formId ?? undefined}>
-                              {g.pages[0] ?? g.formId ?? "No form"}
+                    </td>
+                    <td className="hidden py-3.5 sm:table-cell">
+                      <div className="trell-skeleton h-4 w-8" />
+                    </td>
+                    <td className="hidden py-3.5 md:table-cell">
+                      <div className="trell-skeleton h-4 w-24" />
+                    </td>
+                    <td className="hidden py-3.5 lg:table-cell">
+                      <div className="trell-skeleton h-4 w-24" />
+                    </td>
+                    <td className="py-3.5 pr-4 sm:pr-5" />
+                  </tr>
+                ))
+              : visible.map((g) => {
+                  const isOpen = expanded === g.key;
+                  const menuForRow = openMenu === g.key;
+                  return (
+                    <Fragment key={g.key}>
+                      <tr
+                        onClick={() => setExpanded(isOpen ? null : g.key)}
+                        className={`cursor-pointer border-t border-trell-line transition-colors hover:bg-neutral-50 ${isOpen ? "bg-neutral-50/60" : ""}`}
+                      >
+                        <td className="max-w-[220px] py-3 pl-4 sm:max-w-none sm:pl-5">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <span
+                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${FORM_TILE}`}
+                            >
+                              <Icon name="send" size={14} className={toneFor(g.key)} />
+                            </span>
+                            <div className="min-w-0">
+                              <div className="truncate text-[13px] font-medium text-trell-ink" title={g.name}>
+                                {g.name}
+                              </div>
+                              <div
+                                className="truncate text-xs text-neutral-400"
+                                title={g.pages[0] ?? g.formId ?? undefined}
+                              >
+                                {g.pages[0] ?? g.formId ?? "No form"}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="hidden whitespace-nowrap px-2 py-3 tabular-nums text-[13px] text-trell-ink sm:table-cell">
-                        {g.count}
-                      </td>
-                      <td className="hidden whitespace-nowrap px-2 py-3 text-[13px] tabular-nums text-neutral-500 md:table-cell" title={fmtTime(g.lastTs)}>
-                        {fmtDate(g.lastTs)}
-                      </td>
-                      <td className="hidden whitespace-nowrap px-2 py-3 text-[13px] tabular-nums text-neutral-500 lg:table-cell" title={new Date(g.firstTs).toLocaleString()}>
-                        {ago(g.firstTs)}
-                      </td>
-                      <td className="whitespace-nowrap py-3 pl-2 pr-4 text-right sm:pr-5">
-                        <span className="mr-2 tabular-nums text-[13px] text-trell-ink sm:hidden">{g.count}</span>
-                        <span className="relative inline-block" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => {
-                              setOpenMenu(menuForRow ? null : g.key);
-                              setSortOpen(false);
-                            }}
-                            aria-label={`Actions for ${g.name}`}
-                            className="rounded-md px-1.5 py-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
-                          >
-                            ⋮
-                          </button>
-                          {menuForRow && (
-                            <div className="trell-pop-in absolute right-0 z-30 mt-1 w-44 overflow-hidden rounded-xl border border-trell-line bg-white py-1 text-left shadow-xl">
-                              <button
-                                onClick={() => {
-                                  exportEventsCSV(g.recent);
-                                  setOpenMenu(null);
-                                }}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50"
-                              >
-                                <Icon name="download" size={14} />
-                                Export CSV
-                              </button>
-                              {g.formId && (
+                        </td>
+                        <td className="hidden whitespace-nowrap px-2 py-3 tabular-nums text-[13px] text-trell-ink sm:table-cell">
+                          {g.count}
+                        </td>
+                        <td
+                          className="hidden whitespace-nowrap px-2 py-3 text-[13px] tabular-nums text-neutral-500 md:table-cell"
+                          title={fmtTime(g.lastTs)}
+                        >
+                          {fmtDate(g.lastTs)}
+                        </td>
+                        <td
+                          className="hidden whitespace-nowrap px-2 py-3 text-[13px] tabular-nums text-neutral-500 lg:table-cell"
+                          title={new Date(g.firstTs).toLocaleString()}
+                        >
+                          {ago(g.firstTs)}
+                        </td>
+                        <td className="whitespace-nowrap py-3 pl-2 pr-4 text-right sm:pr-5">
+                          <span className="mr-2 tabular-nums text-[13px] text-trell-ink sm:hidden">{g.count}</span>
+                          <span className="relative inline-block" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => {
+                                setOpenMenu(menuForRow ? null : g.key);
+                                setSortOpen(false);
+                              }}
+                              aria-label={`Actions for ${g.name}`}
+                              className="rounded-md px-1.5 py-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+                            >
+                              ⋮
+                            </button>
+                            {menuForRow && (
+                              <div className="trell-pop-in absolute right-0 z-30 mt-1 w-44 overflow-hidden rounded-xl border border-trell-line bg-white py-1 text-left shadow-xl">
                                 <button
                                   onClick={() => {
-                                    void navigator.clipboard?.writeText(g.formId ?? "");
+                                    exportEventsCSV(g.recent);
                                     setOpenMenu(null);
                                   }}
                                   className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50"
                                 >
-                                  <Icon name="send" size={14} />
-                                  Copy form ID
+                                  <Icon name="download" size={14} />
+                                  Export CSV
                                 </button>
-                              )}
-                            </div>
-                          )}
-                        </span>
-                      </td>
-                    </tr>
-                    {isOpen && (
-                      <tr className="border-t border-trell-line">
-                        <td colSpan={5} className="bg-white px-4 py-3 sm:px-5">
-                          <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
-                            <span><strong className="font-semibold tabular-nums text-trell-ink">{g.count}</strong> events</span>
-                            {g.pages.length > 1 && <span>{g.pages.length} pages</span>}
-                            <button
-                              onClick={() => exportEventsCSV(g.recent)}
-                              className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-trell-line bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
-                            >
-                              <Icon name="download" size={13} />
-                              Export this form
-                            </button>
-                          </div>
-                          <ul className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-trell-line">
-                            {g.recent.slice(0, 5).map((e) => {
-                              const meta = typeMeta(e.type);
-                              return (
-                                <li key={e.eventId} className="flex items-center gap-3 px-3 py-2">
-                                  <span title={meta.label} className={`h-1.5 w-1.5 shrink-0 rounded-full ${meta.dot}`} />
-                                  <div className="min-w-0 flex-1">
-                                    <div className="truncate text-[13px] text-trell-ink">
-                                      {meta.label}
-                                    </div>
-                                    <div className="truncate text-[11px] tabular-nums text-neutral-400" title={fmtTime(e.ts)}>
-                                      {e.pagePath} · {e.visitorId.slice(0, 8)} · {ago(e.ts)}
-                                    </div>
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                          {g.count > 5 && (
-                            <p className="mt-2 text-center text-[11px] text-neutral-400">
-                              Showing 5 of {g.count} — export CSV for the full list.
-                            </p>
-                          )}
+                                {g.formId && (
+                                  <button
+                                    onClick={() => {
+                                      void navigator.clipboard?.writeText(g.formId ?? "");
+                                      setOpenMenu(null);
+                                    }}
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50"
+                                  >
+                                    <Icon name="send" size={14} />
+                                    Copy form ID
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </span>
                         </td>
                       </tr>
-                    )}
-                  </Fragment>
-                );
-              })
-            )}
+                      {isOpen && (
+                        <tr className="border-t border-trell-line">
+                          <td colSpan={5} className="bg-white px-4 py-3 sm:px-5">
+                            <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                              <span>
+                                <strong className="font-semibold tabular-nums text-trell-ink">{g.count}</strong> events
+                              </span>
+                              {g.pages.length > 1 && <span>{g.pages.length} pages</span>}
+                              <button
+                                onClick={() => exportEventsCSV(g.recent)}
+                                className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-trell-line bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
+                              >
+                                <Icon name="download" size={13} />
+                                Export this form
+                              </button>
+                            </div>
+                            <ul className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-trell-line">
+                              {g.recent.slice(0, 5).map((e) => {
+                                const meta = typeMeta(e.type);
+                                return (
+                                  <li key={e.eventId} className="flex items-center gap-3 px-3 py-2">
+                                    <span
+                                      title={meta.label}
+                                      className={`h-1.5 w-1.5 shrink-0 rounded-full ${meta.dot}`}
+                                    />
+                                    <div className="min-w-0 flex-1">
+                                      <div className="truncate text-[13px] text-trell-ink">{meta.label}</div>
+                                      <div
+                                        className="truncate text-[11px] tabular-nums text-neutral-400"
+                                        title={fmtTime(e.ts)}
+                                      >
+                                        {e.pagePath} · {e.visitorId.slice(0, 8)} · {ago(e.ts)}
+                                      </div>
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                            {g.count > 5 && (
+                              <p className="mt-2 text-center text-[11px] text-neutral-400">
+                                Showing 5 of {g.count} — export CSV for the full list.
+                              </p>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
           </tbody>
         </table>
 
@@ -462,7 +490,10 @@ export default function EventsPage() {
               {type ? `No ${eventLabel(type).toLowerCase()} events in this range` : "No events yet"}
             </p>
             {type && (
-              <button onClick={() => setType("")} className="mt-3 rounded-lg border border-trell-line px-3 py-1.5 text-xs font-medium text-trell-ink transition-colors hover:bg-neutral-50">
+              <button
+                onClick={() => setType("")}
+                className="mt-3 rounded-lg border border-trell-line px-3 py-1.5 text-xs font-medium text-trell-ink transition-colors hover:bg-neutral-50"
+              >
                 Clear type filter
               </button>
             )}

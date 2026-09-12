@@ -35,8 +35,7 @@ function fmtDate(iso: string): string {
 function fieldEntries(fields: unknown): [string, string][] {
   if (!fields || typeof fields !== "object") return [];
   const obj = fields as Record<string, unknown>;
-  const inner =
-    obj.fields && typeof obj.fields === "object" ? (obj.fields as Record<string, unknown>) : obj;
+  const inner = obj.fields && typeof obj.fields === "object" ? (obj.fields as Record<string, unknown>) : obj;
   const skip = new Set(["form", "formId", "formName", "page", "url"]);
   const rows: [string, string][] = Object.entries(inner)
     .filter(([k]) => !skip.has(k))
@@ -188,9 +187,7 @@ export default function SubmissionsPage() {
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     const rows = q
-      ? groups.filter((g) =>
-          [g.name, g.formId, ...g.pages].join(" ").toLowerCase().includes(q),
-        )
+      ? groups.filter((g) => [g.name, g.formId, ...g.pages].join(" ").toLowerCase().includes(q))
       : [...groups];
     switch (sort) {
       case "az":
@@ -261,7 +258,6 @@ export default function SubmissionsPage() {
         </div>
       </header>
 
-      {/* Filters — same card as Events */}
       <div className="mb-4 rounded-2xl border border-trell-line bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block">
@@ -279,9 +275,7 @@ export default function SubmissionsPage() {
               key={t.value}
               onClick={() => setTypeFilter(t.value)}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                typeFilter === t.value
-                  ? "bg-white text-trell-ink shadow-sm"
-                  : "text-neutral-500 hover:text-neutral-700"
+                typeFilter === t.value ? "bg-white text-trell-ink shadow-sm" : "text-neutral-500 hover:text-neutral-700"
               }`}
             >
               {t.label}
@@ -290,7 +284,6 @@ export default function SubmissionsPage() {
         </div>
       </div>
 
-      {/* Toolbar — search + sort, like the reference */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <label className="flex h-9 w-full items-center gap-2 rounded-full border border-trell-line bg-white px-3.5 transition-all focus-within:border-neutral-400 focus-within:ring-4 focus-within:ring-neutral-100 sm:w-60">
           <Icon name="search" size={15} className="shrink-0 text-neutral-400" />
@@ -312,7 +305,10 @@ export default function SubmissionsPage() {
               className="trell-btn-outline h-9 gap-1.5 rounded-full border border-trell-line bg-white px-3 text-[13px] font-normal shadow-sm"
             >
               {sortLabel}
-              <ChevronDown size={14} className={`text-neutral-400 transition-transform ${sortOpen ? "rotate-180" : ""}`} />
+              <ChevronDown
+                size={14}
+                className={`text-neutral-400 transition-transform ${sortOpen ? "rotate-180" : ""}`}
+              />
             </button>
             {sortOpen && (
               <div className="trell-pop-in absolute right-0 z-30 mt-2 w-48 overflow-hidden rounded-xl border border-trell-line bg-white py-1 shadow-xl">
@@ -337,7 +333,6 @@ export default function SubmissionsPage() {
         </div>
       </div>
 
-      {/* Forms table */}
       <div className="trell-card overflow-hidden">
         <table className="trell-table trell-table-plain w-full border-separate border-spacing-0 text-sm">
           <thead>
@@ -352,161 +347,187 @@ export default function SubmissionsPage() {
             </tr>
           </thead>
           <tbody>
-            {isLoading ? (
-              [0, 1, 2, 3, 4].map((i) => (
-                <tr key={i} className="border-t border-trell-line">
-                  <td className="py-3.5 pl-4 sm:pl-5">
-                    <div className="flex items-center gap-3">
-                      <div className="trell-skeleton h-8 w-8 rounded-lg" />
-                      <div>
-                        <div className="trell-skeleton h-4 w-40" />
-                        <div className="trell-skeleton mt-1.5 h-3 w-24" />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="hidden py-3.5 sm:table-cell"><div className="trell-skeleton h-4 w-8" /></td>
-                  <td className="hidden py-3.5 md:table-cell"><div className="trell-skeleton h-4 w-24" /></td>
-                  <td className="hidden py-3.5 lg:table-cell"><div className="trell-skeleton h-4 w-24" /></td>
-                  <td className="py-3.5 pr-4 sm:pr-5" />
-                </tr>
-              ))
-            ) : (
-              visible.map((g) => {
-                const isOpen = expanded === g.key;
-                const menuForRow = openMenu === g.key;
-                return (
-                  <Fragment key={g.key}>
-                    <tr
-                      onClick={() => setExpanded(isOpen ? null : g.key)}
-                      className={`cursor-pointer border-t border-trell-line transition-colors hover:bg-neutral-50 ${isOpen ? "bg-neutral-50/60" : ""}`}
-                    >
-                      <td className="max-w-[220px] py-3 pl-4 sm:max-w-none sm:pl-5">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${FORM_TILE}`}>
-                            <Icon name="send" size={14} className={toneFor(g.key)} />
-                          </span>
-                          <div className="min-w-0">
-                            <div className="truncate text-[13px] font-medium text-trell-ink" title={g.name}>
-                              {g.name}
-                            </div>
-                            <div className="truncate text-xs text-neutral-400" title={g.formId}>
-                              {g.pages[0] ?? g.formId}
-                            </div>
-                          </div>
+            {isLoading
+              ? [0, 1, 2, 3, 4].map((i) => (
+                  <tr key={i} className="border-t border-trell-line">
+                    <td className="py-3.5 pl-4 sm:pl-5">
+                      <div className="flex items-center gap-3">
+                        <div className="trell-skeleton h-8 w-8 rounded-lg" />
+                        <div>
+                          <div className="trell-skeleton h-4 w-40" />
+                          <div className="trell-skeleton mt-1.5 h-3 w-24" />
                         </div>
-                      </td>
-                      <td className="hidden whitespace-nowrap px-2 py-3 tabular-nums text-[13px] text-trell-ink sm:table-cell">
-                        {g.count}
-                      </td>
-                      <td className="hidden whitespace-nowrap px-2 py-3 text-[13px] tabular-nums text-neutral-500 md:table-cell" title={fmtTime(g.lastTs)}>
-                        {fmtDate(g.lastTs)}
-                      </td>
-                      <td className="hidden whitespace-nowrap px-2 py-3 text-[13px] tabular-nums text-neutral-500 lg:table-cell" title={new Date(g.firstTs).toLocaleString()}>
-                        {ago(g.firstTs)}
-                      </td>
-                      <td className="whitespace-nowrap py-3 pl-2 pr-4 text-right sm:pr-5">
-                        <span className="mr-2 tabular-nums text-[13px] text-trell-ink sm:hidden">{g.count}</span>
-                        <span className="relative inline-block" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => {
-                              setOpenMenu(menuForRow ? null : g.key);
-                              setSortOpen(false);
-                            }}
-                            aria-label={`Actions for ${g.name}`}
-                            className="rounded-md px-1.5 py-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
-                          >
-                            ⋮
-                          </button>
-                          {menuForRow && (
-                            <div className="trell-pop-in absolute right-0 z-30 mt-1 w-44 overflow-hidden rounded-xl border border-trell-line bg-white py-1 text-left shadow-xl">
-                              <button
-                                onClick={() => exportGroup(g)}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50"
-                              >
-                                <Icon name="download" size={14} />
-                                Export CSV
-                              </button>
-                              <button
-                                onClick={() => {
-                                  copy(g.formId, `form:${g.key}`);
-                                  setOpenMenu(null);
-                                }}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50"
-                              >
-                                <Icon name={copied === `form:${g.key}` ? "check" : "send"} size={14} />
-                                {copied === `form:${g.key}` ? "Copied ID" : "Copy form ID"}
-                              </button>
-                            </div>
-                          )}
-                        </span>
-                      </td>
-                    </tr>
-                    {isOpen && (
-                      <tr className="border-t border-trell-line">
-                        <td colSpan={5} className="bg-white px-4 py-3 sm:px-5">
-                          <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
-                            <span><strong className="font-semibold tabular-nums text-trell-ink">{g.count}</strong> responses</span>
-                            <span><strong className="font-semibold tabular-nums text-trell-ink">{g.conversions}</strong> converted</span>
-                            {g.pages.length > 1 && <span>{g.pages.length} pages</span>}
-                            <button
-                              onClick={() => exportGroup(g)}
-                              className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-trell-line bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
+                      </div>
+                    </td>
+                    <td className="hidden py-3.5 sm:table-cell">
+                      <div className="trell-skeleton h-4 w-8" />
+                    </td>
+                    <td className="hidden py-3.5 md:table-cell">
+                      <div className="trell-skeleton h-4 w-24" />
+                    </td>
+                    <td className="hidden py-3.5 lg:table-cell">
+                      <div className="trell-skeleton h-4 w-24" />
+                    </td>
+                    <td className="py-3.5 pr-4 sm:pr-5" />
+                  </tr>
+                ))
+              : visible.map((g) => {
+                  const isOpen = expanded === g.key;
+                  const menuForRow = openMenu === g.key;
+                  return (
+                    <Fragment key={g.key}>
+                      <tr
+                        onClick={() => setExpanded(isOpen ? null : g.key)}
+                        className={`cursor-pointer border-t border-trell-line transition-colors hover:bg-neutral-50 ${isOpen ? "bg-neutral-50/60" : ""}`}
+                      >
+                        <td className="max-w-[220px] py-3 pl-4 sm:max-w-none sm:pl-5">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <span
+                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${FORM_TILE}`}
                             >
-                              <Icon name="download" size={13} />
-                              Export this form
-                            </button>
+                              <Icon name="send" size={14} className={toneFor(g.key)} />
+                            </span>
+                            <div className="min-w-0">
+                              <div className="truncate text-[13px] font-medium text-trell-ink" title={g.name}>
+                                {g.name}
+                              </div>
+                              <div className="truncate text-xs text-neutral-400" title={g.formId}>
+                                {g.pages[0] ?? g.formId}
+                              </div>
+                            </div>
                           </div>
-                          <ul className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-trell-line">
-                            {g.recent.slice(0, 5).map((s) => {
-                              const entries = fieldEntries(s.fields);
-                              const summary = entries
-                                .slice(0, 3)
-                                .map(([, v]) => v)
-                                .join(" · ");
-                              const key = `copy:${s.id}`;
-                              const isCopied = copied === key;
-                              const converted = s.type === "form_success";
-                              return (
-                                <li key={s.id} className="flex items-center gap-3 px-3 py-2">
-                                  <span
-                                    title={converted ? "Conversion" : "Submission"}
-                                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${converted ? "bg-emerald-500" : "bg-neutral-300"}`}
-                                  />
-                                  <div className="min-w-0 flex-1">
-                                    <div
-                                      className="truncate text-[13px] text-trell-ink"
-                                      title={entries.map(([k, v]) => `${prettyKey(k)}: ${v}`).join("\n") || s.page}
-                                    >
-                                      {summary || "Empty response"}
-                                    </div>
-                                    <div className="truncate text-[11px] tabular-nums text-neutral-400" title={new Date(s.ts).toLocaleString()}>
-                                      {s.page} · {ago(s.ts)}{converted ? " · Converted" : ""}
-                                    </div>
-                                  </div>
-                                  <button
-                                    onClick={() => copy(entries.map(([k, v]) => `${prettyKey(k)}: ${v}`).join("\n") || s.id, key)}
-                                    className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
-                                      isCopied ? "text-emerald-600" : "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
-                                    }`}
-                                  >
-                                    {isCopied ? "Copied" : "Copy"}
-                                  </button>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                          {g.count > 5 && (
-                            <p className="mt-2 text-center text-[11px] text-neutral-400">
-                              Showing 5 of {g.count} — export CSV for the full list.
-                            </p>
-                          )}
+                        </td>
+                        <td className="hidden whitespace-nowrap px-2 py-3 tabular-nums text-[13px] text-trell-ink sm:table-cell">
+                          {g.count}
+                        </td>
+                        <td
+                          className="hidden whitespace-nowrap px-2 py-3 text-[13px] tabular-nums text-neutral-500 md:table-cell"
+                          title={fmtTime(g.lastTs)}
+                        >
+                          {fmtDate(g.lastTs)}
+                        </td>
+                        <td
+                          className="hidden whitespace-nowrap px-2 py-3 text-[13px] tabular-nums text-neutral-500 lg:table-cell"
+                          title={new Date(g.firstTs).toLocaleString()}
+                        >
+                          {ago(g.firstTs)}
+                        </td>
+                        <td className="whitespace-nowrap py-3 pl-2 pr-4 text-right sm:pr-5">
+                          <span className="mr-2 tabular-nums text-[13px] text-trell-ink sm:hidden">{g.count}</span>
+                          <span className="relative inline-block" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => {
+                                setOpenMenu(menuForRow ? null : g.key);
+                                setSortOpen(false);
+                              }}
+                              aria-label={`Actions for ${g.name}`}
+                              className="rounded-md px-1.5 py-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+                            >
+                              ⋮
+                            </button>
+                            {menuForRow && (
+                              <div className="trell-pop-in absolute right-0 z-30 mt-1 w-44 overflow-hidden rounded-xl border border-trell-line bg-white py-1 text-left shadow-xl">
+                                <button
+                                  onClick={() => exportGroup(g)}
+                                  className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50"
+                                >
+                                  <Icon name="download" size={14} />
+                                  Export CSV
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    copy(g.formId, `form:${g.key}`);
+                                    setOpenMenu(null);
+                                  }}
+                                  className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50"
+                                >
+                                  <Icon name={copied === `form:${g.key}` ? "check" : "send"} size={14} />
+                                  {copied === `form:${g.key}` ? "Copied ID" : "Copy form ID"}
+                                </button>
+                              </div>
+                            )}
+                          </span>
                         </td>
                       </tr>
-                    )}
-                  </Fragment>
-                );
-              })
-            )}
+                      {isOpen && (
+                        <tr className="border-t border-trell-line">
+                          <td colSpan={5} className="bg-white px-4 py-3 sm:px-5">
+                            <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
+                              <span>
+                                <strong className="font-semibold tabular-nums text-trell-ink">{g.count}</strong>{" "}
+                                responses
+                              </span>
+                              <span>
+                                <strong className="font-semibold tabular-nums text-trell-ink">{g.conversions}</strong>{" "}
+                                converted
+                              </span>
+                              {g.pages.length > 1 && <span>{g.pages.length} pages</span>}
+                              <button
+                                onClick={() => exportGroup(g)}
+                                className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-trell-line bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
+                              >
+                                <Icon name="download" size={13} />
+                                Export this form
+                              </button>
+                            </div>
+                            <ul className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-trell-line">
+                              {g.recent.slice(0, 5).map((s) => {
+                                const entries = fieldEntries(s.fields);
+                                const summary = entries
+                                  .slice(0, 3)
+                                  .map(([, v]) => v)
+                                  .join(" · ");
+                                const key = `copy:${s.id}`;
+                                const isCopied = copied === key;
+                                const converted = s.type === "form_success";
+                                return (
+                                  <li key={s.id} className="flex items-center gap-3 px-3 py-2">
+                                    <span
+                                      title={converted ? "Conversion" : "Submission"}
+                                      className={`h-1.5 w-1.5 shrink-0 rounded-full ${converted ? "bg-emerald-500" : "bg-neutral-300"}`}
+                                    />
+                                    <div className="min-w-0 flex-1">
+                                      <div
+                                        className="truncate text-[13px] text-trell-ink"
+                                        title={entries.map(([k, v]) => `${prettyKey(k)}: ${v}`).join("\n") || s.page}
+                                      >
+                                        {summary || "Empty response"}
+                                      </div>
+                                      <div
+                                        className="truncate text-[11px] tabular-nums text-neutral-400"
+                                        title={new Date(s.ts).toLocaleString()}
+                                      >
+                                        {s.page} · {ago(s.ts)}
+                                        {converted ? " · Converted" : ""}
+                                      </div>
+                                    </div>
+                                    <button
+                                      onClick={() =>
+                                        copy(entries.map(([k, v]) => `${prettyKey(k)}: ${v}`).join("\n") || s.id, key)
+                                      }
+                                      className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
+                                        isCopied
+                                          ? "text-emerald-600"
+                                          : "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+                                      }`}
+                                    >
+                                      {isCopied ? "Copied" : "Copy"}
+                                    </button>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                            {g.count > 5 && (
+                              <p className="mt-2 text-center text-[11px] text-neutral-400">
+                                Showing 5 of {g.count} — export CSV for the full list.
+                              </p>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
           </tbody>
         </table>
 

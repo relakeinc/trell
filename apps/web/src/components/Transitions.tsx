@@ -14,10 +14,7 @@ import { useEffect, useRef, useState } from "react";
  *   ...
  *   {t.mounted && <div className={t.closing ? "trell-pop-out" : "trell-pop-in"}>…</div>}
  */
-export function useMounted(
-  open: boolean,
-  ms = 150,
-): { mounted: boolean; closing: boolean } {
+export function useMounted(open: boolean, ms = 150): { mounted: boolean; closing: boolean } {
   const [mounted, setMounted] = useState(open);
   const [closing, setClosing] = useState(false);
   const timer = useRef<number | null>(null);
@@ -39,7 +36,6 @@ export function useMounted(
     return () => {
       if (timer.current) window.clearTimeout(timer.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, ms]);
 
   return { mounted, closing };

@@ -22,9 +22,9 @@
   --trell-dark-surface: #191918;
   --trell-dark-surface-2: #1e1e1d;
   --trell-dark-border: #2a2a29;
-  --trell-dark-text: #CDCCCC;
+  --trell-dark-text: #cdcccc;
   --trell-dark-text-muted: #656565;
-  --trell-dark-accent: #CDCCCC;
+  --trell-dark-accent: #cdcccc;
 }
 
 .dark body {
@@ -390,7 +390,8 @@ body {
 /* Primary: dark bg, white text */
 .trell-btn-primary {
   @apply trell-btn border-black bg-black text-white hover:bg-neutral-800 hover:ring-4 hover:ring-neutral-200;
-}.dark .trell-btn-primary {
+}
+.dark .trell-btn-primary {
   border-color: var(--trell-dark-accent) !important;
   background-color: var(--trell-dark-accent) !important;
   color: var(--trell-dark-bg) !important;
@@ -671,10 +672,20 @@ body {
 /* Animated icons: vertices/corners animate on hover of parent */
 
 @keyframes trell-edge-flow {
-  0% { transform: translateY(-6rem); opacity: 0; }
-  12% { opacity: 1; }
-  88% { opacity: 1; }
-  100% { transform: translateY(100vh); opacity: 0; }
+  0% {
+    transform: translateY(-6rem);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
 }
 
 .trell-edge-flow {
@@ -692,8 +703,12 @@ body {
 /* Chat message entry + thinking shimmer */
 /* Shimmer text (thinking indicator) */
 @keyframes trell-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .trell-shimmer {
@@ -711,8 +726,14 @@ body {
 }
 
 @keyframes trell-msg-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .trell-msg-in {
@@ -738,29 +759,55 @@ body {
 }
 
 @keyframes icon-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
 }
 
 @keyframes icon-rotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes icon-slide-right {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(2px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(2px);
+  }
 }
 
 @keyframes icon-slide-down {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(2px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(2px);
+  }
 }
 
 @keyframes icon-wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-8deg); }
-  75% { transform: rotate(8deg); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-8deg);
+  }
+  75% {
+    transform: rotate(8deg);
+  }
 }
 
 /* Arrow icons: subtle slide on hover */
@@ -839,7 +886,9 @@ body {
 
 /* ── Input focus glow ────────────────────────────────────── */
 .trell-input {
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .trell-input:focus {
@@ -849,7 +898,9 @@ body {
 
 /* ── Table row hover ─────────────────────────────────────── */
 .trell-table tbody tr {
-  transition: background-color 0.1s ease, transform 0.15s ease;
+  transition:
+    background-color 0.1s ease,
+    transform 0.15s ease;
 }
 
 .trell-table tbody tr:hover {
@@ -867,8 +918,13 @@ body {
 
 /* ── Skeleton loading pulse ──────────────────────────────── */
 @keyframes trell-skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 .trell-skeleton {
@@ -879,9 +935,17 @@ body {
 
 /* ── Success check animation ─────────────────────────────── */
 @keyframes trell-check-pop {
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .trell-check-animate {
@@ -899,8 +963,15 @@ body {
 
 /* ── Badge pulse for live indicator ──────────────────────── */
 @keyframes trell-dot-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.5); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.5);
+  }
 }
 
 .trell-dot-pulse {
@@ -909,8 +980,12 @@ body {
 
 /* ── Toast progress bar ──────────────────────────────────── */
 @keyframes trell-toast-progress {
-  from { width: 100%; }
-  to { width: 0%; }
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }
 
 .trell-toast-progress {
@@ -946,7 +1021,7 @@ body {
 }
 
 .trell-theme-switch.active {
-  background-color: #CDCCCC;
+  background-color: #cdcccc;
 }
 
 .trell-theme-switch::after {
@@ -958,7 +1033,7 @@ body {
   height: 16px;
   border-radius: 50%;
   background: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -999,7 +1074,9 @@ body {
 
 /* ── Card hover lift ─────────────────────────────────────── */
 .trell-card-hover {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .trell-card-hover:hover {
@@ -1012,97 +1089,265 @@ body {
 }
 
 /* ── Accent theming (data-accent) ───────────────────────── */
-[data-accent="blue"] { --accent: #2563eb; --accent-soft: rgba(37, 99, 235, 0.12); --accent-text: #2563eb; }
-[data-accent="sky"] { --accent: #06b6d4; --accent-soft: rgba(6, 182, 212, 0.12); --accent-text: #0891b2; }
-[data-accent="lavender"] { --accent: #a855f7; --accent-soft: rgba(168, 85, 247, 0.12); --accent-text: #9333ea; }
-[data-accent="mint"] { --accent: #10b981; --accent-soft: rgba(16, 185, 129, 0.12); --accent-text: #059669; }
-[data-accent="netflix"] { --accent: #dc2626; --accent-soft: rgba(220, 38, 38, 0.12); --accent-text: #dc2626; }
-[data-accent="spotify"] { --accent: #22c55e; --accent-soft: rgba(34, 197, 94, 0.12); --accent-text: #16a34a; }
-[data-accent="coinbase"] { --accent: #3b82f6; --accent-soft: rgba(59, 130, 246, 0.12); --accent-text: #2563eb; }
-[data-accent="airbnb"] { --accent: #ec4899; --accent-soft: rgba(236, 72, 153, 0.12); --accent-text: #db2777; }
-[data-accent="discord"] { --accent: #6366f1; --accent-soft: rgba(99, 102, 241, 0.12); --accent-text: #4f46e5; }
-[data-accent="rabbit"] { --accent: #f97316; --accent-soft: rgba(249, 115, 22, 0.12); --accent-text: #ea580c; }
-[data-accent="default"] { --accent: #2563eb; --accent-soft: rgba(37, 99, 235, 0.12); --accent-text: #2563eb; }
+[data-accent="blue"] {
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.12);
+  --accent-text: #2563eb;
+}
+[data-accent="sky"] {
+  --accent: #06b6d4;
+  --accent-soft: rgba(6, 182, 212, 0.12);
+  --accent-text: #0891b2;
+}
+[data-accent="lavender"] {
+  --accent: #a855f7;
+  --accent-soft: rgba(168, 85, 247, 0.12);
+  --accent-text: #9333ea;
+}
+[data-accent="mint"] {
+  --accent: #10b981;
+  --accent-soft: rgba(16, 185, 129, 0.12);
+  --accent-text: #059669;
+}
+[data-accent="netflix"] {
+  --accent: #dc2626;
+  --accent-soft: rgba(220, 38, 38, 0.12);
+  --accent-text: #dc2626;
+}
+[data-accent="spotify"] {
+  --accent: #22c55e;
+  --accent-soft: rgba(34, 197, 94, 0.12);
+  --accent-text: #16a34a;
+}
+[data-accent="coinbase"] {
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.12);
+  --accent-text: #2563eb;
+}
+[data-accent="airbnb"] {
+  --accent: #ec4899;
+  --accent-soft: rgba(236, 72, 153, 0.12);
+  --accent-text: #db2777;
+}
+[data-accent="discord"] {
+  --accent: #6366f1;
+  --accent-soft: rgba(99, 102, 241, 0.12);
+  --accent-text: #4f46e5;
+}
+[data-accent="rabbit"] {
+  --accent: #f97316;
+  --accent-soft: rgba(249, 115, 22, 0.12);
+  --accent-text: #ea580c;
+}
+[data-accent="default"] {
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.12);
+  --accent-text: #2563eb;
+}
 
 /* Apply accent to blue-accented elements */
-[data-accent] a[class*="text-blue-600"] { color: var(--accent-text) !important; }
-[data-accent] a[class*="bg-blue-50"][class*="text-blue-600"] { color: var(--accent-text) !important; background-color: var(--accent-soft) !important; }
-[data-accent] [class*="bg-blue-50"] { background-color: var(--accent-soft) !important; }
-[data-accent] [class*="bg-blue-500"] { background-color: var(--accent) !important; }
-[data-accent] [class*="text-blue-500"] { color: var(--accent-text) !important; }
-[data-accent] .trell-btn-primary { background-color: var(--accent) !important; border-color: var(--accent) !important; }
+[data-accent] a[class*="text-blue-600"] {
+  color: var(--accent-text) !important;
+}
+[data-accent] a[class*="bg-blue-50"][class*="text-blue-600"] {
+  color: var(--accent-text) !important;
+  background-color: var(--accent-soft) !important;
+}
+[data-accent] [class*="bg-blue-50"] {
+  background-color: var(--accent-soft) !important;
+}
+[data-accent] [class*="bg-blue-500"] {
+  background-color: var(--accent) !important;
+}
+[data-accent] [class*="text-blue-500"] {
+  color: var(--accent-text) !important;
+}
+[data-accent] .trell-btn-primary {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
 
 /* ── Enter/exit transitions (popovers, modals, drawers, toasts) ──
    Usage with useMounted(open): render while `mounted`, swap -in/-out
    classes by `closing`. Durations must match the hook timeout. */
 @keyframes trell-pop-in {
-  from { opacity: 0; transform: scale(0.97) translateY(-4px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 @keyframes trell-pop-out {
-  from { opacity: 1; transform: scale(1) translateY(0); }
-  to { opacity: 0; transform: scale(0.97) translateY(-4px); }
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97) translateY(-4px);
+  }
 }
 @keyframes trell-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes trell-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 @keyframes trell-modal-in {
-  from { opacity: 0; transform: translateY(10px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 @keyframes trell-modal-out {
-  from { opacity: 1; transform: translateY(0) scale(1); }
-  to { opacity: 0; transform: translateY(10px) scale(0.98); }
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
 }
 @keyframes trell-drawer-right-in {
-  from { opacity: 0.4; transform: translateX(32px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0.4;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 @keyframes trell-drawer-right-out {
-  from { opacity: 1; transform: translateX(0); }
-  to { opacity: 0.4; transform: translateX(32px); }
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0.4;
+    transform: translateX(32px);
+  }
 }
 @keyframes trell-drawer-left-in {
-  from { opacity: 0.4; transform: translateX(-32px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0.4;
+    transform: translateX(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 @keyframes trell-drawer-left-out {
-  from { opacity: 1; transform: translateX(0); }
-  to { opacity: 0.4; transform: translateX(-32px); }
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0.4;
+    transform: translateX(-32px);
+  }
 }
 @keyframes trell-slide-right-in {
-  from { opacity: 0; transform: translateX(28px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 @keyframes trell-slide-left-in {
-  from { opacity: 0; transform: translateX(-28px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
-.trell-pop-in { animation: trell-pop-in 0.15s ease-out; transform-origin: top center; }
-.trell-pop-out { animation: trell-pop-out 0.12s ease-in forwards; transform-origin: top center; }
+.trell-pop-in {
+  animation: trell-pop-in 0.15s ease-out;
+  transform-origin: top center;
+}
+.trell-pop-out {
+  animation: trell-pop-out 0.12s ease-in forwards;
+  transform-origin: top center;
+}
 /* Upward-opening variant (e.g. time pickers above the trigger). */
-.trell-pop-up-in { animation: trell-pop-in 0.15s ease-out; transform-origin: bottom center; }
-.trell-pop-up-out { animation: trell-pop-out 0.12s ease-in forwards; transform-origin: bottom center; }
-.trell-fade-in { animation: trell-fade-in 0.15s ease-out; }
-.trell-fade-out { animation: trell-fade-out 0.12s ease-in forwards; }
-.trell-modal-in { animation: trell-modal-in 0.18s cubic-bezier(0.16, 1, 0.3, 1); }
-.trell-modal-out { animation: trell-modal-out 0.14s ease-in forwards; }
-.trell-drawer-right-in { animation: trell-drawer-right-in 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
-.trell-drawer-right-out { animation: trell-drawer-right-out 0.16s ease-in forwards; }
-.trell-drawer-left-in { animation: trell-drawer-left-in 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
-.trell-drawer-left-out { animation: trell-drawer-left-out 0.16s ease-in forwards; }
-.trell-slide-right-in { animation: trell-slide-right-in 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
-.trell-slide-left-in { animation: trell-slide-left-in 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+.trell-pop-up-in {
+  animation: trell-pop-in 0.15s ease-out;
+  transform-origin: bottom center;
+}
+.trell-pop-up-out {
+  animation: trell-pop-out 0.12s ease-in forwards;
+  transform-origin: bottom center;
+}
+.trell-fade-in {
+  animation: trell-fade-in 0.15s ease-out;
+}
+.trell-fade-out {
+  animation: trell-fade-out 0.12s ease-in forwards;
+}
+.trell-modal-in {
+  animation: trell-modal-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.trell-modal-out {
+  animation: trell-modal-out 0.14s ease-in forwards;
+}
+.trell-drawer-right-in {
+  animation: trell-drawer-right-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.trell-drawer-right-out {
+  animation: trell-drawer-right-out 0.16s ease-in forwards;
+}
+.trell-drawer-left-in {
+  animation: trell-drawer-left-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.trell-drawer-left-out {
+  animation: trell-drawer-left-out 0.16s ease-in forwards;
+}
+.trell-slide-right-in {
+  animation: trell-slide-right-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.trell-slide-left-in {
+  animation: trell-slide-left-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
 @media (prefers-reduced-motion: reduce) {
-  .trell-pop-in, .trell-pop-out, .trell-pop-up-in, .trell-pop-up-out, .trell-fade-in, .trell-fade-out,
-  .trell-slide-right-in, .trell-slide-left-in,
-  .trell-modal-in, .trell-modal-out, .trell-drawer-right-in, .trell-drawer-right-out,
-  .trell-drawer-left-in, .trell-drawer-left-out {
+  .trell-pop-in,
+  .trell-pop-out,
+  .trell-pop-up-in,
+  .trell-pop-up-out,
+  .trell-fade-in,
+  .trell-fade-out,
+  .trell-slide-right-in,
+  .trell-slide-left-in,
+  .trell-modal-in,
+  .trell-modal-out,
+  .trell-drawer-right-in,
+  .trell-drawer-right-out,
+  .trell-drawer-left-in,
+  .trell-drawer-left-out {
     animation: none;
   }
 }

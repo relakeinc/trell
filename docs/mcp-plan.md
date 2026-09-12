@@ -6,13 +6,13 @@
 
 ## 1. Decisiones tomadas
 
-| # | Decisión | Valor elegido | Por qué |
-|---|----------|---------------|---------|
-| 1 | Transporte | **Ambos**: `stdio` (dev: Claude Desktop/Cursor) + **Streamable HTTP** (bot) | stdio para desarrollar, HTTP para producción |
-| 2 | Workspaces | **Multi-workspace**: las tools reciben `project` (slug o id) | Un solo MCP sirve todos los proyectos; el control de acceso va por env |
-| 3 | Alcance | **Lectura + acciones** (escrituras seguras en v1; destructivas tras bandera + confirmación) | Útil desde el día 1 sin riesgo de borrar nada por accidente |
-| 4 | Despliegue | **Mismo servidor/proceso que `apps/api`** (montado en la app Hono) | Un solo deploy, comparte Prisma, config y red |
-| 5 | Documentación | Este plan + docs de operación al implementar | Rastro completo de qué se hizo y cómo |
+| #   | Decisión      | Valor elegido                                                                               | Por qué                                                                |
+| --- | ------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 1   | Transporte    | **Ambos**: `stdio` (dev: Claude Desktop/Cursor) + **Streamable HTTP** (bot)                 | stdio para desarrollar, HTTP para producción                           |
+| 2   | Workspaces    | **Multi-workspace**: las tools reciben `project` (slug o id)                                | Un solo MCP sirve todos los proyectos; el control de acceso va por env |
+| 3   | Alcance       | **Lectura + acciones** (escrituras seguras en v1; destructivas tras bandera + confirmación) | Útil desde el día 1 sin riesgo de borrar nada por accidente            |
+| 4   | Despliegue    | **Mismo servidor/proceso que `apps/api`** (montado en la app Hono)                          | Un solo deploy, comparte Prisma, config y red                          |
+| 5   | Documentación | Este plan + docs de operación al implementar                                                | Rastro completo de qué se hizo y cómo                                  |
 
 ## 2. Arquitectura
 
@@ -44,33 +44,33 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
 
 ### Lectura
 
-| Tool | Qué hace | Origen |
-|------|----------|--------|
-| `list_projects` | workspaces accesibles (id, slug, name, plan) | `ProjectUser` |
-| `get_project` | detalle + instalación (`connected`, `lastEventAt`) + uso vs límites | `getProjectOwnerPlan`, `Event` |
-| `get_stats` | KPIs agregados (rango, filtros) | `routes/analytics` |
-| `get_series` | serie temporal | `routes/analytics` |
-| `get_breakdown` | desglose por dimensión | `routes/analytics` |
-| `get_forms` | ranking de formularios | `routes/analytics` |
-| `query_events` | eventos recientes (tope 100) | `getEventsForAnalytics` |
-| `get_funnel` / `list_funnels` | funnels + pasos | `Funnel` |
-| `list_views` | vistas guardadas | `SavedView` |
-| `list_webhooks` | webhooks (URL, eventos, enabled; **nunca el secret**) | `Webhook` |
-| `list_utm_templates` | plantillas UTM | `UtmTemplate` |
-| `list_api_keys` | keys **metadata solo** (nombre, prefijo, fecha; jamás hashes) | `ApiKey` |
-| `get_domains` | allowlist actual + aviso si vacía | `Project.domains` |
-| `tracking_checkup` | ¿está llegando data? (último evento, dominios, pk) | combinado |
+| Tool                          | Qué hace                                                            | Origen                         |
+| ----------------------------- | ------------------------------------------------------------------- | ------------------------------ |
+| `list_projects`               | workspaces accesibles (id, slug, name, plan)                        | `ProjectUser`                  |
+| `get_project`                 | detalle + instalación (`connected`, `lastEventAt`) + uso vs límites | `getProjectOwnerPlan`, `Event` |
+| `get_stats`                   | KPIs agregados (rango, filtros)                                     | `routes/analytics`             |
+| `get_series`                  | serie temporal                                                      | `routes/analytics`             |
+| `get_breakdown`               | desglose por dimensión                                              | `routes/analytics`             |
+| `get_forms`                   | ranking de formularios                                              | `routes/analytics`             |
+| `query_events`                | eventos recientes (tope 100)                                        | `getEventsForAnalytics`        |
+| `get_funnel` / `list_funnels` | funnels + pasos                                                     | `Funnel`                       |
+| `list_views`                  | vistas guardadas                                                    | `SavedView`                    |
+| `list_webhooks`               | webhooks (URL, eventos, enabled; **nunca el secret**)               | `Webhook`                      |
+| `list_utm_templates`          | plantillas UTM                                                      | `UtmTemplate`                  |
+| `list_api_keys`               | keys **metadata solo** (nombre, prefijo, fecha; jamás hashes)       | `ApiKey`                       |
+| `get_domains`                 | allowlist actual + aviso si vacía                                   | `Project.domains`              |
+| `tracking_checkup`            | ¿está llegando data? (último evento, dominios, pk)                  | combinado                      |
 
 ### Escritura (segura)
 
-| Tool | Qué hace | Guardarraíl |
-|------|----------|-------------|
-| `create_funnel` / `update_funnel` | CRUD funnels | valida pasos como el dashboard |
-| `create_utm_template` / `update_utm_template` | CRUD plantillas | nombre obligatorio |
-| `add_domain` / `remove_domain` | allowlist | `sanitizeDomains` + límite del plan |
-| `create_webhook` | alta webhook | URL válida + solo plan Pro |
-| `create_api_key` | **devuelve el secreto UNA vez** con advertencia `.env` | nombre obligatorio |
-| `delete_webhook` | baja webhook | tras bandera destructiva (ver §4) |
+| Tool                                          | Qué hace                                               | Guardarraíl                         |
+| --------------------------------------------- | ------------------------------------------------------ | ----------------------------------- |
+| `create_funnel` / `update_funnel`             | CRUD funnels                                           | valida pasos como el dashboard      |
+| `create_utm_template` / `update_utm_template` | CRUD plantillas                                        | nombre obligatorio                  |
+| `add_domain` / `remove_domain`                | allowlist                                              | `sanitizeDomains` + límite del plan |
+| `create_webhook`                              | alta webhook                                           | URL válida + solo plan Pro          |
+| `create_api_key`                              | **devuelve el secreto UNA vez** con advertencia `.env` | nombre obligatorio                  |
+| `delete_webhook`                              | baja webhook                                           | tras bandera destructiva (ver §4)   |
 
 ### Destructivas (tras bandera, ver §4)
 
@@ -101,12 +101,12 @@ Convención: `project: string` (slug o id) en todas. Paginación con tope
 
 ## 5. Variables de entorno (nuevas)
 
-| Var | Uso | Ejemplo |
-|-----|-----|---------|
-| `MCP_API_KEY` | Bearer del endpoint `/mcp` (HTTP) | `opcional-en-dev-stdio` |
-| `MCP_ALLOWED_SLUGS` | slugs permitidos, `*` = todos | `*` |
-| `MCP_ALLOW_DESTRUCTIVE` | habilita tools destructivas | `false` |
-| `TRELL_SECRET_KEY` | (lado **bot**, no MCP) sk del bot | `sk_…` |
+| Var                     | Uso                               | Ejemplo                 |
+| ----------------------- | --------------------------------- | ----------------------- |
+| `MCP_API_KEY`           | Bearer del endpoint `/mcp` (HTTP) | `opcional-en-dev-stdio` |
+| `MCP_ALLOWED_SLUGS`     | slugs permitidos, `*` = todos     | `*`                     |
+| `MCP_ALLOW_DESTRUCTIVE` | habilita tools destructivas       | `false`                 |
+| `TRELL_SECRET_KEY`      | (lado **bot**, no MCP) sk del bot | `sk_…`                  |
 
 ## 6. Fases de implementación
 

@@ -40,7 +40,7 @@ export function SelectField({
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open ]);
+  }, [open]);
 
   const current = options.find((o) => o.value === value);
 
@@ -56,10 +56,16 @@ export function SelectField({
         }`}
       >
         <span className="truncate text-trell-ink">{current?.label ?? value}</span>
-        <Icon name="arrow-down-01" size={14} className={`shrink-0 text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`} />
+        <Icon
+          name="arrow-down-01"
+          size={14}
+          className={`shrink-0 text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
       {t.mounted && (
-        <div className={`absolute inset-x-0 z-30 mt-1 overflow-hidden rounded-xl border border-trell-line bg-white py-1 shadow-xl ${t.closing ? "trell-pop-out" : "trell-pop-in"}`}>
+        <div
+          className={`absolute inset-x-0 z-30 mt-1 overflow-hidden rounded-xl border border-trell-line bg-white py-1 shadow-xl ${t.closing ? "trell-pop-out" : "trell-pop-in"}`}
+        >
           {options.map((o) => (
             <button
               key={o.value}
@@ -73,7 +79,9 @@ export function SelectField({
               }`}
             >
               <span>
-                <span className={`block text-xs ${o.value === value ? "font-semibold text-trell-ink" : "text-neutral-700"}`}>
+                <span
+                  className={`block text-xs ${o.value === value ? "font-semibold text-trell-ink" : "text-neutral-700"}`}
+                >
                   {o.label}
                 </span>
                 {o.hint && <span className="block text-[11px] font-normal text-neutral-400">{o.hint}</span>}

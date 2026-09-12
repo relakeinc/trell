@@ -19,9 +19,7 @@ for (const file of ["apps/api/.env", ".env"]) {
 
 async function main(): Promise<void> {
   const config = mcpConfigFromEnv();
-  // Optional per-user scoping for personal use: only this account's
-  // workspaces are visible (service mode without it). NOT a security
-  // boundary here — a local process already has full DB access.
+  // Optional per-user scoping; NOT a security boundary, local process already has full DB access.
   const identityEmail = process.env.MCP_IDENTITY_EMAIL?.trim();
   if (identityEmail) {
     config.identity = { email: identityEmail };

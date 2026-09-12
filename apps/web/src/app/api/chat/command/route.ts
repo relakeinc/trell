@@ -71,7 +71,9 @@ interface StatsResult {
 
 function fmtStats(r: StatsResult): string {
   const lines = ["**Stats — last 30 days**", `Total events: ${r.total ?? 0}`];
-  const types = Object.entries(r.byType ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const types = Object.entries(r.byType ?? {})
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
   if (types.length > 0) {
     lines.push("By type:");
     for (const [t, n] of types) lines.push(`- ${t}: ${n}`);
@@ -83,9 +85,20 @@ function fmtStats(r: StatsResult): string {
   return lines.join("\n");
 }
 
-const COMMANDS: Record<string, { tool: string; args: (slug: string) => Record<string, unknown>; fmt: (r: unknown) => string }> = {
-  tracking: { tool: "tracking_checkup", args: (slug) => ({ project: slug }), fmt: (r) => fmtTracking(r as TrackingResult) },
-  recent: { tool: "query_events", args: (slug) => ({ project: slug, limit: 8 }), fmt: (r) => fmtRecent(r as RecentResult) },
+const COMMANDS: Record<
+  string,
+  { tool: string; args: (slug: string) => Record<string, unknown>; fmt: (r: unknown) => string }
+> = {
+  tracking: {
+    tool: "tracking_checkup",
+    args: (slug) => ({ project: slug }),
+    fmt: (r) => fmtTracking(r as TrackingResult),
+  },
+  recent: {
+    tool: "query_events",
+    args: (slug) => ({ project: slug, limit: 8 }),
+    fmt: (r) => fmtRecent(r as RecentResult),
+  },
   stats: { tool: "get_stats", args: (slug) => ({ project: slug }), fmt: (r) => fmtStats(r as StatsResult) },
 };
 

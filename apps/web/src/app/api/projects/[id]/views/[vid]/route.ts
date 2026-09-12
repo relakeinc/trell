@@ -9,10 +9,14 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   if (!session?.user?.id) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const { id, vid } = await ctx.params;
   const svc = new ProjectAccessService(new PrismaMembershipRepo(prisma));
-  if (!(await svc.canAccessProject(session.user.id, id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!(await svc.canAccessProject(session.user.id, id)))
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   try {
     return NextResponse.json(await apiRelay({ projectId: id, path: `views/${vid}`, method: "DELETE" }));
   } catch (e) {
-    return NextResponse.json({ error: "relay_error", message: e instanceof Error ? e.message : "relay_error" }, { status: 502 });
+    return NextResponse.json(
+      { error: "relay_error", message: e instanceof Error ? e.message : "relay_error" },
+      { status: 502 },
+    );
   }
 }

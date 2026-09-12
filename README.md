@@ -102,10 +102,10 @@ outside Docker, any dummy `DATABASE_URL` works (e.g.
 
 ### Recommended Versions
 
-| Package | Version   |
-| ------- | --------- |
-| node    | v20.x     |
-| pnpm    | 10.33.0   |
+| Package | Version |
+| ------- | ------- |
+| node    | v20.x   |
+| pnpm    | 10.33.0 |
 
 ### Common Local Development Issues
 
@@ -126,4 +126,4 @@ outside Docker, any dummy `DATABASE_URL` works (e.g.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+AGPL-3.0-only — see [LICENSE](LICENSE).

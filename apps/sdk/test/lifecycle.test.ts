@@ -16,7 +16,11 @@ function makeEngine() {
   };
   const trell = init(
     { project: "pk_test", endpoint: "https://e.trell/v1/events", autoDetect: true },
-    { win: window as unknown as Window, fetchFn: fetchFn as unknown as typeof fetch, beaconFn: (() => true) as unknown as (url: string, data: BodyInit) => boolean },
+    {
+      win: window as unknown as Window,
+      fetchFn: fetchFn as unknown as typeof fetch,
+      beaconFn: (() => true) as unknown as (url: string, data: BodyInit) => boolean,
+    },
   ) as TrellEngine;
   return { fetchFn, trell };
 }
@@ -34,13 +38,15 @@ let fetchFn: ReturnType<typeof vi.fn>;
 let trell: TrellEngine;
 
 beforeEach(() => {
-  document.body.innerHTML = '<form id="f" data-trell-form="f"><input name="email"><button type="submit">x</button></form>';
+  document.body.innerHTML =
+    '<form id="f" data-trell-form="f"><input name="email"><button type="submit">x</button></form>';
   const env = makeEngine();
   fetchFn = env.fetchFn;
   trell = env.trell;
 });
 
-const dispatchSubmit = () => document.getElementById("f")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+const dispatchSubmit = () =>
+  document.getElementById("f")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
 const tick = () => new Promise((r) => setTimeout(r, 10));
 
 describe("form().destroy() lifecycle", () => {

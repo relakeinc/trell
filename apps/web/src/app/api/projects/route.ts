@@ -28,13 +28,18 @@ export async function POST(req: Request) {
   const encKey = process.env.TRELL_ENC_KEY;
   if (!encKey) return NextResponse.json({ error: "config", message: "TRELL_ENC_KEY is not set" }, { status: 500 });
 
-  // Check project limit
   const limits = getPlanLimits("free");
   const projectCount = await prisma.project.count({
     where: { members: { some: { userId } } },
   });
   if (projectCount >= limits.projects) {
-    return NextResponse.json({ error: "limit_reached", message: `Free plan allows up to ${limits.projects} projects. Upgrade to Pro for more.` }, { status: 403 });
+    return NextResponse.json(
+      {
+        error: "limit_reached",
+        message: `Free plan allows up to ${limits.projects} projects. Upgrade to Pro for more.`,
+      },
+      { status: 403 },
+    );
   }
 
   const domains = Array.isArray(body.domains) ? body.domains.join(",") : (body.domains ?? "");
@@ -42,7 +47,6 @@ export async function POST(req: Request) {
   const { pk, sk, skHash } = newApiKeys("pk", "sk");
   const slug = slugify(name);
 
-  // Generate a default API key
   const defaultPk = `pk_${randomBytes(16).toString("hex")}`;
   const defaultSk = `sk_${randomBytes(16).toString("hex")}`;
   const defaultKeyHash = createHash("sha256").update(defaultSk).digest("hex");
@@ -68,7 +72,6 @@ export async function POST(req: Request) {
     await tx.projectUser.create({
       data: { projectId: p.id, userId, role: "owner" },
     });
-    // Create default API key
     await tx.apiKey.create({
       data: {
         projectId: p.id,
@@ -85,5 +88,8 @@ export async function POST(req: Request) {
 }
 
 function slugify(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }

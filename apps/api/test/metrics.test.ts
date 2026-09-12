@@ -125,7 +125,12 @@ describe("computeMetrics", () => {
   it("averages hesitation and gap from field interactions", () => {
     const props = (extra: Record<string, unknown>) => JSON.stringify(extra);
     const events = [
-      ev({ type: "field_interaction", eventId: "i1", formId: "c", properties: props({ hesitationMs: 1000, gapMs: 500 }) }),
+      ev({
+        type: "field_interaction",
+        eventId: "i1",
+        formId: "c",
+        properties: props({ hesitationMs: 1000, gapMs: 500 }),
+      }),
       ev({ type: "field_interaction", eventId: "i2", formId: "c", properties: props({ gapMs: 1500 }) }),
       ev({ type: "field_interaction", eventId: "i3", formId: "c", properties: props({ hesitationMs: -5 }) }), // invalid → ignored
     ];

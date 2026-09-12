@@ -82,8 +82,15 @@ export class PrismaRepo implements Repo {
     return this.prisma.utmTemplate.findMany({
       where: { projectId },
       select: {
-        id: true, name: true, source: true, medium: true, campaign: true,
-        term: true, content: true, referral: true, createdAt: true,
+        id: true,
+        name: true,
+        source: true,
+        medium: true,
+        campaign: true,
+        term: true,
+        content: true,
+        referral: true,
+        createdAt: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -147,7 +154,12 @@ export class PrismaRepo implements Repo {
 
   async createWebhook(input: { projectId: string; url: string; events: string[] }) {
     const created = await this.prisma.webhook.create({
-      data: { projectId: input.projectId, url: input.url, events: input.events, secret: randomBytes(32).toString("hex") },
+      data: {
+        projectId: input.projectId,
+        url: input.url,
+        events: input.events,
+        secret: randomBytes(32).toString("hex"),
+      },
       select: { id: true, url: true, events: true, enabled: true, createdAt: true },
     });
     return created;
@@ -241,7 +253,14 @@ export class PrismaRepo implements Repo {
       id: r.id,
       projectId: r.projectId,
       name: r.name,
-      steps: r.steps.map((s) => ({ id: s.id, funnelId: s.funnelId, eventType: s.eventType, formId: s.formId, label: s.label, position: s.position })),
+      steps: r.steps.map((s) => ({
+        id: s.id,
+        funnelId: s.funnelId,
+        eventType: s.eventType,
+        formId: s.formId,
+        label: s.label,
+        position: s.position,
+      })),
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
     }));
@@ -257,7 +276,14 @@ export class PrismaRepo implements Repo {
       id: r.id,
       projectId: r.projectId,
       name: r.name,
-      steps: r.steps.map((s) => ({ id: s.id, funnelId: s.funnelId, eventType: s.eventType, formId: s.formId, label: s.label, position: s.position })),
+      steps: r.steps.map((s) => ({
+        id: s.id,
+        funnelId: s.funnelId,
+        eventType: s.eventType,
+        formId: s.formId,
+        label: s.label,
+        position: s.position,
+      })),
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
     };
@@ -283,7 +309,14 @@ export class PrismaRepo implements Repo {
       id: funnel.id,
       projectId: funnel.projectId,
       name: funnel.name,
-      steps: funnel.steps.map((s) => ({ id: s.id, funnelId: s.funnelId, eventType: s.eventType, formId: s.formId, label: s.label, position: s.position })),
+      steps: funnel.steps.map((s) => ({
+        id: s.id,
+        funnelId: s.funnelId,
+        eventType: s.eventType,
+        formId: s.formId,
+        label: s.label,
+        position: s.position,
+      })),
       createdAt: funnel.createdAt,
       updatedAt: funnel.updatedAt,
     };
@@ -293,7 +326,6 @@ export class PrismaRepo implements Repo {
     const data: Prisma.FunnelUpdateInput = {};
     if (input.name !== undefined) data.name = input.name;
     if (input.steps !== undefined) {
-      // Delete existing steps, recreate
       await this.prisma.funnelStep.deleteMany({ where: { funnelId: id } });
       data.steps = {
         create: input.steps.map((s) => ({
@@ -313,7 +345,14 @@ export class PrismaRepo implements Repo {
       id: funnel.id,
       projectId: funnel.projectId,
       name: funnel.name,
-      steps: funnel.steps.map((s) => ({ id: s.id, funnelId: s.funnelId, eventType: s.eventType, formId: s.formId, label: s.label, position: s.position })),
+      steps: funnel.steps.map((s) => ({
+        id: s.id,
+        funnelId: s.funnelId,
+        eventType: s.eventType,
+        formId: s.formId,
+        label: s.label,
+        position: s.position,
+      })),
       createdAt: funnel.createdAt,
       updatedAt: funnel.updatedAt,
     };
@@ -330,20 +369,44 @@ export class PrismaRepo implements Repo {
       where: { projectId },
       orderBy: { createdAt: "desc" },
     });
-    return rows.map((r) => ({ id: r.id, projectId: r.projectId, name: r.name, type: r.type, config: r.config, createdAt: r.createdAt, updatedAt: r.updatedAt }));
+    return rows.map((r) => ({
+      id: r.id,
+      projectId: r.projectId,
+      name: r.name,
+      type: r.type,
+      config: r.config,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+    }));
   }
 
   async getSavedView(id: string): Promise<SavedViewRecord | null> {
     const r = await this.prisma.savedView.findUnique({ where: { id } });
     if (!r) return null;
-    return { id: r.id, projectId: r.projectId, name: r.name, type: r.type, config: r.config, createdAt: r.createdAt, updatedAt: r.updatedAt };
+    return {
+      id: r.id,
+      projectId: r.projectId,
+      name: r.name,
+      type: r.type,
+      config: r.config,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+    };
   }
 
   async createSavedView(input: CreateSavedViewInput): Promise<SavedViewRecord> {
     const r = await this.prisma.savedView.create({
       data: { projectId: input.projectId, name: input.name, type: input.type, config: input.config },
     });
-    return { id: r.id, projectId: r.projectId, name: r.name, type: r.type, config: r.config, createdAt: r.createdAt, updatedAt: r.updatedAt };
+    return {
+      id: r.id,
+      projectId: r.projectId,
+      name: r.name,
+      type: r.type,
+      config: r.config,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+    };
   }
 
   async deleteSavedView(id: string): Promise<void> {

@@ -17,8 +17,7 @@ export default async function ProjectLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  // Single auth + single project list (auth() hits the DB on every call
-  // with the database session strategy, so never call it twice).
+  // Single auth + project list: auth() hits the DB per call, so never call it twice.
   const session = await auth();
   if (!session?.user?.id) redirect("/signin");
 
@@ -34,27 +33,27 @@ export default async function ProjectLayout({
       <CommandPalette />
       <MobileShellProvider>
         <ChatProvider>
-        <MobileShell
-          projectSlug={project.slug}
-          projectName={project.name}
-          projects={projects}
-          userEmail={session.user.email ?? ""}
-        >
-          <div className="trell-page">
-            <aside className="trell-sidebar hidden md:flex h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-xl bg-neutral-100 py-2 pr-2">
-              <ProjectSidebar
-                projectSlug={project.slug}
-                projectName={project.name}
-                projects={projects}
-                userEmail={session.user.email ?? ""}
-              />
-            </aside>
-            <div className="trell-main-frame">
-              <div className="trell-main">{children}</div>
+          <MobileShell
+            projectSlug={project.slug}
+            projectName={project.name}
+            projects={projects}
+            userEmail={session.user.email ?? ""}
+          >
+            <div className="trell-page">
+              <aside className="trell-sidebar hidden md:flex h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-xl bg-neutral-100 py-2 pr-2">
+                <ProjectSidebar
+                  projectSlug={project.slug}
+                  projectName={project.name}
+                  projects={projects}
+                  userEmail={session.user.email ?? ""}
+                />
+              </aside>
+              <div className="trell-main-frame">
+                <div className="trell-main">{children}</div>
+              </div>
+              <ChatWidget />
             </div>
-            <ChatWidget />
-          </div>
-        </MobileShell>
+          </MobileShell>
         </ChatProvider>
       </MobileShellProvider>
     </KeyboardShortcutsProvider>

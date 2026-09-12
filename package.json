@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Trell — bring analytics and conversion tracking to the forms you already have.",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=20"
@@ -21,9 +21,12 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "db:generate": "turbo run db:generate"
+    "db:generate": "turbo run db:generate",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "prettier": "^3.6.2",
     "turbo": "^2.4.0",
     "typescript": "^5.7.0"
   }

@@ -1,10 +1,5 @@
 import type { Device, Utm } from "@trell/shared";
-import {
-  COOKIE_VISITOR,
-  SESSION_IDLE_MS,
-  STORAGE_SESSION,
-  STORAGE_UTM,
-} from "@trell/shared";
+import { COOKIE_VISITOR, SESSION_IDLE_MS, STORAGE_SESSION, STORAGE_UTM } from "@trell/shared";
 import type { KeyValueStore } from "./storage";
 import { randomUUID } from "./rng";
 
@@ -59,11 +54,7 @@ export function getOrCreateSessionId(win: Window, store: KeyValueStore): string 
   return next.id;
 }
 
-export function getOrCreateUtm(
-  win: Window,
-  store: KeyValueStore,
-  persistent: boolean,
-): Utm | null {
+export function getOrCreateUtm(win: Window, store: KeyValueStore, persistent: boolean): Utm | null {
   const existing = persistent ? store.get(STORAGE_UTM) : null;
   if (existing) {
     try {
@@ -100,13 +91,16 @@ export function getUrlContext(win: Window): { url: string; referrer: string; pag
 export function detectDevice(win: Window): Device {
   const nav = win.navigator;
   const ua = nav.userAgent || "";
-  const uaData = (nav as unknown as { userAgentData?: { platform?: string; mobile?: boolean; brands?: { brand?: string; version?: string }[] } }).userAgentData;
+  const uaData = (
+    nav as unknown as {
+      userAgentData?: { platform?: string; mobile?: boolean; brands?: { brand?: string; version?: string }[] };
+    }
+  ).userAgentData;
 
   const width = win.innerWidth || win.document.documentElement.clientWidth || 0;
   const height = win.innerHeight || win.document.documentElement.clientHeight || 0;
 
-  const isMobile =
-    uaData?.mobile === true || /Mobile|Android|iPhone|iPod/i.test(ua);
+  const isMobile = uaData?.mobile === true || /Mobile|Android|iPhone|iPod/i.test(ua);
 
   let type: Device["type"] = "desktop";
   if (isMobile) type = "mobile";

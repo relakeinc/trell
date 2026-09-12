@@ -9,11 +9,13 @@
 ## 1. Qué se implementó
 
 ### Monorepo (Turborepo + pnpm, TypeScript)
+
 - Raíz: `package.json` (workspaces), `pnpm-workspace.yaml`, `turbo.json`,
   `tsconfig.base.json` (strict), `.gitignore`.
 - Comandos: `pnpm build`, `pnpm test`, `pnpm typecheck` (vía turbo).
 
 ### `packages/shared` — `@trell/shared`
+
 - `src/types.ts`: todos los tipos públicos del contrato (§3, §4, §7): `EventType`,
   `BaseEvent`, `Utm`, `Device`, `FormContext`, payloads por tipo, `EventPayload`,
   `TrellConfig`, `FormConfig`, `SuccessDetection`, `TrackOptions`, `Identity`,
@@ -23,6 +25,7 @@
 - Exports separados: `.` (tipos + constantes, sin zod) y `./schemas` (zod).
 
 ### `apps/sdk` — `@trell/sdk` (el corazón)
+
 - API pública mínima: `init`, `track`, `form`, `identify` (`src/index.ts`).
 - `src/engine.ts`: `TrellEngine` — orquesta context + transport + auto-detección.
 - `src/context.ts`: `visitor_id`, `session_id` (idle), UTM first-touch, URL/referrer,
@@ -42,6 +45,7 @@
 - Auto-init desde el snippet clásico (`data-*`), guardado con `document.currentScript`.
 
 ### Tests — 32/32 pasando (`apps/sdk/test`)
+
 - `payload.test.ts` (5): envelope, merge de properties, value, form context, cta.
 - `validate.test.ts` (7): válidos/inválidos por tipo + eventos custom.
 - `context.test.ts` (6): visitor estable, session idle, UTM first-touch, device.
@@ -53,6 +57,7 @@
 ---
 
 ## 2. Estado de build / tamaño
+
 - `pnpm build` ✓ (shared + sdk). `pnpm typecheck` ✓ (shared + sdk, strict).
 - Bundle SDK:
   - **snippet (IIFE)** `dist/index.global.js`: **14.9 KB min, 5.8 KB gzip**,
@@ -64,6 +69,7 @@
 ---
 
 ## 3. Qué falta (fuera del alcance del Prompt 03)
+
 - **`apps/api`** (Hono): ingestion + management + claves pk/sk + validación zod
   autoritativa. **Por implementar.**
 - **`apps/web`** (Next.js + Auth.js): login, dashboard, proyectos/forms, stats.
@@ -75,6 +81,7 @@
 ---
 
 ## 4. Desviaciones / notas (a decidir en prompt siguiente)
+
 1. **Bundle > objetivo**: 5.8 KB gzip vs meta "< 5 KB". Cercano; se puede
    optimizar luego (minificar a mano, tarpara libs).
 2. **`form().destroy()`** es un no-op (la re-registración limpia listeners; no hay
@@ -91,6 +98,7 @@
 ---
 
 ## 5. Contrato
+
 - `docs/sdk-contract.md`: **sin cambios**.
 - No se encontraron contradicciones bloqueantes durante la implementación; las
   ambigüedades están listadas en §4.

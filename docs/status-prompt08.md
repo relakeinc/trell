@@ -7,12 +7,14 @@
 ---
 
 ## 1. E2E live (real, 19/19 ✓) — `apps/web/scripts/e2e.ts` (`pnpm e2e`)
+
 Corre contra **Postgres real** (contenedor Podman `trellpg` @ `localhost:5432`), el
 **servidor Next** (build) y el **API Hono** con Prisma. El login de Google se
 **simula** insertando una sesión de Auth.js en DB (el click-through de Google
 requiere navegador real + dominio de callback configurado).
 
 Verificado:
+
 - unauthenticated `/api/projects` → **401**;
 - sin sesión en `/dashboard` → **redirect /signin**;
 - crear proyecto → **201 + pk + sk** (una vez);
@@ -27,6 +29,7 @@ Verificado:
 ## 2. Qué se implementó
 
 ### Backend dashboard (`apps/web`)
+
 - `GET /api/projects/[id]` → detalle **sin `sk`** + `installation { connected, lastEventAt }`
   (derivado de eventos; sin heartbeat).
 - `PATCH /api/projects/[id]` → editar allowlist (addDomain/removeDomain), valida
@@ -36,6 +39,7 @@ Verificado:
   cambio se refleja inmediatamente.
 
 ### UI (`dashboard`, estilo Dub)
+
 - **`CreateProjectModal`**: nombre + dominios → genera `pk`+`sk`; muestra la `sk`
   **una sola vez** con botón copiar y advertencia (se almacena solo el hash).
 - **`ProjectSettings`**: **badge de instalación** ("Connected · Last event X ago" /
@@ -45,18 +49,21 @@ Verificado:
 - Header: botones **New project** y **Settings**; empty state con CTA.
 
 ## 3. Estado
+
 - `pnpm build` ✓ · `pnpm typecheck` ✓ · `pnpm test` → **94 tests** (50 API + 32 SDK
-  + 12 web: authz 3, crypto 4, domains 5).
+  - 12 web: authz 3, crypto 4, domains 5).
 - **E2E: 19/19** (requiere Postgres; se corre con `pnpm e2e` y `DATABASE_URL`).
 - Container Postgres `trellpg` levantado para desarrollo (no commiteado).
 
 ## 4. Requisitos runtime (documentado en `apps/web/.env`)
+
 - **Postgres** (`DATABASE_URL`) — compartido por API y dashboard.
 - **Google OAuth callback** de Auth.js: `http://localhost:3000/api/auth/callback/google`
   (dominio real en prod). Credenciales de `orbit.relake.co` ya en `apps/web/.env`.
 - `AUTH_SECRET`, `TRELL_ENC_KEY` (cifrado de `sk`), `TRELL_API_URL`.
 
 ## 5. Qué falta / siguiente
+
 - **Onboarding pulido** (asesor por pasos con verificación real).
 - **Docker Compose self-host** (Next + Hono + Postgres) — el usuario lo pospuso:
   primero asegurar el flujo SaaS, luego empaquetar.

@@ -68,24 +68,38 @@ export default function DomainsSettingsPage() {
         <h1 className="text-lg font-semibold text-trell-ink">Domains</h1>
       </div>
 
-      {/* Add Domain */}
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
-        <form onSubmit={(e) => { e.preventDefault(); void addDomain(); }}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void addDomain();
+          }}
+        >
           <div className="border-b border-trell-line px-4 py-3">
             <span className="text-sm font-medium text-trell-ink">Add Domain</span>
           </div>
           <div className="p-4">
             <p className="mb-3 text-sm text-trell-ink-muted">Add a domain to start tracking events from that origin.</p>
-            <input value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="example.com" className="trell-input max-w-sm" />
+            <input
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              placeholder="example.com"
+              className="trell-input max-w-sm"
+            />
           </div>
           <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50 px-4 py-2.5">
             <span className="text-xs text-trell-ink-muted">Only the hostname, no protocol or path.</span>
-            <button type="submit" disabled={adding || !domain.trim()} className="trell-btn-outline h-8 gap-1.5 text-xs disabled:opacity-40">{adding ? "Adding…" : "Save Changes"}</button>
+            <button
+              type="submit"
+              disabled={adding || !domain.trim()}
+              className="trell-btn-outline h-8 gap-1.5 text-xs disabled:opacity-40"
+            >
+              {adding ? "Adding…" : "Save Changes"}
+            </button>
           </div>
         </form>
       </div>
 
-      {/* Current Domains */}
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
         <div className="border-b border-trell-line px-4 py-3">
           <span className="text-sm font-medium text-trell-ink">Current Domains</span>
@@ -96,12 +110,19 @@ export default function DomainsSettingsPage() {
           ) : (
             <div className="flex flex-col gap-2">
               {project.domains.map((d) => (
-                <div key={d} className="flex items-center justify-between rounded-md border border-trell-line px-3 py-2">
+                <div
+                  key={d}
+                  className="flex items-center justify-between rounded-md border border-trell-line px-3 py-2"
+                >
                   <div className="flex items-center gap-2">
                     <Icon name="globe" size={14} className="text-trell-ink-muted" />
                     <span className="text-sm text-trell-ink">{d}</span>
                   </div>
-                  <button disabled={removing === d} onClick={() => removeDomain(d)} className="flex items-center gap-1 text-xs text-trell-ink-muted transition-colors hover:text-red-600 disabled:opacity-40">
+                  <button
+                    disabled={removing === d}
+                    onClick={() => removeDomain(d)}
+                    className="flex items-center gap-1 text-xs text-trell-ink-muted transition-colors hover:text-red-600 disabled:opacity-40"
+                  >
                     <Icon name="close" size={12} className={removing === d ? "animate-spin" : ""} />
                     Remove
                   </button>

@@ -24,11 +24,9 @@ export default function GeneralSettingsPage() {
   const [deleteSlug, setDeleteSlug] = useState("");
   const [deleting, setDeleting] = useState(false);
 
-  // Field state — initialized from project, edited locally
   const [name, setName] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
 
-  // Success feedback
   const [nameSaved, setNameSaved] = useState(false);
   const [slugSaved, setSlugSaved] = useState(false);
   const [logoSaved, setLogoSaved] = useState(false);
@@ -39,8 +37,8 @@ export default function GeneralSettingsPage() {
   useEffect(() => {
     if (project) {
       setLogoVariantState(project.logoVariant);
-      setName((prev) => prev === null ? project.name : prev);
-      setSlug((prev) => prev === null ? project.slug : prev);
+      setName((prev) => (prev === null ? project.name : prev));
+      setSlug((prev) => (prev === null ? project.slug : prev));
     }
   }, [project]);
 
@@ -53,7 +51,7 @@ export default function GeneralSettingsPage() {
       await toast.promise(deleteProject(), {
         loading: "Deleting workspace…",
         success: "Workspace deleted",
-        error: (e) => e instanceof Error ? e.message : "Failed to delete workspace",
+        error: (e) => (e instanceof Error ? e.message : "Failed to delete workspace"),
       });
       router.replace("/");
     } catch {
@@ -68,19 +66,27 @@ export default function GeneralSettingsPage() {
         <p className="mt-1 text-sm text-trell-ink-muted">Manage your workspace settings and preferences.</p>
       </div>
 
-      {/* Workspace Name */}
       <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
-        <form onSubmit={async (e) => {
-          e.preventDefault();
-          if (!nameValue.trim()) { toast.error("Name cannot be empty"); return; }
-          try {
-            await toast.promise(
-              saveProject({ name: nameValue.trim() }),
-              { loading: "Saving…", success: "Name updated", error: (err) => err instanceof Error ? err.message : "Failed to save" }
-            );
-            setName(null); setNameSaved(true);
-          } catch { /* error toast already shown */ }
-        }}>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!nameValue.trim()) {
+              toast.error("Name cannot be empty");
+              return;
+            }
+            try {
+              await toast.promise(saveProject({ name: nameValue.trim() }), {
+                loading: "Saving…",
+                success: "Name updated",
+                error: (err) => (err instanceof Error ? err.message : "Failed to save"),
+              });
+              setName(null);
+              setNameSaved(true);
+            } catch {
+              /* error toast already shown */
+            }
+          }}
+        >
           <div className="p-5 pb-0">
             <div className="text-sm font-semibold text-trell-ink">Workspace Name</div>
             <div className="mt-1 text-sm text-trell-ink-muted">This is the name of your workspace on Trell.</div>
@@ -105,25 +111,36 @@ export default function GeneralSettingsPage() {
         </form>
       </div>
 
-      {/* Workspace Slug */}
       <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
-        <form onSubmit={async (e) => {
-          e.preventDefault();
-          if (!slugValue.trim()) { toast.error("Slug cannot be empty"); return; }
-          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugValue.trim())) { toast.error("Slug must be lowercase with dashes only"); return; }
-          try {
-            const updated = await toast.promise(
-              saveProject({ slug: slugValue.trim() }),
-              { loading: "Saving…", success: "Slug updated", error: (err) => err instanceof Error ? err.message : "Failed to save" }
-            );
-            setSlug(null); setSlugSaved(true);
-            // Keep the URL in sync — otherwise a refresh lands on the old slug.
-            if (updated.slug !== project.slug) {
-              const rest = pathname.split("/").slice(2).join("/");
-              router.replace(`/${updated.slug}/${rest}`);
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!slugValue.trim()) {
+              toast.error("Slug cannot be empty");
+              return;
             }
-          } catch { /* error toast already shown */ }
-        }}>
+            if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugValue.trim())) {
+              toast.error("Slug must be lowercase with dashes only");
+              return;
+            }
+            try {
+              const updated = await toast.promise(saveProject({ slug: slugValue.trim() }), {
+                loading: "Saving…",
+                success: "Slug updated",
+                error: (err) => (err instanceof Error ? err.message : "Failed to save"),
+              });
+              setSlug(null);
+              setSlugSaved(true);
+              // Keep the URL in sync — otherwise a refresh lands on the old slug.
+              if (updated.slug !== project.slug) {
+                const rest = pathname.split("/").slice(2).join("/");
+                router.replace(`/${updated.slug}/${rest}`);
+              }
+            } catch {
+              /* error toast already shown */
+            }
+          }}
+        >
           <div className="p-5 pb-0">
             <div className="text-sm font-semibold text-trell-ink">Workspace Slug</div>
             <div className="mt-1 text-sm text-trell-ink-muted">This is your workspace&apos;s unique slug on Trell.</div>
@@ -137,11 +154,15 @@ export default function GeneralSettingsPage() {
             </div>
             <div className="mt-2 flex items-center gap-1.5 text-xs text-trell-ink-muted">
               <Icon name="globe" size={14} />
-              <span>{getBaseDomain()}/<span className="font-medium text-trell-ink">{slugValue}</span></span>
+              <span>
+                {getBaseDomain()}/<span className="font-medium text-trell-ink">{slugValue}</span>
+              </span>
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between border-t border-trell-line bg-neutral-50/80 px-5 py-3">
-            <span className="text-xs text-trell-ink-muted">Only lowercase letters, numbers, and dashes. Max 48 characters.</span>
+            <span className="text-xs text-trell-ink-muted">
+              Only lowercase letters, numbers, and dashes. Max 48 characters.
+            </span>
             <div className="flex items-center gap-3">
               <SuccessCheck show={slugSaved} onDone={() => setSlugSaved(false)} />
               <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
@@ -152,7 +173,6 @@ export default function GeneralSettingsPage() {
         </form>
       </div>
 
-      {/* Workspace Logo */}
       <div className="overflow-hidden rounded-xl border border-trell-line bg-white">
         <div className="p-5">
           <div className="text-sm font-semibold text-trell-ink">Workspace Logo</div>
@@ -166,9 +186,7 @@ export default function GeneralSettingsPage() {
                     key={i}
                     onClick={() => setLogoVariantState(i)}
                     className={`cursor-pointer rounded-lg p-1 transition-all ${
-                      logoVariant === i
-                        ? "bg-blue-100 ring-2 ring-blue-500"
-                        : "hover:bg-neutral-100"
+                      logoVariant === i ? "bg-blue-100 ring-2 ring-blue-500" : "hover:bg-neutral-100"
                     }`}
                   >
                     <WorkspaceIcon name={project.name} variant={i} size={32} className="rounded-md" />
@@ -179,16 +197,22 @@ export default function GeneralSettingsPage() {
             </div>
           </div>
         </div>
-        <form onSubmit={async (e) => {
-          e.preventDefault();
-          try {
-            await toast.promise(
-              saveProject({ logoVariant }),
-              { loading: "Saving…", success: "Logo saved", error: (err) => err instanceof Error ? err.message : "Failed to save" }
-            );
-            setLogoSaved(true);
-          } catch { /* error toast already shown */ }
-        }} className="flex items-center justify-end border-t border-trell-line bg-neutral-50/80 px-5 py-3">
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            try {
+              await toast.promise(saveProject({ logoVariant }), {
+                loading: "Saving…",
+                success: "Logo saved",
+                error: (err) => (err instanceof Error ? err.message : "Failed to save"),
+              });
+              setLogoSaved(true);
+            } catch {
+              /* error toast already shown */
+            }
+          }}
+          className="flex items-center justify-end border-t border-trell-line bg-neutral-50/80 px-5 py-3"
+        >
           <div className="flex items-center gap-3">
             <SuccessCheck show={logoSaved} onDone={() => setLogoSaved(false)} />
             <button type="submit" className="trell-btn-outline h-8 cursor-pointer px-3 text-xs">
@@ -198,11 +222,13 @@ export default function GeneralSettingsPage() {
         </form>
       </div>
 
-      {/* Delete Workspace */}
       <div className="overflow-hidden rounded-xl border border-red-200 bg-white">
         <div className="p-5 pb-4">
           <div className="text-sm font-semibold text-red-600">Delete Workspace</div>
-          <div className="mt-1 text-sm text-red-500/80">Permanently delete your workspace, custom domain, and all associated links + their stats. This action cannot be undone.</div>
+          <div className="mt-1 text-sm text-red-500/80">
+            Permanently delete your workspace, custom domain, and all associated links + their stats. This action cannot
+            be undone.
+          </div>
         </div>
         <div className="flex items-center justify-end border-t border-red-100 bg-red-50/50 px-5 py-3">
           {!deleteOpen ? (
@@ -216,7 +242,9 @@ export default function GeneralSettingsPage() {
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-red-600">Type</span>
-                <code className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700">{project.slug}</code>
+                <code className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700">
+                  {project.slug}
+                </code>
                 <span className="text-xs text-red-600">to confirm:</span>
               </div>
               <input
@@ -234,7 +262,10 @@ export default function GeneralSettingsPage() {
                 {deleting ? "Deleting…" : "Delete"}
               </button>
               <button
-                onClick={() => { setDeleteOpen(false); setDeleteSlug(""); }}
+                onClick={() => {
+                  setDeleteOpen(false);
+                  setDeleteSlug("");
+                }}
                 className="flex h-8 cursor-pointer items-center rounded-lg border border-trell-line bg-white px-3 text-xs font-medium text-trell-ink transition-colors hover:bg-neutral-50"
               >
                 Cancel

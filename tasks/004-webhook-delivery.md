@@ -1,9 +1,11 @@
 # Webhook Delivery System
 
 ## Descripción
+
 Los webhooks ya se pueden crear y guardar en la DB, pero no se entregan. Falta implementar el sistema de delivery que envía POST requests a las URLs configuradas cuando ocurren eventos.
 
 ## Funcionalidades
+
 - **Delivery async**: enviar webhooks después del ingest, sin bloquear
 - **Retry con backoff**: 3 intentos con delay exponencial (1s, 5s, 30s)
 - **Signing secret**: firmar el payload con HMAC-SHA256 usando el `secret` del webhook
@@ -12,6 +14,7 @@ Los webhooks ya se pueden crear y guardar en la DB, pero no se entregan. Falta i
 - **Rate limiting**: max 10 webhooks por evento, max 1 request/segundo por webhook
 
 ## Payload Format
+
 ```json
 {
   "event": "form_submit",
@@ -28,6 +31,7 @@ Los webhooks ya se pueden crear y guardar en la DB, pero no se entregan. Falta i
 ```
 
 ## Headers
+
 ```
 Content-Type: application/json
 X-Trell-Signature: sha256=...
@@ -36,6 +40,7 @@ X-Trell-Delivery: uuid
 ```
 
 ## Schema (Delivery Log)
+
 ```prisma
 model WebhookDelivery {
   id          String   @id @default(uuid()) @db.Uuid
@@ -54,6 +59,7 @@ model WebhookDelivery {
 ```
 
 ## Archivos a crear/modificar
+
 - `apps/api/prisma/schema.prisma` — agregar WebhookDelivery
 - `apps/api/src/lib/webhook-delivery.ts` — lógica de delivery + retry
 - `apps/api/src/routes/ingest.ts` — disparar webhooks después de insertar eventos

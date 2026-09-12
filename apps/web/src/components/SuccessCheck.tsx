@@ -9,7 +9,10 @@ export function SuccessCheck({ show, onDone }: { show: boolean; onDone?: () => v
   useEffect(() => {
     if (show) {
       setVisible(true);
-      const t = setTimeout(() => { setVisible(false); onDone?.(); }, 1500);
+      const t = setTimeout(() => {
+        setVisible(false);
+        onDone?.();
+      }, 1500);
       return () => clearTimeout(t);
     }
   }, [show, onDone]);

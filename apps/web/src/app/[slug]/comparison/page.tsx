@@ -39,8 +39,11 @@ function exportComparisonCSV(data: ComparisonResult) {
 function formatDate(iso: string): string {
   try {
     const d = new Date(iso);
-    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }) +
-      ", " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true });
+    return (
+      d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }) +
+      ", " +
+      d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true })
+    );
   } catch {
     return iso;
   }
@@ -63,7 +66,10 @@ export default function ComparisonPage() {
 
   // Everything is reactive: stats (with native comparison) + both series refetch on any change.
   const statsQs = useMemo(
-    () => (valid ? `${rangeQs(from, to)}&compareFrom=${encodeURIComponent(compFrom)}&compareTo=${encodeURIComponent(compTo)}` : null),
+    () =>
+      valid
+        ? `${rangeQs(from, to)}&compareFrom=${encodeURIComponent(compFrom)}&compareTo=${encodeURIComponent(compTo)}`
+        : null,
     [valid, from, to, compFrom, compTo],
   );
   const curQs = useMemo(() => (valid ? rangeQs(from, to) : null), [valid, from, to]);
@@ -82,15 +88,15 @@ export default function ComparisonPage() {
           <h1 className="text-base font-semibold text-trell-ink">Comparison</h1>
         </div>
         <div className="flex items-center gap-2">
-        <button
-          onClick={() => comparison && exportComparisonCSV(comparison)}
-          disabled={!comparison}
-          className="trell-btn-outline h-9 gap-1.5 disabled:opacity-40"
-        >
-          <Icon name="download" size={16} />
-          Export CSV
-        </button>
-        <AskYoiButton />
+          <button
+            onClick={() => comparison && exportComparisonCSV(comparison)}
+            disabled={!comparison}
+            className="trell-btn-outline h-9 gap-1.5 disabled:opacity-40"
+          >
+            <Icon name="download" size={16} />
+            Export CSV
+          </button>
+          <AskYoiButton />
         </div>
       </header>
 
@@ -134,11 +140,7 @@ export default function ComparisonPage() {
         )}
       </div>
 
-      <AreaChart
-        series={curSeries?.series ?? []}
-        comparison={baseSeries?.series}
-        loading={curLoading || baseLoading}
-      />
+      <AreaChart series={curSeries?.series ?? []} comparison={baseSeries?.series} loading={curLoading || baseLoading} />
 
       {statsLoading && !comparison && <div className="trell-skeleton h-64 w-full rounded-2xl" />}
 

@@ -19,9 +19,7 @@ export function Section({
         )}
         <h2 className="text-xl font-semibold tracking-tight text-neutral-900">{title}</h2>
       </div>
-      <div className="space-y-4 text-[15px] leading-relaxed text-neutral-600">
-        {children}
-      </div>
+      <div className="space-y-4 text-[15px] leading-relaxed text-neutral-600">{children}</div>
     </section>
   );
 }
@@ -40,12 +38,9 @@ export function SubSection({
   return (
     <div id={id} className="scroll-mt-20">
       <h3 className="mb-3 text-base font-semibold text-neutral-900">
-        <span className="font-semibold">{number}</span>{" "}
-        {title}
+        <span className="font-semibold">{number}</span> {title}
       </h3>
-      <div className="space-y-3 text-[15px] leading-relaxed text-neutral-600">
-        {children}
-      </div>
+      <div className="space-y-3 text-[15px] leading-relaxed text-neutral-600">{children}</div>
     </div>
   );
 }

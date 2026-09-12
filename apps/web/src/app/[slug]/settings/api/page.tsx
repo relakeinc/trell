@@ -52,9 +52,18 @@ export default function ApiKeysSettingsPage() {
     let cancelled = false;
     fetch(`/api/projects/${project.id}/api-keys`)
       .then((r) => r.json())
-      .then((d) => { if (!cancelled) { setKeys(d.keys ?? []); setLoading(false); } })
-      .catch(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .then((d) => {
+        if (!cancelled) {
+          setKeys(d.keys ?? []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [project]);
 
   async function createKey() {
@@ -69,7 +78,10 @@ export default function ApiKeysSettingsPage() {
       const data = await res.json().catch(() => null);
       if (res.ok && data) {
         setNewKey({ id: data.key.id, name: data.key.name, secret: data.secret });
-        setKeys((prev) => [...prev, { id: data.key.id, name: data.key.name, keyPrefix: data.key.keyPrefix, createdAt: data.key.createdAt }]);
+        setKeys((prev) => [
+          ...prev,
+          { id: data.key.id, name: data.key.name, keyPrefix: data.key.keyPrefix, createdAt: data.key.createdAt },
+        ]);
         setName("");
         toast.success("Secret key created");
       } else {
@@ -112,20 +124,26 @@ export default function ApiKeysSettingsPage() {
       <div className="px-1 pt-2">
         <h1 className="text-lg font-semibold text-trell-ink">API Keys</h1>
         <p className="mt-1 text-sm text-trell-ink-muted">
-          Server keys for your backend. They live in your <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs">.env</code> — never in the browser.
+          Server keys for your backend. They live in your{" "}
+          <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs">.env</code> — never in the browser.
         </p>
       </div>
 
-      {/* pk vs sk explainer */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="rounded-lg border border-trell-line bg-white p-4">
           <div className="flex items-center gap-2">
             <Icon name="globe" size={14} className="text-trell-ink-muted" />
             <span className="text-sm font-medium text-trell-ink">Publishable key</span>
-            <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[11px] text-trell-ink-muted">{project?.pk ? `${project.pk.slice(0, 11)}…` : "pk_…"}</code>
+            <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[11px] text-trell-ink-muted">
+              {project?.pk ? `${project.pk.slice(0, 11)}…` : "pk_…"}
+            </code>
           </div>
           <p className="mt-1.5 text-xs leading-relaxed text-trell-ink-muted">
-            Public. Powers the browser snippet in <Link href={`/${slug}/settings/tracking`} className="font-medium text-blue-600 hover:underline">Tracking</Link>, protected by your domain allowlist.
+            Public. Powers the browser snippet in{" "}
+            <Link href={`/${slug}/settings/tracking`} className="font-medium text-blue-600 hover:underline">
+              Tracking
+            </Link>
+            , protected by your domain allowlist.
           </p>
         </div>
         <div className="rounded-lg border border-trell-line bg-white p-4">
@@ -134,7 +152,8 @@ export default function ApiKeysSettingsPage() {
             <span className="text-sm font-medium text-trell-ink">Secret keys</span>
           </div>
           <p className="mt-1.5 text-xs leading-relaxed text-trell-ink-muted">
-            Private. For server-to-server calls from your backend. A secret key bypasses the domain allowlist — anyone holding one can write to this workspace.
+            Private. For server-to-server calls from your backend. A secret key bypasses the domain allowlist — anyone
+            holding one can write to this workspace.
           </p>
         </div>
       </div>
@@ -145,14 +164,22 @@ export default function ApiKeysSettingsPage() {
             <Icon name="check" size={16} className="mt-0.5 shrink-0 text-amber-600" />
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium text-amber-900">Secret key created: {newKey.name}</div>
-              <div className="mt-1 text-xs text-amber-700">Copy it now — it won&apos;t be shown again. Store it as <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">TRELL_SECRET_KEY</code> in your backend <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">.env</code>.</div>
+              <div className="mt-1 text-xs text-amber-700">
+                Copy it now — it won&apos;t be shown again. Store it as{" "}
+                <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">TRELL_SECRET_KEY</code> in your backend{" "}
+                <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">.env</code>.
+              </div>
               <div className="mt-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <code className="min-w-0 flex-1 break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-amber-900 ring-1 ring-amber-200">{newKey.secret}</code>
+                  <code className="min-w-0 flex-1 break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-amber-900 ring-1 ring-amber-200">
+                    {newKey.secret}
+                  </code>
                   <CopyButton value={newKey.secret} label="Copy" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <code className="min-w-0 flex-1 break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-amber-900 ring-1 ring-amber-200">TRELL_SECRET_KEY={newKey.secret}</code>
+                  <code className="min-w-0 flex-1 break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-amber-900 ring-1 ring-amber-200">
+                    TRELL_SECRET_KEY={newKey.secret}
+                  </code>
                   <CopyButton value={`TRELL_SECRET_KEY=${newKey.secret}`} label=".env" />
                 </div>
               </div>
@@ -168,12 +195,21 @@ export default function ApiKeysSettingsPage() {
       )}
 
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
-        <form onSubmit={(e) => { e.preventDefault(); void createKey(); }}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void createKey();
+          }}
+        >
           <div className="border-b border-trell-line px-4 py-3">
             <span className="text-sm font-medium text-trell-ink">Create secret key</span>
           </div>
           <div className="p-4">
-            <p className="mb-3 text-sm text-trell-ink-muted">Name it after where it will live, e.g. <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs">production server</code> or <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs">staging</code>.</p>
+            <p className="mb-3 text-sm text-trell-ink-muted">
+              Name it after where it will live, e.g.{" "}
+              <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs">production server</code> or{" "}
+              <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs">staging</code>.
+            </p>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -184,7 +220,13 @@ export default function ApiKeysSettingsPage() {
           </div>
           <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50 px-4 py-2.5">
             <span className="text-xs text-trell-ink-muted">One key per environment. Revoke anytime below.</span>
-            <button type="submit" disabled={creating || !name.trim()} className="trell-btn-outline h-8 gap-1.5 text-xs disabled:opacity-40">{creating ? "Creating…" : "Create secret key"}</button>
+            <button
+              type="submit"
+              disabled={creating || !name.trim()}
+              className="trell-btn-outline h-8 gap-1.5 text-xs disabled:opacity-40"
+            >
+              {creating ? "Creating…" : "Create secret key"}
+            </button>
           </div>
         </form>
       </div>
@@ -195,16 +237,27 @@ export default function ApiKeysSettingsPage() {
         </div>
         <div className="p-4">
           {keys.length === 0 ? (
-            <p className="text-sm text-trell-ink-muted">No secret keys yet. Browser-only? You don&apos;t need one — the <Link href={`/${slug}/settings/tracking`} className="font-medium text-blue-600 hover:underline">tracking snippet</Link> is enough.</p>
+            <p className="text-sm text-trell-ink-muted">
+              No secret keys yet. Browser-only? You don&apos;t need one — the{" "}
+              <Link href={`/${slug}/settings/tracking`} className="font-medium text-blue-600 hover:underline">
+                tracking snippet
+              </Link>{" "}
+              is enough.
+            </p>
           ) : (
             <div className="flex flex-col gap-2">
               {keys.map((k) => (
-                <div key={k.id} className="flex items-center justify-between gap-2 rounded-md border border-trell-line px-3 py-2">
+                <div
+                  key={k.id}
+                  className="flex items-center justify-between gap-2 rounded-md border border-trell-line px-3 py-2"
+                >
                   <div className="flex min-w-0 items-center gap-3">
                     <Icon name="keyRound" size={14} className="shrink-0 text-trell-ink-muted" />
                     <div className="min-w-0">
                       <div className="truncate text-sm font-medium text-trell-ink">{k.name}</div>
-                      <div className="font-mono text-xs text-trell-ink-muted">{k.keyPrefix}… · Created {new Date(k.createdAt).toLocaleDateString()}</div>
+                      <div className="font-mono text-xs text-trell-ink-muted">
+                        {k.keyPrefix}… · Created {new Date(k.createdAt).toLocaleDateString()}
+                      </div>
                     </div>
                   </div>
                   <button

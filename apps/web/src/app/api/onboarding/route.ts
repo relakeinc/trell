@@ -23,7 +23,6 @@ export async function POST(req: Request) {
   const { pk, sk, skHash } = newApiKeys("pk", "sk");
   const slug = slugify(name);
 
-  // Generate a default API key
   const defaultPk = `pk_${randomBytes(16).toString("hex")}`;
   const defaultSk = `sk_${randomBytes(16).toString("hex")}`;
   const defaultKeyHash = createHash("sha256").update(defaultSk).digest("hex");
@@ -49,7 +48,6 @@ export async function POST(req: Request) {
     await tx.projectUser.create({
       data: { projectId: p.id, userId, role: "owner" },
     });
-    // Create default API key
     await tx.apiKey.create({
       data: {
         projectId: p.id,
@@ -61,7 +59,6 @@ export async function POST(req: Request) {
     return p;
   });
 
-  // Advance step: 1 -> 2 (project created, keys not yet confirmed seen)
   await prisma.user.update({
     where: { id: userId },
     data: { onboardingStep: Math.max(1, await getStep(userId)) },
@@ -76,5 +73,8 @@ async function getStep(userId: string): Promise<number> {
 }
 
 function slugify(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }

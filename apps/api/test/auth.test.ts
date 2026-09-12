@@ -66,35 +66,55 @@ describe("API auth + ingestion", () => {
 
   it("returns 401 when the API key is missing", async () => {
     const { app } = await makeApp();
-    const res = await app.request("/v1/events", { method: "POST", headers: { origin: "https://example.com", "content-type": "application/json" }, body: validEvent() });
+    const res = await app.request("/v1/events", {
+      method: "POST",
+      headers: { origin: "https://example.com", "content-type": "application/json" },
+      body: validEvent(),
+    });
     expect(res.status).toBe(401);
     expect((await res.json()).error.code).toBe("missing_api_key");
   });
 
   it("accepts the publishable key via ?key= query param (sendBeacon compat)", async () => {
     const { app } = await makeApp();
-    const res = await app.request(`/v1/events?key=${PK}`, { method: "POST", headers: { origin: "https://example.com", "content-type": "application/json" }, body: validEvent() });
+    const res = await app.request(`/v1/events?key=${PK}`, {
+      method: "POST",
+      headers: { origin: "https://example.com", "content-type": "application/json" },
+      body: validEvent(),
+    });
     expect(res.status).toBe(202);
     expect(await res.json()).toEqual({ inserted: 1, duplicates: 0 });
   });
 
   it("returns 401 for an invalid ?key= query param", async () => {
     const { app } = await makeApp();
-    const res = await app.request("/v1/events?key=pk_bogus", { method: "POST", headers: { origin: "https://example.com", "content-type": "application/json" }, body: validEvent() });
+    const res = await app.request("/v1/events?key=pk_bogus", {
+      method: "POST",
+      headers: { origin: "https://example.com", "content-type": "application/json" },
+      body: validEvent(),
+    });
     expect(res.status).toBe(401);
     expect((await res.json()).error.code).toBe("invalid_api_key");
   });
 
   it("returns 401 when the API key is invalid", async () => {
     const { app } = await makeApp();
-    const res = await app.request("/v1/events", { method: "POST", headers: { authorization: "Bearer pk_bogus", origin: "https://example.com", "content-type": "application/json" }, body: validEvent() });
+    const res = await app.request("/v1/events", {
+      method: "POST",
+      headers: { authorization: "Bearer pk_bogus", origin: "https://example.com", "content-type": "application/json" },
+      body: validEvent(),
+    });
     expect(res.status).toBe(401);
     expect((await res.json()).error.code).toBe("invalid_api_key");
   });
 
   it("returns 403 for a domain not in the allowlist", async () => {
     const { app } = await makeApp();
-    const res = await app.request("/v1/events", { method: "POST", headers: await headers({ origin: "https://evil.com" }), body: validEvent() });
+    const res = await app.request("/v1/events", {
+      method: "POST",
+      headers: await headers({ origin: "https://evil.com" }),
+      body: validEvent(),
+    });
     expect(res.status).toBe(403);
     expect((await res.json()).error.code).toBe("origin_not_allowed");
   });
@@ -103,7 +123,11 @@ describe("API auth + ingestion", () => {
     const { app } = await makeApp();
     const bad = JSON.parse(validEvent());
     delete bad.project;
-    const res = await app.request("/v1/events", { method: "POST", headers: await headers(), body: JSON.stringify(bad) });
+    const res = await app.request("/v1/events", {
+      method: "POST",
+      headers: await headers(),
+      body: JSON.stringify(bad),
+    });
     expect(res.status).toBe(400);
     expect((await res.json()).error.code).toBe("invalid_event");
   });
@@ -160,7 +184,11 @@ describe("server keys (sk_... named keys)", () => {
     const { app } = await makeAppWithKey();
     const res = await app.request("/v1/events", {
       method: "POST",
-      headers: { authorization: "Bearer sk_bogus_key", origin: "https://example.com", "content-type": "application/json" },
+      headers: {
+        authorization: "Bearer sk_bogus_key",
+        origin: "https://example.com",
+        "content-type": "application/json",
+      },
       body: validEvent(),
     });
     expect(res.status).toBe(401);

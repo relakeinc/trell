@@ -30,7 +30,11 @@ function makeSDK(): { trell: TrellEngine; batches: unknown[][] } {
   };
   const trell = init(
     { project: PK, endpoint: "https://t.test/v1/events", autoDetect: false },
-    { win: window as unknown as Window, fetchFn: fetchFn as unknown as typeof fetch, beaconFn: (() => true) as unknown as (url: string, data: BodyInit) => boolean },
+    {
+      win: window as unknown as Window,
+      fetchFn: fetchFn as unknown as typeof fetch,
+      beaconFn: (() => true) as unknown as (url: string, data: BodyInit) => boolean,
+    },
   ) as TrellEngine;
   return { trell, batches };
 }
@@ -38,7 +42,12 @@ function makeSDK(): { trell: TrellEngine; batches: unknown[][] } {
 async function post(app: ReturnType<typeof createApp>, body: unknown, extraHeaders: Record<string, string> = {}) {
   return app.request("/v1/events", {
     method: "POST",
-    headers: { authorization: `Bearer ${PK}`, origin: "https://example.com", "content-type": "application/json", ...extraHeaders },
+    headers: {
+      authorization: `Bearer ${PK}`,
+      origin: "https://example.com",
+      "content-type": "application/json",
+      ...extraHeaders,
+    },
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
 }

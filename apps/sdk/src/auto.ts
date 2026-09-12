@@ -2,7 +2,10 @@ import type { FormConfig } from "@trell/shared";
 
 /** Emits events into the engine. Keeps auto.ts decoupled from the engine. */
 export interface AutoEmitter {
-  trackEvent(type: string, opts: { form: FormConfig | { id: string; name?: string }; extra?: Record<string, unknown> }): void;
+  trackEvent(
+    type: string,
+    opts: { form: FormConfig | { id: string; name?: string }; extra?: Record<string, unknown> },
+  ): void;
 }
 
 interface FormState {
@@ -31,7 +34,17 @@ export function attachAuto(win: Window, emitter: AutoEmitter, opts: { autoDetect
   const states = new Map<string, FormState>();
 
   function createState(element: HTMLElement, config: FormConfig): FormState {
-    return { config, element, startedAt: null, succeeded: false, lastField: new Map(), focusAt: new Map(), changedFields: new Set(), lastInteractAt: null, disposers: [] };
+    return {
+      config,
+      element,
+      startedAt: null,
+      succeeded: false,
+      lastField: new Map(),
+      focusAt: new Map(),
+      changedFields: new Set(),
+      lastInteractAt: null,
+      disposers: [],
+    };
   }
 
   function markStart(state: FormState): void {
@@ -50,8 +63,6 @@ export function attachAuto(win: Window, emitter: AutoEmitter, opts: { autoDetect
     const last = state.lastField.get(name);
     if (last != null && now - last < FIELD_THROTTLE_MS) return;
     state.lastField.set(name, now);
-    // gapMs: ms since the previous tracked interaction in this form.
-    // hesitationMs: focus → first change per field ("thinking time").
     const props: Record<string, unknown> = {};
     if (state.lastInteractAt != null) props["gapMs"] = now - state.lastInteractAt;
     if (interaction === "change" && !state.changedFields.has(name)) {
@@ -92,10 +103,12 @@ export function attachAuto(win: Window, emitter: AutoEmitter, opts: { autoDetect
     const mo = new MutationObserver((muts: MutationRecord[]) => {
       let confirmed = false;
       if (observed.length > 0) {
-        confirmed = muts.some((m => Array.from(m.addedNodes ?? []).some((node) => {
+        confirmed = muts.some((m) =>
+          Array.from(m.addedNodes ?? []).some((node) => {
             const el = node as HTMLElement;
             return el.nodeType === 1 && el.matches ? el.matches(observed.join(",")) : false;
-          })));
+          }),
+        );
       } else {
         confirmed = muts.some((m) => m.type === "childList");
       }

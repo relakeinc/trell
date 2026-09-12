@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Trell dashboard (Next.js + Auth.js). The secret key never reaches the browser.",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

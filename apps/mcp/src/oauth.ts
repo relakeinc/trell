@@ -72,10 +72,17 @@ export interface DcrRequest {
 
 export function handleRegister(body: DcrRequest): { status: number; json: unknown } {
   const uris = body.redirect_uris;
-  if (!Array.isArray(uris) || uris.length === 0 || !uris.every((u) => typeof u === "string" && isAllowedRedirectUri(u))) {
+  if (
+    !Array.isArray(uris) ||
+    uris.length === 0 ||
+    !uris.every((u) => typeof u === "string" && isAllowedRedirectUri(u))
+  ) {
     return {
       status: 400,
-      json: { error: "invalid_redirect_uri", error_description: "register a loopback (http://127.0.0.1:*) or https://vscode.dev/redirect URI" },
+      json: {
+        error: "invalid_redirect_uri",
+        error_description: "register a loopback (http://127.0.0.1:*) or https://vscode.dev/redirect URI",
+      },
     };
   }
   return {
@@ -119,7 +126,14 @@ export function beginAuthorize(
     return { status: 400, text: "code_challenge with S256 is required" };
   }
   const st = signJwt(
-    { type: "oauth_state", client_id, redirect_uri, code_challenge, client_state: state ?? null, nonce: randomBytes(8).toString("hex") },
+    {
+      type: "oauth_state",
+      client_id,
+      redirect_uri,
+      code_challenge,
+      client_state: state ?? null,
+      nonce: randomBytes(8).toString("hex"),
+    },
     config.oauthSecret,
     AUTH_CODE_TTL_SEC,
   );
@@ -163,7 +177,10 @@ function oauthError(redirectUri: string, clientState: string | null, error: stri
 export async function handleCallback(
   config: McpConfig,
   query: { code?: string; state?: string; error?: string },
-  google?: { exchange: (code: string) => Promise<string>; userinfo: (token: string) => Promise<{ email: string; verified: boolean }> },
+  google?: {
+    exchange: (code: string) => Promise<string>;
+    userinfo: (token: string) => Promise<{ email: string; verified: boolean }>;
+  },
 ): Promise<{ redirect?: string; status?: number; text?: string }> {
   if (!config.oauthSecret) return { status: 503, text: "Google login is not configured on this MCP server" };
   if (query.error || !query.code || !query.state) {
@@ -177,8 +194,7 @@ export async function handleCallback(
   try {
     const deps = googleDeps(config);
     const exchange = google?.exchange ?? ((code: string) => exchangeCode(deps, code));
-    const userinfo =
-      google?.userinfo ?? ((token: string) => fetchGoogleUser(deps, token));
+    const userinfo = google?.userinfo ?? ((token: string) => fetchGoogleUser(deps, token));
     const accessToken = await exchange(query.code);
     const user = await userinfo(accessToken);
     if (!user.verified) return oauthError(redirectUri, clientState, "login_requirements_not_met");
@@ -214,14 +230,14 @@ export interface TokenRequest {
   refresh_token?: string;
 }
 
-export function handleToken(
-  config: McpConfig,
-  body: TokenRequest,
-): { status: number; json: unknown } {
+export function handleToken(config: McpConfig, body: TokenRequest): { status: number; json: unknown } {
   if (!config.oauthSecret) {
     return { status: 503, json: { error: "server_error", error_description: "login not configured" } };
   }
-  const fail = (error: string, description: string, status = 400) => ({ status, json: { error, error_description: description } });
+  const fail = (error: string, description: string, status = 400) => ({
+    status,
+    json: { error, error_description: description },
+  });
 
   if (body.grant_type === "refresh_token") {
     if (!body.refresh_token) return fail("invalid_request", "refresh_token is required");

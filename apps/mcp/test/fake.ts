@@ -239,7 +239,12 @@ export class FakeStore implements McpStore {
     return this.keys.get(projectId) ?? [];
   }
 
-  async createApiKey(input: { projectId: string; name: string; keyHash: string; keyPrefix: string }): Promise<McpApiKey> {
+  async createApiKey(input: {
+    projectId: string;
+    name: string;
+    keyHash: string;
+    keyPrefix: string;
+  }): Promise<McpApiKey> {
     const meta: McpApiKey = {
       id: `ak_${++this.seq}`,
       name: input.name,
@@ -281,8 +286,6 @@ export class FakeStore implements McpStore {
   }
 
   async listMemberships(userId: string): Promise<{ projectId: string; role: string }[]> {
-    return this.memberships
-      .filter((m) => m.userId === userId)
-      .map((m) => ({ projectId: m.projectId, role: m.role }));
+    return this.memberships.filter((m) => m.userId === userId).map((m) => ({ projectId: m.projectId, role: m.role }));
   }
 }

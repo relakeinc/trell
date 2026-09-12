@@ -27,12 +27,7 @@
 **A) Snippet (no module) — auto-inicializa desde `data-*`:**
 
 ```html
-<script
-  defer
-  src="https://cdn.trell.dev/sdk.js"
-  data-project="pk_live_xxx"
-  data-domain="misitio.com"
-></script>
+<script defer src="https://cdn.trell.dev/sdk.js" data-project="pk_live_xxx" data-domain="misitio.com"></script>
 ```
 
 - Lee los atributos `data-*`, inicializa automáticamente y expone `window.trell`
@@ -179,10 +174,12 @@ type TrellConfig = {
 ## 4. Identificación de proyecto y formulario
 
 ### 4.1 Proyecto
+
 Identificado por `project` (la `pk_...`). La `pk_` se envía en cada evento y la API
 la usa para resolver el proyecto + verificar el `domain`.
 
 ### 4.2 Formulario
+
 Cada formulario trackeado tiene un `id` (slug estable) y un `name` (etiqueta). El
 `id` es la dimensión clave para las métricas. Snapshot del `name` por si el form se
 borra después.
@@ -205,12 +202,14 @@ type FormConfig = {
 ```
 
 **Modo declarativo** (autoDetect):
+
 ```html
 <form data-trell-form="contacto" data-trell-name="Contacto">
   <input name="email" />
   <button type="submit">Enviar</button>
 </form>
 ```
+
 - `[data-trell-form="id"]` sobre `<form>` o un contenedor.
 - Atributos de form: `data-trell-name`, `data-trell-fields`, `data-trell-ignore`.
 - Campos a excluir: `data-trell-ignore` en el input.
@@ -224,26 +223,30 @@ En SPAs (React/Vue) y formularios con `preventDefault` + `fetch`, el evento nati
 `submit` **puede no dispararse**. Estrategia en cascada (de más a menos fiable):
 
 ### 5.1 Manual (más fiable)
+
 `formHandle.success(options?)` o `track("form_success", { form })` cuando el
 usuario confirma éxito en su propio código.
 
 ### 5.2 Auto — detección de UI
+
 `MutationObserver` + heurística configurable: contenido nuevo que sugiere éxito
 (clase `.success`, texto de confirmación, cambio de URL visible, formulario
 ocultado). Configurable en `SuccessDetection`:
 
 ```ts
 type SuccessDetection =
-  | false                                   // desactivar auto (solo manual)
+  | false // desactivar auto (solo manual)
   | { observed: string[]; throttleMs?: number; timeoutMs?: number };
 ```
 
 ### 5.3 Cooldown / timeout (best-effort)
+
 Si hubo `form_submit` reciente y no hay evidencia de error en un `timeoutMs` y la
 UI muta, se infiere éxito. Trade-off documentado: **no** inferir éxito sin señales
 para no inflar la tasa de conversión.
 
 ### 5.4 No interferencia
+
 El SDK **nunca** llama a `preventDefault()` ni altera la validación. Solo escucha.
 `form_submit` incluye si el form era válido (`checkValidity()`).
 
@@ -251,15 +254,15 @@ El SDK **nunca** llama a `preventDefault()` ni altera la validación. Solo escuc
 
 ## 6. Eventos automáticos (autoDetect)
 
-| Evento | Detonante | Qué se envía |
-|--------|-----------|--------------|
-| `form_view` | el form entra en viewport (IntersectionObserver) | `FormEvent` |
-| `form_start` | primera interacción real (focusin/change/pointerdown) | `FormEvent` |
-| `field_interaction` | foco/cambio en un campo (throttled ca. 300ms) | `FormEvent` + `field` |
-| `form_submit` | evento `submit` (sin intervenir) | `FormEvent` + `valid` |
-| `form_success` | confirmación (manual o auto §5) | `FormEvent` + `time_to_success_ms?` |
-| `form_abandon` | `started` sin `success` al terminar sesión/página | `FormEvent` + `duration_ms` |
-| `cta_click` | click en `[data-trell-cta]` (delegado) | `{ cta, label?, href? }` |
+| Evento              | Detonante                                             | Qué se envía                        |
+| ------------------- | ----------------------------------------------------- | ----------------------------------- |
+| `form_view`         | el form entra en viewport (IntersectionObserver)      | `FormEvent`                         |
+| `form_start`        | primera interacción real (focusin/change/pointerdown) | `FormEvent`                         |
+| `field_interaction` | foco/cambio en un campo (throttled ca. 300ms)         | `FormEvent` + `field`               |
+| `form_submit`       | evento `submit` (sin intervenir)                      | `FormEvent` + `valid`               |
+| `form_success`      | confirmación (manual o auto §5)                       | `FormEvent` + `time_to_success_ms?` |
+| `form_abandon`      | `started` sin `success` al terminar sesión/página     | `FormEvent` + `duration_ms`         |
+| `cta_click`         | click en `[data-trell-cta]` (delegado)                | `{ cta, label?, href? }`            |
 
 `cta_click` es de **baja prioridad** en el MVP; se documenta pero la medición
 principal sigue siendo de formularios.
@@ -272,41 +275,45 @@ Todo evento se serializa a este JSON. **TS es fuente de verdad** (paquete `share
 
 ```ts
 export type EventType =
-  | "form_view" | "form_start" | "field_interaction"
-  | "form_submit" | "form_success" | "form_abandon"
-  | "cta_click";
+  "form_view" | "form_start" | "field_interaction" | "form_submit" | "form_success" | "form_abandon" | "cta_click";
 
 // ---------- Envelope común ----------
 export interface BaseEvent {
-  v: 1;                     // versión del schema
-  event_id: string;         // UUID — idempotencia en el servidor
-  project: string;          // pk_
+  v: 1; // versión del schema
+  event_id: string; // UUID — idempotencia en el servidor
+  project: string; // pk_
   type: EventType | string; // tipo o custom
-  ts: number;               // epoch ms, reloj del cliente
+  ts: number; // epoch ms, reloj del cliente
   session_id: string;
   visitor_id: string;
-  url: string;              // URL completa al momento de captura
+  url: string; // URL completa al momento de captura
   page: { path: string; title: string };
   referrer: string;
   utm: Utm | null;
   device: Device;
-  properties: Record<string, unknown>;   // merge de defaults + call + identify
+  properties: Record<string, unknown>; // merge de defaults + call + identify
 }
 
 export interface Utm {
-  source: string | null; medium: string | null; campaign: string | null;
-  term: string | null; content: string | null;
+  source: string | null;
+  medium: string | null;
+  campaign: string | null;
+  term: string | null;
+  content: string | null;
 }
 
 export interface Device {
   type: "desktop" | "tablet" | "mobile";
   os: string | null;
   browser: string | null;
-  viewport: [number, number];   // [width, height]
+  viewport: [number, number]; // [width, height]
 }
 
 // ---------- Payloads por tipo ----------
-export interface FormContext { id: string; name?: string; }
+export interface FormContext {
+  id: string;
+  name?: string;
+}
 
 export interface FormEvent extends BaseEvent {
   type: Exclude<EventType, "cta_click">;
@@ -351,6 +358,7 @@ export type EventPayload =
 ```
 
 **Propiedades `properties`:**
+
 - Se agregan vía `defaults` (config), `identify`, y el `options.properties` del call.
 - Merge: `defaults` < `identify` < `options.properties` (el último gana).
 - Serán **opcionales/consentidas** según privacy; sin PII por defecto.
@@ -360,16 +368,19 @@ export type EventPayload =
 ## 8. Identidad
 
 ### 8.1 `visitor_id` (anónimo, persistente)
+
 - UUID aleatorio.
 - Persistido en cookie de primera parte (`trell:vid`, ~1 año) o `localStorage`.
 - Modo `strict`: solo en memoria (no persiste → no deduplica entre visitas).
 
 ### 8.2 `session_id` (una visita/sesión)
+
 - UUID aleatorio.
 - Persistido en `sessionStorage` (por tab) con fallback cookie.
 - Regenerado tras inactividad (ca. 30 min) o update (cambio de tab/session).
 
 ### 8.3 `identify()`
+
 - Vincula un usuario conocido a `visitor_id`.
 - Recibe el identificador **crudo** (`{ userId?, email? }`) y calcula **SHA-256** por
   dentro (síncrono, JS puro); solo persiste/envía el **hash**
@@ -381,17 +392,20 @@ export type EventPayload =
 ## 9. Contexto capturado
 
 ### 9.1 UTM
+
 - Leídas de la URL de entrada (`utm_source/medium/campaign/term/content`).
 - Almacenadas en `sessionStorage`/memoria para sobrevivir navegación interna.
 - Política: **first-touch wins** (la primera captura prevalece).
 - Default `null` si no hay UTM. Fallback de origen: `referrer` (ver 9.2).
 
 ### 9.2 URL / referrer
+
 - `url` = `location.href` al momento de captura (para `form_view`, la del view).
 - `referrer` = `document.referrer`.
 - `page.title` = `document.title`; `page.path` = `location.pathname`.
 
 ### 9.3 Device
+
 - Derivado del cliente **sin librerías**: `navigator.userAgent` +
   `navigator.platform` + `navigator.userAgentData` (si existe) + viewport.
 - `type`: heuristico por UA + viewport; `os`/`browser`: parseo ligero.
@@ -402,16 +416,19 @@ export type EventPayload =
 ## 10. Transporte
 
 ### 10.1 Batching
+
 - Buffer interno de eventos; flush por **tamaño** o **intervalo**:
   - Flush inmediato para `form_submit` y `form_success` (críticos).
   - Otros: flush al llegar a `MAX_BATCH` (10) o `MAX_BATCH_INTERVAL` (5 s).
 - En `pagehide`/`visibilitychange→hidden`: vacío el buffer con `sendBeacon`.
 
 ### 10.2 sendBeacon
+
 - `navigator.sendBeacon(endpoint, Blob(JSON, { type: "application/json" }))` en
   navegación/hidden. Si no existe, fallback a `fetch(url, { keepalive: true })`.
 
 ### 10.3 Retries
+
 - En POST interactivo que falle (red/5xx): reintenta hasta 3 veces con backoff
   exponencial + jitter.
 - En `429`: respeta `Retry-After` (respeta backoff), luego descarta.
@@ -419,6 +436,7 @@ export type EventPayload =
 - Idempotencia por `event_id`.
 
 ### 10.4 Offline / cola
+
 - Si `navigator.onLine === false` o fetch falla: encola en memoria (o
   `sessionStorage` si se tolera durabilidad, tope `MAX_QUEUE`).
 - Al evento `online`: flush.
@@ -427,6 +445,7 @@ export type EventPayload =
   pierden (trade-off documentado).
 
 ### 10.5 Tamaño máximo de payload
+
 - Límite por request `MAX_PAYLOAD` (64 KB). Si el batch excede: se divide en
   varios requests.
 - `properties`/`value` por evento acotados a `MAX_PROPERTY` (4 KB); el SDK corta
@@ -437,12 +456,14 @@ export type EventPayload =
 ## 11. Validación y errores
 
 **En el SDK:**
+
 - El SDK valida su propio payload con un mini-assert (internal, **no** dependencia).
 - Eventos inválidos: se descartan; se logean solo con `debug`.
 - El SDK **no lanza** errores al host. Todo se envuelve en try/catch; si falla,
   se limpia y el buffer sobrevive.
 
 **En la API (autoridad):**
+
 - Validación estricta con zod (paquete `shared`).
 - `400` schema inválido, `403` origin/key no permitido, `429` rate limit.
 - El SDK responde a estos códigos sin propagar errores al cliente.
@@ -493,6 +514,7 @@ export const STORAGE_UTM = "trell:utm";
 > prompt explícito (evolución de schema v1).
 
 **Decision log (Prompt 09):** cambios contractuales, documentados y aplicados aquí:
+
 - §2.4 / §8.3 — `identify({ userId?, email? })` recibe el identificador **crudo**,
   el SDK calcula SHA-256 y **solo envía el hash**; nunca transmite PII cruda
   (sustituye al ejemplo previo con `emailHash` pre-calculado). Hash **síncrono**

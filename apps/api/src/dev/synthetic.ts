@@ -73,22 +73,32 @@ export async function seedSyntheticEvents(repo: Repo, days = 30): Promise<Synthe
   const base = Date.now() - days * 86_400_000;
   const formA = { formId: "form-a", formName: "Formulario A" };
 
-  // 25 matched start/success pairs => avg 10s
   for (let i = 0; i < 25; i++) {
     const startTs = new Date(base + i * 3_600_000);
     evs.push(mk("form_start", { ...formA, sessionId: "sp" + i, visitorId: "vp" + i, ts: startTs }));
-    evs.push(mk("form_success", { ...formA, sessionId: "sp" + i, visitorId: "vp" + i, ts: new Date(startTs.getTime() + 10_000) }));
+    evs.push(
+      mk("form_success", {
+        ...formA,
+        sessionId: "sp" + i,
+        visitorId: "vp" + i,
+        ts: new Date(startTs.getTime() + 10_000),
+      }),
+    );
   }
-  // remaining starts (incomplete sessions -> no success)
   for (let i = 25; i < 60; i++) {
-    evs.push(mk("form_start", { ...formA, sessionId: "si" + i, visitorId: "vi" + i, ts: new Date(base + i * 3_600_000) }));
+    evs.push(
+      mk("form_start", { ...formA, sessionId: "si" + i, visitorId: "vi" + i, ts: new Date(base + i * 3_600_000) }),
+    );
   }
   for (let i = 0; i < 100; i++) evs.push(mk("form_view", formA));
   for (let i = 0; i < 40; i++) evs.push(mk("form_submit", formA));
   for (let i = 0; i < 15; i++) evs.push(mk("form_abandon", formA));
 
   // edge: form-b has starts but NO success
-  for (let i = 0; i < 20; i++) evs.push(mk("form_start", { formId: "form-b", formName: "Formulario B", sessionId: "sb" + i, visitorId: "vb" + i }));
+  for (let i = 0; i < 20; i++)
+    evs.push(
+      mk("form_start", { formId: "form-b", formName: "Formulario B", sessionId: "sb" + i, visitorId: "vb" + i }),
+    );
   for (let i = 0; i < 10; i++) evs.push(mk("form_view", { formId: "form-b", formName: "Formulario B" }));
 
   // edge: a couple of events way outside the 30-day window

@@ -40,10 +40,7 @@ export function SourcesPanel({ rows, total, dims, dim, onDim }: SourcesPanelProp
               </button>
             ))}
           </div>
-          <a
-            href="#"
-            className="shrink-0 text-xs font-medium text-neutral-400 transition-colors hover:text-trell-ink"
-          >
+          <a href="#" className="shrink-0 text-xs font-medium text-neutral-400 transition-colors hover:text-trell-ink">
             View all &rarr;
           </a>
         </div>

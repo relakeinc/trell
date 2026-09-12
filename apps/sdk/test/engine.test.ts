@@ -23,7 +23,10 @@ class FakeIntersectionObserver {
   unobserve(): void {}
   disconnect(): void {}
   trigger(): void {
-    this.cb(this.targets.map((t) => ({ target: t, isIntersecting: true })) as unknown as IntersectionObserverEntry[], this as unknown as IntersectionObserver);
+    this.cb(
+      this.targets.map((t) => ({ target: t, isIntersecting: true })) as unknown as IntersectionObserverEntry[],
+      this as unknown as IntersectionObserver,
+    );
   }
 }
 
@@ -50,12 +53,21 @@ function makeEngine() {
   const fetchFn = vi.fn(async (_i: string, _init: RequestInit) => fakeRes(204));
   const trell = init(
     { project: "pk_test", endpoint: "https://e.trell/v1/events" },
-    { win: window as unknown as Window, fetchFn: fetchFn as unknown as typeof fetch, beaconFn: vi.fn(() => true) as unknown as (url: string, data: BodyInit) => boolean },
+    {
+      win: window as unknown as Window,
+      fetchFn: fetchFn as unknown as typeof fetch,
+      beaconFn: vi.fn(() => true) as unknown as (url: string, data: BodyInit) => boolean,
+    },
   ) as TrellEngine;
   return { fetchFn, trell };
 }
 
-function bodyOf(call: unknown[]): { type: string; form?: { id: string }; valid?: boolean; properties?: Record<string, unknown> } {
+function bodyOf(call: unknown[]): {
+  type: string;
+  form?: { id: string };
+  valid?: boolean;
+  properties?: Record<string, unknown>;
+} {
   const init = call[1] as RequestInit;
   return JSON.parse(init.body as string)[0] as never;
 }

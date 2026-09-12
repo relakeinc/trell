@@ -59,9 +59,30 @@ function seedStore(): { store: FakeStore; siteId: string } {
     createdAt: new Date("2026-02-01T00:00:00Z"),
   });
   store.events.set(site.id, [
-    makeEvent({ eventId: "e1", type: "form_submit", ts: new Date("2026-09-01T10:00:00Z"), formId: "contact", formName: "Contact", pagePath: "/contact" }),
-    makeEvent({ eventId: "e2", type: "form_start", ts: new Date("2026-09-02T09:00:00Z"), formId: "contact", formName: "Contact", pagePath: "/contact" }),
-    makeEvent({ eventId: "e3", type: "form_success", ts: new Date("2026-09-02T10:00:00Z"), formId: "contact", formName: "Contact", pagePath: "/contact" }),
+    makeEvent({
+      eventId: "e1",
+      type: "form_submit",
+      ts: new Date("2026-09-01T10:00:00Z"),
+      formId: "contact",
+      formName: "Contact",
+      pagePath: "/contact",
+    }),
+    makeEvent({
+      eventId: "e2",
+      type: "form_start",
+      ts: new Date("2026-09-02T09:00:00Z"),
+      formId: "contact",
+      formName: "Contact",
+      pagePath: "/contact",
+    }),
+    makeEvent({
+      eventId: "e3",
+      type: "form_success",
+      ts: new Date("2026-09-02T10:00:00Z"),
+      formId: "contact",
+      formName: "Contact",
+      pagePath: "/contact",
+    }),
     makeEvent({ eventId: "e4", type: "pageview", ts: new Date("2026-09-02T11:00:00Z"), pagePath: "/pricing" }),
   ]);
   store.funnels.set(site.id, [
@@ -78,12 +99,25 @@ function seedStore(): { store: FakeStore; siteId: string } {
   ]);
   store.views.set(site.id, [{ id: "v1", name: "Main", type: "events", createdAt: new Date("2026-04-01T00:00:00Z") }]);
   store.webhooks.set(site.id, [
-    { id: "w1", url: "https://hooks.example.com/t", events: ["form_submit"], enabled: true, createdAt: new Date("2026-05-01T00:00:00Z") },
+    {
+      id: "w1",
+      url: "https://hooks.example.com/t",
+      events: ["form_submit"],
+      enabled: true,
+      createdAt: new Date("2026-05-01T00:00:00Z"),
+    },
   ]);
   store.utm.set(site.id, [
     {
-      id: "u1", name: "Summer", source: "google", medium: "cpc", campaign: "summer",
-      term: null, content: null, referral: null, createdAt: new Date("2026-06-01T00:00:00Z"),
+      id: "u1",
+      name: "Summer",
+      source: "google",
+      medium: "cpc",
+      campaign: "summer",
+      term: null,
+      content: null,
+      referral: null,
+      createdAt: new Date("2026-06-01T00:00:00Z"),
     },
   ]);
   store.keys.set(site.id, [
@@ -272,9 +306,9 @@ describe("analytics tools", () => {
 
   it("get_breakdown groups by dimension with limit", async () => {
     const { store } = seedStore();
-    const body = readJson(
-      await getBreakdown(store, OPEN_CONFIG, { project: "site", dimension: "type", ...RANGE }),
-    ) as { rows: { value: string; count: number }[] };
+    const body = readJson(await getBreakdown(store, OPEN_CONFIG, { project: "site", dimension: "type", ...RANGE })) as {
+      rows: { value: string; count: number }[];
+    };
     expect(body.rows).toHaveLength(4);
     expect(body.rows[0]).toEqual({ value: "form_submit", count: 1 });
     const limited = readJson(
@@ -285,9 +319,9 @@ describe("analytics tools", () => {
 
   it("get_forms computes conversion rate as successes/starts", async () => {
     const { store } = seedStore();
-    const body = readJson(
-      await getForms(store, OPEN_CONFIG, { project: "site", ...RANGE }),
-    ) as { forms: { id: string; starts: number; successes: number; conversionRate: number }[] };
+    const body = readJson(await getForms(store, OPEN_CONFIG, { project: "site", ...RANGE })) as {
+      forms: { id: string; starts: number; successes: number; conversionRate: number }[];
+    };
     expect(body.forms).toEqual([
       { id: "contact", name: "Contact", events: 3, starts: 1, successes: 1, conversionRate: 1 },
     ]);
@@ -295,9 +329,11 @@ describe("analytics tools", () => {
 
   it("query_events paginates newest-first with cursor", async () => {
     const { store } = seedStore();
-    const first = readJson(
-      await queryEvents(store, OPEN_CONFIG, { project: "site", limit: 2, ...RANGE }),
-    ) as { events: { eventId: string }[]; total: number; nextCursor: string };
+    const first = readJson(await queryEvents(store, OPEN_CONFIG, { project: "site", limit: 2, ...RANGE })) as {
+      events: { eventId: string }[];
+      total: number;
+      nextCursor: string;
+    };
     expect(first.total).toBe(4);
     expect(first.events.map((e) => e.eventId)).toEqual(["e2", "e1"]);
     expect(first.nextCursor).toBe("e2");
@@ -316,7 +352,10 @@ describe("write tools", () => {
       await createFunnel(store, OPEN_CONFIG, {
         project: "site",
         name: " Checkout ",
-        steps: [{ eventType: "form_view", formId: "c" }, { eventType: "form_submit", formId: "c", label: "Pay" }],
+        steps: [
+          { eventType: "form_view", formId: "c" },
+          { eventType: "form_submit", formId: "c", label: "Pay" },
+        ],
       }),
     ) as { funnel: { id: string; name: string } };
     expect(created.funnel.name).toBe("Checkout");
@@ -362,13 +401,17 @@ describe("write tools", () => {
       await addDomain(store, OPEN_CONFIG, { project: "other", domain: "HTTPS://Shop.Example.com/path/" }),
     ) as { domains: string[] };
     expect(added.domains).toEqual(["shop.example.com"]);
-    const idempotent = readJson(await addDomain(store, OPEN_CONFIG, { project: "other", domain: "shop.example.com" })) as {
+    const idempotent = readJson(
+      await addDomain(store, OPEN_CONFIG, { project: "other", domain: "shop.example.com" }),
+    ) as {
       domains: string[];
     };
     expect(idempotent.domains).toEqual(["shop.example.com"]);
     const bad = await addDomain(store, OPEN_CONFIG, { project: "other", domain: "not a domain!!" });
     expect(bad.isError).toBe(true);
-    const removed = readJson(await removeDomain(store, OPEN_CONFIG, { project: "other", domain: "SHOP.example.com" })) as {
+    const removed = readJson(
+      await removeDomain(store, OPEN_CONFIG, { project: "other", domain: "SHOP.example.com" }),
+    ) as {
       domains: string[];
     };
     expect(removed.domains).toEqual([]);
@@ -378,10 +421,18 @@ describe("write tools", () => {
     const { store } = seedStore();
     const bad = await createWebhook(store, OPEN_CONFIG, { project: "site", url: "ftp://x", events: ["form_submit"] });
     expect(bad.isError).toBe(true);
-    const empty = await createWebhook(store, OPEN_CONFIG, { project: "site", url: "https://h.example.com/w", events: [] });
+    const empty = await createWebhook(store, OPEN_CONFIG, {
+      project: "site",
+      url: "https://h.example.com/w",
+      events: [],
+    });
     expect(empty.isError).toBe(true);
     const created = readJson(
-      await createWebhook(store, OPEN_CONFIG, { project: "site", url: "https://h.example.com/w", events: ["form_submit", "form_submit"] }),
+      await createWebhook(store, OPEN_CONFIG, {
+        project: "site",
+        url: "https://h.example.com/w",
+        events: ["form_submit", "form_submit"],
+      }),
     ) as { webhook: { id: string; events: string[] } };
     expect(created.webhook.events).toEqual(["form_submit"]);
     await deleteWebhook(store, OPEN_CONFIG, { project: "site", webhook: created.webhook.id });
@@ -483,9 +534,7 @@ describe("entity tools", () => {
     const utm = readJson(await listUtmTemplates(store, OPEN_CONFIG, { project: "site" })) as {
       templates: { name: string; source: string }[];
     };
-    expect(utm.templates).toEqual([
-      expect.objectContaining({ name: "Summer", source: "google" }),
-    ]);
+    expect(utm.templates).toEqual([expect.objectContaining({ name: "Summer", source: "google" })]);
     const keys = readJson(await listApiKeys(store, OPEN_CONFIG, { project: "site" })) as {
       keys: { name: string; keyPrefix: string; keyHash?: string; secret?: string }[];
     };

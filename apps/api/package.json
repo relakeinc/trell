@@ -2,7 +2,7 @@
   "name": "@trell/api",
   "version": "0.0.0",
   "description": "Trell ingestion + management API (Hono).",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "main": "./dist/index.js",
   "exports": {

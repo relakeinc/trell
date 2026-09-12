@@ -101,7 +101,6 @@ export function ProjectSettings({
     void load();
   }, [load]);
 
-  // Slide-in on mount
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
   }, []);
@@ -168,9 +167,10 @@ export function ProjectSettings({
     <div
       className="fixed inset-0 z-40 flex items-stretch bg-neutral-200/80 p-3 transition-all duration-200 ease-out"
       style={{ opacity: visible ? 1 : 0 }}
-      onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
     >
-      {/* ── Settings sidebar ─────────────────────────────── */}
       <aside
         className="flex h-full w-[260px] shrink-0 flex-col overflow-hidden rounded-xl bg-neutral-100 transition-all duration-250 ease-out"
         style={{
@@ -215,9 +215,11 @@ export function ProjectSettings({
           </div>
         </div>
 
-        {/* Usage footer */}
         <div className="flex flex-shrink-0 flex-col gap-2 border-t border-neutral-200 px-4 py-3">
-          <button onClick={() => switchSection("billing")} className="flex items-center gap-1 text-sm font-medium text-neutral-700 hover:text-neutral-900">
+          <button
+            onClick={() => switchSection("billing")}
+            className="flex items-center gap-1 text-sm font-medium text-neutral-700 hover:text-neutral-900"
+          >
             Usage <Icon name="arrow-right-01" size={13} />
           </button>
           <div className="flex items-center justify-between text-sm">
@@ -228,15 +230,20 @@ export function ProjectSettings({
             </span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200">
-            <div className="h-full rounded-full bg-blue-600 transition-all duration-500" style={{ width: `${usagePct}%` }} />
+            <div
+              className="h-full rounded-full bg-blue-600 transition-all duration-500"
+              style={{ width: `${usagePct}%` }}
+            />
           </div>
-          <button onClick={() => switchSection("billing")} className="mt-1 flex h-8 w-full items-center justify-center rounded-lg border border-black bg-black text-sm font-medium text-white transition-colors hover:bg-neutral-800">
+          <button
+            onClick={() => switchSection("billing")}
+            className="mt-1 flex h-8 w-full items-center justify-center rounded-lg border border-black bg-black text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+          >
             Upgrade plan
           </button>
         </div>
       </aside>
 
-      {/* ── Content ──────────────────────────────────────── */}
       <main
         className="ml-3 flex h-full min-w-0 flex-1 overflow-hidden rounded-xl bg-white transition-all duration-250 ease-out"
         style={{
@@ -275,14 +282,16 @@ export function ProjectSettings({
                 />
               )}
               {section === "api" && (
-                <ApiSection
-                  pk={project.pk}
-                  busy={busy}
-                  newSk={newSk}
-                  onRotate={() => void rotate()}
+                <ApiSection pk={project.pk} busy={busy} newSk={newSk} onRotate={() => void rotate()} />
+              )}
+              {section === "tracking" && (
+                <TrackingSection
+                  snippet={snippet}
+                  steps={STEPS}
+                  stepDone={stepDone}
+                  lastEventAt={installation.lastEventAt}
                 />
               )}
-              {section === "tracking" && <TrackingSection snippet={snippet} steps={STEPS} stepDone={stepDone} lastEventAt={installation.lastEventAt} />}
               {section === "webhooks" && <WebhooksSection />}
             </div>
           </div>
@@ -294,7 +303,17 @@ export function ProjectSettings({
 
 // ── Sections ────────────────────────────────────────────────
 
-function Field({ label, hint, children, action }: { label: string; hint?: string; children?: React.ReactNode; action?: React.ReactNode }) {
+function Field({
+  label,
+  hint,
+  children,
+  action,
+}: {
+  label: string;
+  hint?: string;
+  children?: React.ReactNode;
+  action?: React.ReactNode;
+}) {
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-5">
       <div className="flex items-start justify-between gap-4">
@@ -322,7 +341,10 @@ function GeneralSection({ project }: { project: Status["project"] }) {
       <Field label="Workspace Slug" hint="This is your workspace's unique slug on Trell. Max 48 characters.">
         <input defaultValue={project.slug} maxLength={48} className="trell-input max-w-sm" />
       </Field>
-      <Field label="Created" hint={`This workspace was created on ${new Date(project.createdAt).toLocaleDateString()}.`} />
+      <Field
+        label="Created"
+        hint={`This workspace was created on ${new Date(project.createdAt).toLocaleDateString()}.`}
+      />
     </div>
   );
 }
@@ -336,7 +358,8 @@ function BillingSection({ usage }: { usage: Status["usage"] }) {
           <div className="flex items-center justify-between text-sm">
             <span className="text-neutral-500">Events</span>
             <span className="tabular-nums text-neutral-500">
-              {usage.events.toLocaleString()} <span className="text-neutral-400">of {usage.limit.toLocaleString()}</span>
+              {usage.events.toLocaleString()}{" "}
+              <span className="text-neutral-400">of {usage.limit.toLocaleString()}</span>
             </span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200">
@@ -360,19 +383,38 @@ function BillingSection({ usage }: { usage: Status["usage"] }) {
       </div>
       <div className="rounded-xl border border-neutral-200 bg-white p-5 text-sm text-neutral-500">
         <div className="mb-2 text-sm font-medium text-neutral-900">Usage summary</div>
-        <p className="mt-2 text-xs text-neutral-400">Event tracking is billable on a monthly cycle. Analytics, funnels and reports are always free.</p>
+        <p className="mt-2 text-xs text-neutral-400">
+          Event tracking is billable on a monthly cycle. Analytics, funnels and reports are always free.
+        </p>
       </div>
     </div>
   );
 }
 
-function DomainsSection({ domains, newDomain, setNewDomain, onAdd, onRemove, error }: { domains: string[]; newDomain: string; setNewDomain: (v: string) => void; onAdd: () => void; onRemove: (d: string) => void; error: string | null }) {
+function DomainsSection({
+  domains,
+  newDomain,
+  setNewDomain,
+  onAdd,
+  onRemove,
+  error,
+}: {
+  domains: string[];
+  newDomain: string;
+  setNewDomain: (v: string) => void;
+  onAdd: () => void;
+  onRemove: (d: string) => void;
+  error: string | null;
+}) {
   return (
     <div className="flex flex-col gap-5">
       <Field label="Allowed domains" hint="Only events from these origins are accepted by the ingestion endpoint.">
         <div className="flex flex-wrap gap-1.5">
           {domains.map((d) => (
-            <span key={d} className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs">
+            <span
+              key={d}
+              className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs"
+            >
               {d}
               <button onClick={() => onRemove(d)} className="text-neutral-400 hover:text-red-600" title="Remove">
                 <Icon name="close-circle" size={13} />
@@ -391,13 +433,25 @@ function DomainsSection({ domains, newDomain, setNewDomain, onAdd, onRemove, err
           placeholder="example.com"
           onKeyDown={(e) => e.key === "Enter" && onAdd()}
         />
-        <button onClick={onAdd} className="trell-btn-accent h-9">Add</button>
+        <button onClick={onAdd} className="trell-btn-accent h-9">
+          Add
+        </button>
       </div>
     </div>
   );
 }
 
-function ApiSection({ pk, busy, newSk, onRotate }: { pk: string; busy: boolean; newSk: string | null; onRotate: () => void }) {
+function ApiSection({
+  pk,
+  busy,
+  newSk,
+  onRotate,
+}: {
+  pk: string;
+  busy: boolean;
+  newSk: string | null;
+  onRotate: () => void;
+}) {
   const [confirmRotate, setConfirmRotate] = useState(false);
 
   function handleRotate() {
@@ -415,7 +469,15 @@ function ApiSection({ pk, busy, newSk, onRotate }: { pk: string; busy: boolean; 
       <Field label="Publishable key" hint="Safe to expose in the browser — used by the Trell SDK.">
         <CopyRow value={pk} />
       </Field>
-      <Field label="Secret key" hint="Only a hash is stored. Rotating invalidates the old key immediately." action={<button onClick={handleRotate} disabled={busy} className="trell-btn-danger h-8 px-3 text-xs">{busy ? "…" : confirmRotate ? "Click again to confirm" : "Rotate"}</button>}>
+      <Field
+        label="Secret key"
+        hint="Only a hash is stored. Rotating invalidates the old key immediately."
+        action={
+          <button onClick={handleRotate} disabled={busy} className="trell-btn-danger h-8 px-3 text-xs">
+            {busy ? "…" : confirmRotate ? "Click again to confirm" : "Rotate"}
+          </button>
+        }
+      >
         {confirmRotate && !newSk && (
           <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
             The current key stops working everywhere immediately. Anyone using it must update.
@@ -436,17 +498,34 @@ function ApiSection({ pk, busy, newSk, onRotate }: { pk: string; busy: boolean; 
   );
 }
 
-function TrackingSection({ snippet, steps, stepDone, lastEventAt }: { snippet: string; steps: string[]; stepDone: boolean[]; lastEventAt: string | null }) {
+function TrackingSection({
+  snippet,
+  steps,
+  stepDone,
+  lastEventAt,
+}: {
+  snippet: string;
+  steps: string[];
+  stepDone: boolean[];
+  lastEventAt: string | null;
+}) {
   return (
     <div className="flex flex-col gap-5">
       <Field label="Install Trell SDK" hint="Add this snippet before the closing </body> on your website.">
-        <pre className="max-w-2xl overflow-x-auto rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs">{snippet}</pre>
+        <pre className="max-w-2xl overflow-x-auto rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs">
+          {snippet}
+        </pre>
       </Field>
-      <Field label="Setup checklist" hint={lastEventAt ? `Last event: ${ago(lastEventAt)}` : "Waiting for the first event."}>
+      <Field
+        label="Setup checklist"
+        hint={lastEventAt ? `Last event: ${ago(lastEventAt)}` : "Waiting for the first event."}
+      >
         <ol className="space-y-2 text-sm">
           {steps.map((s, i) => (
             <li key={s} className="flex items-center gap-2.5">
-              <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] ${stepDone[i] ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-500"}`}>
+              <span
+                className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] ${stepDone[i] ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-500"}`}
+              >
                 {stepDone[i] ? "✓" : i + 1}
               </span>
               <span className={stepDone[i] ? "text-neutral-900" : "text-neutral-500"}>{s}</span>
@@ -473,7 +552,10 @@ function WebhooksSection() {
 function CopyRow({ value, mono }: { value: string; mono?: boolean }) {
   return (
     <div className="flex max-w-2xl items-center gap-2">
-      <code className={`flex-1 truncate rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs ${mono ? "font-mono" : ""}`} title={value}>
+      <code
+        className={`flex-1 truncate rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs ${mono ? "font-mono" : ""}`}
+        title={value}
+      >
         {value}
       </code>
       <button onClick={() => void navigator.clipboard.writeText(value)} className="trell-btn-outline h-8 px-3 text-xs">

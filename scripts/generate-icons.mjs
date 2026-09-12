@@ -48,9 +48,7 @@ const ICONS = [
   "close-circle", // Close / remove
 ];
 
-const manifest = JSON.parse(
-  readFileSync(resolve(distDir, "manifest.json"), "utf-8"),
-);
+const manifest = JSON.parse(readFileSync(resolve(distDir, "manifest.json"), "utf-8"));
 
 const style = "linear";
 const out = {};
@@ -61,9 +59,7 @@ for (const name of ICONS) {
     console.warn(`⚠️  iconsax: "${name}" not in manifest — skipping`);
     continue;
   }
-  const data = JSON.parse(
-    readFileSync(resolve(distDir, "data", `${meta.category}.json`), "utf-8"),
-  );
+  const data = JSON.parse(readFileSync(resolve(distDir, "data", `${meta.category}.json`), "utf-8"));
   const svg = data[name]?.[style];
   if (!svg) {
     console.warn(`⚠️  iconsax: "${name}" has no ${style} style — skipping`);
