@@ -6,6 +6,7 @@ import { AskYoiButton } from "@/components/AskYoiButton";
 import { FunnelBuilder } from "@/components/FunnelBuilder";
 import { FunnelView } from "@/components/FunnelView";
 import { useChat } from "@/components/ChatProvider";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { useProjectId, useProjectFunnels, useFunnelLive, useFunnelMutations } from "@/lib/hooks";
 import { fmtShortDate, localInput } from "@/lib/format";
 
@@ -387,22 +388,14 @@ export default function FunnelsPage() {
 
       {!builderOpen && !showTemplates && savedFunnels.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-lg bg-neutral-100 p-0.5">
-            {savedFunnels.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setActiveFunnelId(f.id)}
-                title={`${f.steps.length} steps`}
-                className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                  f.id === activeFunnelId
-                    ? "bg-white text-trell-ink shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-700"
-                }`}
-              >
-                {f.name}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            scrollable
+            size="md"
+            ariaLabel="Funnels"
+            value={activeFunnelId ?? ""}
+            onChange={(id) => setActiveFunnelId(id)}
+            options={savedFunnels.map((f) => ({ value: f.id, label: f.name, title: `${f.steps.length} steps` }))}
+          />
           <span className="text-xs text-trell-ink-muted">
             Live data · {fmtShortDate(from)} – {fmtShortDate(to)}
           </span>

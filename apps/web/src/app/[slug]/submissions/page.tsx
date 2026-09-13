@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { Icon } from "@/components/Icon";
 import { AskYoiButton } from "@/components/AskYoiButton";
 import { DateTimeField } from "@/components/DateTimeField";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { useProjectId, useProjectSubmissions } from "@/lib/hooks";
 import { fmtTime, localInput } from "@/lib/format";
 
@@ -269,19 +270,14 @@ export default function SubmissionsPage() {
             <DateTimeField value={to} onChange={setTo} />
           </label>
         </div>
-        <div className="scrollbar-hide mt-3 flex items-center gap-0.5 overflow-x-auto whitespace-nowrap rounded-lg bg-neutral-100 p-0.5">
-          {TYPE_FILTERS.map((t) => (
-            <button
-              key={t.value}
-              onClick={() => setTypeFilter(t.value)}
-              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                typeFilter === t.value ? "bg-white text-trell-ink shadow-sm" : "text-neutral-500 hover:text-neutral-700"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          scrollable
+          className="mt-3"
+          ariaLabel="Event type filter"
+          value={typeFilter}
+          onChange={setTypeFilter}
+          options={TYPE_FILTERS.map((t) => ({ value: t.value, label: t.label }))}
+        />
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">

@@ -2,6 +2,7 @@
 
 import { Check } from "lucide-react";
 import { useTheme, type FontStyle } from "@/lib/useTheme";
+import { SegmentedControl } from "@/components/SegmentedControl";
 
 const ACCENTS = [
   { id: "blue", label: "Blue", dot: "#2563eb" },
@@ -44,16 +45,27 @@ function MockBars({ dark }: { dark?: boolean }) {
   );
 }
 
+function MockAvatar({ dark }: { dark?: boolean }) {
+  return (
+    <div className="mt-2 flex items-center gap-1.5">
+      <span className={`size-4 shrink-0 rounded-full ${dark ? "bg-neutral-600" : "bg-neutral-300"}`} />
+      <div className={`h-1.5 rounded-full ${dark ? "bg-neutral-600" : "bg-neutral-300"} w-1/3`} />
+    </div>
+  );
+}
+
 function ThemeMock({ mode }: { mode: "light" | "dark" | "system" }) {
   if (mode === "system") {
     return (
-      <div className="flex h-24 overflow-hidden rounded-md">
-        <div className="w-1/2 bg-white p-2">
+      <div className="flex h-36 overflow-hidden rounded-md">
+        <div className="w-1/2 bg-white p-2.5">
           <TrafficLights />
+          <MockAvatar />
           <MockBars />
         </div>
-        <div className="w-1/2 bg-[#111111] p-2">
+        <div className="w-1/2 bg-[#111111] p-2.5">
           <TrafficLights />
+          <MockAvatar dark />
           <MockBars dark />
         </div>
       </div>
@@ -61,8 +73,9 @@ function ThemeMock({ mode }: { mode: "light" | "dark" | "system" }) {
   }
   const dark = mode === "dark";
   return (
-    <div className={`h-24 rounded-md p-2 ${dark ? "bg-[#111111]" : "bg-white"}`}>
+    <div className={`h-36 rounded-md p-2.5 ${dark ? "bg-[#111111]" : "bg-white"}`}>
       <TrafficLights />
+      <MockAvatar dark={dark} />
       <MockBars dark={dark} />
     </div>
   );
@@ -162,27 +175,18 @@ export default function AppearanceSettingsPage() {
                 Choose your font style
               </div>
             </div>
-            <div className="flex items-center gap-1">
-              {FONTS.map((f) => {
-                const selected = font === f.id;
-                return (
-                  <div key={f.id} className="group relative">
-                    <button
-                      onClick={() => setFont(f.id)}
-                      aria-label={`${f.label} font`}
-                      className={`flex h-9 w-11 items-center justify-center rounded-md text-lg transition-colors ${
-                        selected ? "bg-neutral-100 font-semibold text-trell-ink" : "text-neutral-400 hover:bg-neutral-50"
-                      } ${f.className}`}
-                    >
-                      Ag
-                    </button>
-                    <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
-                      {f.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+            <SegmentedControl<FontStyle>
+              size="lg"
+              ariaLabel="Font style"
+              value={font}
+              onChange={setFont}
+              options={FONTS.map((f) => ({
+                value: f.id,
+                label: <span className={f.className}>Ag</span>,
+                title: `${f.label} font`,
+                hint: f.label,
+              }))}
+            />
           </div>
         </div>
       </div>

@@ -11,6 +11,7 @@ import { SelectField } from "@/components/SelectField";
 import { useMounted } from "@/components/Transitions";
 import { DimIcon } from "@/components/DimIcon";
 import { AreaChart } from "@/components/AreaChart";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { AskYoiButton } from "@/components/AskYoiButton";
 import { EventsFeed } from "@/components/analytics/EventsFeed";
 import { FormsRanking } from "@/components/analytics/FormsRanking";
@@ -396,21 +397,12 @@ function PanelCard({
         </span>
         <div className="flex min-w-0 items-center gap-3">
           {tabs && selectedTab && onSelectTab && (
-            <div className="scrollbar-hide flex items-center gap-0.5 overflow-x-auto whitespace-nowrap rounded-lg bg-neutral-100 p-0.5">
-              {tabs.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => onSelectTab(t.id)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                    selectedTab === t.id
-                      ? "bg-white text-trell-ink shadow-sm"
-                      : "text-neutral-500 hover:text-neutral-700"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              scrollable
+              value={selectedTab}
+              onChange={onSelectTab}
+              options={tabs.map((t) => ({ value: t.id, label: t.label }))}
+            />
           )}
         </div>
       </div>

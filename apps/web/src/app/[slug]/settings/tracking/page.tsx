@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Icon } from "@/components/Icon";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { useProject } from "../_components/ProjectContext";
 import { SDK_URL, INGEST_URL } from "@/lib/publicUrls";
 
@@ -88,20 +89,15 @@ export async function POST(req: NextRequest) {
       <div className="overflow-hidden rounded-lg border border-trell-line bg-white">
         <div className="flex items-center justify-between border-b border-trell-line px-4 py-3">
           <span className="text-sm font-medium text-trell-ink">Tracking Script</span>
-          <div className="inline-flex items-center rounded-lg border border-neutral-200 bg-white p-0.5">
-            <button
-              onClick={() => setTab("browser")}
-              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${tab === "browser" ? "bg-neutral-100 text-neutral-900" : "text-neutral-500 hover:text-neutral-900"}`}
-            >
-              Browser
-            </button>
-            <button
-              onClick={() => setTab("server")}
-              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${tab === "server" ? "bg-neutral-100 text-neutral-900" : "text-neutral-500 hover:text-neutral-900"}`}
-            >
-              Server (.env)
-            </button>
-          </div>
+          <SegmentedControl
+            ariaLabel="Snippet type"
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: "browser" as const, label: "Browser" },
+              { value: "server" as const, label: "Server (.env)" },
+            ]}
+          />
         </div>
         {tab === "browser" ? (
           <>

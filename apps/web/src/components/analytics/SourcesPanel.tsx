@@ -1,5 +1,7 @@
 "use client";
 
+import { SegmentedControl } from "@/components/SegmentedControl";
+
 type SourceRow = { key: string; count: number };
 type Dim = { id: string; label: string };
 
@@ -24,22 +26,13 @@ export function SourcesPanel({ rows, total, dims, dim, onDim }: SourcesPanelProp
           <span className="border-b border-dotted border-neutral-300 pb-0.5">Sources</span>
         </span>
         <div className="flex min-w-0 items-center gap-3">
-          <div className="scrollbar-hide flex items-center gap-0.5 overflow-x-auto whitespace-nowrap rounded-lg bg-neutral-100 p-0.5 dark:bg-white/10">
-            {dims.map((d) => (
-              <button
-                key={d.id}
-                onClick={() => onDim(d.id)}
-                aria-pressed={dim === d.id}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  dim === d.id
-                    ? "bg-white text-trell-ink shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
-                }`}
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            scrollable
+            ariaLabel="Breakdown dimension"
+            value={dim}
+            onChange={onDim}
+            options={dims.map((d) => ({ value: d.id, label: d.label }))}
+          />
           <a href="#" className="shrink-0 text-xs font-medium text-neutral-400 transition-colors hover:text-trell-ink">
             View all &rarr;
           </a>

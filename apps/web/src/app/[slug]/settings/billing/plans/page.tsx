@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { Icon } from "@/components/Icon";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { RedirectOverlay } from "@/components/RedirectOverlay";
 import { useProject } from "../../_components/ProjectContext";
 
@@ -119,20 +120,16 @@ export default function BillingPlansPage() {
           <span className="text-lg font-semibold text-trell-ink">Plans</span>
         </div>
         <div className="flex items-center gap-3">
-          <div className="inline-flex items-center rounded-lg border border-neutral-200 bg-white p-0.5">
-            <button
-              onClick={() => setCycle("monthly")}
-              className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${cycle === "monthly" ? "bg-neutral-100 text-neutral-900" : "text-neutral-500 hover:text-neutral-900"}`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setCycle("yearly")}
-              className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${cycle === "yearly" ? "bg-neutral-100 text-neutral-900" : "text-neutral-500 hover:text-neutral-900"}`}
-            >
-              Yearly
-            </button>
-          </div>
+          <SegmentedControl
+            size="md"
+            ariaLabel="Billing cycle"
+            value={cycle}
+            onChange={setCycle}
+            options={[
+              { value: "monthly" as const, label: "Monthly" },
+              { value: "yearly" as const, label: "Yearly" },
+            ]}
+          />
         </div>
       </div>
 

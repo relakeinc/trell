@@ -2,6 +2,7 @@
 
 import { useId, useMemo, useRef, useState } from "react";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { fmtShortDate } from "@/lib/format";
 
 interface TrendPoint {
@@ -217,36 +218,25 @@ export function AreaChart({
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg bg-neutral-100 p-0.5">
-            {METRICS.map((m) => (
-              <button
-                key={m.key}
-                onClick={() => {
-                  setMetric(m.key);
-                  setHoverIdx(null);
-                }}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  metric === m.key ? "bg-white text-trell-ink shadow-sm" : "text-neutral-500 hover:text-neutral-700"
-                }`}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex rounded-lg bg-neutral-100 p-0.5">
-            {(["area", "bars"] as Variant[]).map((v) => (
-              <button
-                key={v}
-                onClick={() => setVariant(v)}
-                title={v === "area" ? "Area chart" : "Bar chart"}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
-                  variant === v ? "bg-white text-trell-ink shadow-sm" : "text-neutral-500 hover:text-neutral-700"
-                }`}
-              >
-                {v}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            ariaLabel="Metric"
+            value={metric}
+            onChange={(v) => {
+              setMetric(v);
+              setHoverIdx(null);
+            }}
+            options={METRICS.map((m) => ({ value: m.key, label: m.label }))}
+          />
+          <SegmentedControl<Variant>
+            ariaLabel="Chart type"
+            value={variant}
+            onChange={setVariant}
+            options={(["area", "bars"] as Variant[]).map((v) => ({
+              value: v,
+              label: <span className="capitalize">{v}</span>,
+              title: v === "area" ? "Area chart" : "Bar chart",
+            }))}
+          />
         </div>
       </div>
 
