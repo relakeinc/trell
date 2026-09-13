@@ -343,6 +343,11 @@
   border-color: var(--trell-dark-border) !important;
 }
 
+/* Gap-based dividers (e.g. the Metrics grid uses bg-trell-line behind a 1px gap) */
+.dark [class*="bg-trell-line"] {
+  background-color: var(--trell-dark-border) !important;
+}
+
 /* Inputs */
 .dark .trell-input {
   border-color: var(--trell-dark-border);
@@ -474,6 +479,21 @@ body {
 .trell-btn-accent:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Sidebar "Upgrade plan" — accent CTA at its own compact size, and readable
+   in both themes (the old solid-black fill disappeared on the dark sidebar). */
+.trell-upgrade-btn {
+  border: 1px solid transparent;
+  color: #ffffff;
+  background-color: #2563eb;
+  background-image: linear-gradient(to bottom, #4d88f5, #2563eb);
+  box-shadow:
+    inset 0 1px 0 0 #4d88f5,
+    0 0 0 1px rgb(29 78 216 / 0.1);
+}
+.trell-upgrade-btn:hover {
+  filter: brightness(1.07);
 }
 
 /* Secondary: bordered */

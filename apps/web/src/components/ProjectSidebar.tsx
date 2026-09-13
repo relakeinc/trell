@@ -317,7 +317,7 @@ export function ProjectSidebar({
 
           <Link
             href={`/${projectSlug}/settings/billing`}
-            className="flex h-8 w-full items-center justify-center rounded-lg border border-neutral-900 bg-neutral-900 text-[13px] font-medium text-white transition-colors hover:bg-neutral-800"
+            className="trell-upgrade-btn flex h-8 w-full items-center justify-center rounded-lg text-[13px] font-medium transition-colors"
           >
             Upgrade plan
           </Link>
