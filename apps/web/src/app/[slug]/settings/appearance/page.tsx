@@ -33,35 +33,65 @@ function TrafficLights() {
   );
 }
 
-function MockBars({ dark }: { dark?: boolean }) {
-  const bar = dark ? "bg-neutral-700" : "bg-neutral-200";
-  const widths = ["w-3/4", "w-full", "w-5/6", "w-2/3", "w-4/5", "w-3/5", "w-11/12"];
+function MockLines({ widths, color }: { widths: string[]; color: string }) {
   return (
-    <div className="mt-3 space-y-2">
-      {widths.map((w) => (
-        <div key={w} className={`h-1.5 rounded-full ${bar} ${w}`} />
+    <div className="flex flex-col gap-1.5">
+      {widths.map((w, i) => (
+        <div key={i} className={`h-1 rounded-full ${w}`} style={{ backgroundColor: color }} />
       ))}
     </div>
   );
 }
 
-function MockAvatar({ dark }: { dark?: boolean }) {
-  return (
-    <div className="mt-2.5 flex items-center gap-1.5">
-      <span className={`size-4 shrink-0 rounded-full ${dark ? "bg-neutral-600" : "bg-neutral-300"}`} />
-      <div className={`h-1.5 rounded-full ${dark ? "bg-neutral-600" : "bg-neutral-300"} w-1/3`} />
-    </div>
-  );
-}
+/**
+ * Miniature dashboard (sidebar rail + content column). Colours are inline on
+ * purpose: the dark-mode overrides in globals.css target utility classes like
+ * `.bg-white` / `.bg-neutral-200`, so class-based colours would bleed the
+ * active app theme into these fixed light/dark previews.
+ */
+function WindowPane({ dark }: { dark: boolean }) {
+  const c = dark
+    ? {
+        frame: "#101010",
+        rail: "#1c1c1b",
+        divider: "#242423",
+        line: "#3a3a39",
+        heading: "#4d4d4b",
+        avatar: "#555552",
+      }
+    : {
+        frame: "#ffffff",
+        rail: "#f4f4f5",
+        divider: "#ececee",
+        line: "#e4e4e7",
+        heading: "#d4d4d8",
+        avatar: "#d4d4d8",
+      };
 
-function MockSpark({ dark }: { dark?: boolean }) {
-  const heights = [38, 62, 45, 78, 58, 88, 66, 96, 72, 84];
-  const bar = dark ? "bg-neutral-600" : "bg-neutral-300";
   return (
-    <div className="mt-auto flex h-20 items-end gap-1.5 pt-4">
-      {heights.map((h, i) => (
-        <div key={i} className={`flex-1 rounded-sm ${bar}`} style={{ height: `${h}%` }} />
-      ))}
+    <div className="flex h-full w-full" style={{ backgroundColor: c.frame }}>
+      <div
+        className="flex w-[38%] flex-col gap-2 border-r p-2"
+        style={{ backgroundColor: c.rail, borderColor: c.divider }}
+      >
+        <TrafficLights />
+        <div className="mt-1 flex items-center gap-1.5">
+          <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: c.avatar }} />
+          <span className="h-1 w-2/3 rounded-full" style={{ backgroundColor: c.heading }} />
+        </div>
+        <div className="mt-0.5">
+          <MockLines widths={["w-full", "w-5/6", "w-11/12", "w-3/4", "w-5/6"]} color={c.line} />
+        </div>
+      </div>
+      <div className="flex flex-1 flex-col gap-2 p-2">
+        <div className="flex items-center gap-1.5">
+          <span className="size-4 shrink-0 rounded-full" style={{ backgroundColor: c.avatar }} />
+          <span className="h-1.5 w-2/5 rounded-full" style={{ backgroundColor: c.heading }} />
+        </div>
+        <div className="mt-1">
+          <MockLines widths={["w-11/12", "w-full", "w-4/5", "w-11/12", "w-2/3", "w-5/6"]} color={c.line} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -69,29 +99,17 @@ function MockSpark({ dark }: { dark?: boolean }) {
 function ThemeMock({ mode }: { mode: "light" | "dark" | "system" }) {
   if (mode === "system") {
     return (
-      <div className="flex h-72 overflow-hidden rounded-md">
-        <div className="flex w-1/2 flex-col bg-white p-2.5">
-          <TrafficLights />
-          <MockAvatar />
-          <MockBars />
-          <MockSpark />
-        </div>
-        <div className="flex w-1/2 flex-col bg-[#111111] p-2.5">
-          <TrafficLights />
-          <MockAvatar dark />
-          <MockBars dark />
-          <MockSpark dark />
+      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-md">
+        <WindowPane dark={false} />
+        <div aria-hidden className="absolute inset-0" style={{ clipPath: "inset(0 0 0 50%)" }}>
+          <WindowPane dark />
         </div>
       </div>
     );
   }
-  const dark = mode === "dark";
   return (
-    <div className={`flex h-72 flex-col rounded-md p-2.5 ${dark ? "bg-[#111111]" : "bg-white"}`}>
-      <TrafficLights />
-      <MockAvatar dark={dark} />
-      <MockBars dark={dark} />
-      <MockSpark dark={dark} />
+    <div className="aspect-[16/10] w-full overflow-hidden rounded-md">
+      <WindowPane dark={mode === "dark"} />
     </div>
   );
 }
