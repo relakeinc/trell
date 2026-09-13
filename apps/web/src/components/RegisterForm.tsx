@@ -69,26 +69,17 @@ export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const devMode = process.env.NEXT_PUBLIC_AUTH_DEV_MODE === "true";
-
   async function onRegister(e: React.FormEvent) {
     e.preventDefault();
-    if (!devMode) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Registration failed");
-      }
+      // There is no password store: the dev credentials provider creates the
+      // user on first sign-in, and production accounts come from Google.
       const { signIn } = await import("next-auth/react");
       const result = await signIn("credentials", {
         email,
+        name,
         redirect: false,
       });
       if (result?.error) {
@@ -195,8 +186,6 @@ export function RegisterForm() {
           <input
             id="password"
             type="password"
-            required
-            minLength={8}
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

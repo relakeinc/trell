@@ -216,7 +216,7 @@ function SignInForm() {
             <input
               id="password"
               type={showPassword ? "text" : "password"}
-              required
+              required={!devMode}
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
