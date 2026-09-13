@@ -47,9 +47,21 @@ function MockBars({ dark }: { dark?: boolean }) {
 
 function MockAvatar({ dark }: { dark?: boolean }) {
   return (
-    <div className="mt-2 flex items-center gap-1.5">
+    <div className="mt-2.5 flex items-center gap-1.5">
       <span className={`size-4 shrink-0 rounded-full ${dark ? "bg-neutral-600" : "bg-neutral-300"}`} />
       <div className={`h-1.5 rounded-full ${dark ? "bg-neutral-600" : "bg-neutral-300"} w-1/3`} />
+    </div>
+  );
+}
+
+function MockSpark({ dark }: { dark?: boolean }) {
+  const heights = [38, 62, 45, 78, 58, 88, 66, 96];
+  const bar = dark ? "bg-neutral-600" : "bg-neutral-300";
+  return (
+    <div className="mt-auto flex h-12 items-end gap-1 pt-2">
+      {heights.map((h, i) => (
+        <div key={i} className={`flex-1 rounded-sm ${bar}`} style={{ height: `${h}%` }} />
+      ))}
     </div>
   );
 }
@@ -57,26 +69,29 @@ function MockAvatar({ dark }: { dark?: boolean }) {
 function ThemeMock({ mode }: { mode: "light" | "dark" | "system" }) {
   if (mode === "system") {
     return (
-      <div className="flex h-36 overflow-hidden rounded-md">
-        <div className="w-1/2 bg-white p-2.5">
+      <div className="flex h-48 overflow-hidden rounded-md">
+        <div className="flex w-1/2 flex-col bg-white p-2.5">
           <TrafficLights />
           <MockAvatar />
           <MockBars />
+          <MockSpark />
         </div>
-        <div className="w-1/2 bg-[#111111] p-2.5">
+        <div className="flex w-1/2 flex-col bg-[#111111] p-2.5">
           <TrafficLights />
           <MockAvatar dark />
           <MockBars dark />
+          <MockSpark dark />
         </div>
       </div>
     );
   }
   const dark = mode === "dark";
   return (
-    <div className={`h-36 rounded-md p-2.5 ${dark ? "bg-[#111111]" : "bg-white"}`}>
+    <div className={`flex h-48 flex-col rounded-md p-2.5 ${dark ? "bg-[#111111]" : "bg-white"}`}>
       <TrafficLights />
       <MockAvatar dark={dark} />
       <MockBars dark={dark} />
+      <MockSpark dark={dark} />
     </div>
   );
 }
