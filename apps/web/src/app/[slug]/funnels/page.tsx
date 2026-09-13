@@ -145,11 +145,9 @@ function TemplateCardShell({
       }}
       className={`group relative flex h-[360px] w-full cursor-pointer flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition-shadow hover:shadow-md ${disabled ? "pointer-events-none opacity-70" : ""}`}
     >
-      <div
-        aria-hidden
-        className="absolute inset-0 [background-image:linear-gradient(#e9ebf1_1px,transparent_1px),linear-gradient(90deg,#e9ebf1_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_90%_90%_at_50%_40%,black_30%,transparent_100%)]"
-      />
+      {/* Per-card color glow disabled — it looked bad. Restore by uncommenting the next line.
       <div aria-hidden className={`absolute inset-0 ${glow}`} />
+      */}
       <div className="relative flex flex-1 flex-col justify-end p-5">{children}</div>
     </div>
   );
