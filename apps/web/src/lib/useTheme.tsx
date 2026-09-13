@@ -4,22 +4,29 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 
 type Theme = "light" | "dark" | "system";
 
+export type FontStyle = "default" | "display" | "system";
+
 interface ThemeContextValue {
   theme: Theme;
   resolvedTheme: "light" | "dark";
   accent: string;
+  font: FontStyle;
   setTheme: (t: Theme) => void;
   setAccent: (a: string) => void;
+  setFont: (f: FontStyle) => void;
 }
 
 const DEFAULT_ACCENT = "default";
+const DEFAULT_FONT: FontStyle = "default";
 
 const ThemeContext = createContext<ThemeContextValue>({
   theme: "system",
   resolvedTheme: "light",
   accent: DEFAULT_ACCENT,
+  font: DEFAULT_FONT,
   setTheme: () => {},
   setAccent: () => {},
+  setFont: () => {},
 });
 
 export function useTheme() {
@@ -39,6 +46,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
   const [accent, setAccentState] = useState<string>(DEFAULT_ACCENT);
+  const [font, setFontState] = useState<FontStyle>(DEFAULT_FONT);
 
   const setTheme = useCallback((t: Theme) => {
     const resolved = t === "system" ? getSystemTheme() : t;
@@ -55,6 +63,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute("data-accent", a);
   }, []);
 
+  const setFont = useCallback((f: FontStyle) => {
+    setFontState(f);
+    localStorage.setItem("trell-font", f);
+    document.documentElement.setAttribute("data-font", f);
+  }, []);
+
   useEffect(() => {
     const stored = localStorage.getItem("trell-theme") as Theme | null;
     const initial = stored ?? "system";
@@ -66,6 +80,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const storedAccent = localStorage.getItem("trell-accent") ?? DEFAULT_ACCENT;
     setAccentState(storedAccent);
     document.documentElement.setAttribute("data-accent", storedAccent);
+
+    const storedFont = (localStorage.getItem("trell-font") as FontStyle | null) ?? DEFAULT_FONT;
+    setFontState(storedFont);
+    document.documentElement.setAttribute("data-font", storedFont);
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const handler = () => {
@@ -80,7 +98,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, accent, setTheme, setAccent }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, accent, font, setTheme, setAccent, setFont }}>
       {children}
     </ThemeContext.Provider>
   );

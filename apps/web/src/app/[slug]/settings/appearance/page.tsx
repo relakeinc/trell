@@ -1,33 +1,81 @@
 "use client";
 
-import { useTheme } from "@/lib/useTheme";
-import { Icon } from "@/components/Icon";
+import { Check } from "lucide-react";
+import { useTheme, type FontStyle } from "@/lib/useTheme";
 
-const THEMES = [
-  { id: "light", label: "White", dot: "from-white to-neutral-300", ring: "#e4e4e7", text: "text-neutral-700" },
-  { id: "dark", label: "Dark", dot: "from-[#111111] to-[#262626]", ring: "#111111", text: "text-neutral-300" },
-  { id: "blue", label: "Blue", dot: "from-blue-500 to-blue-600", ring: "#2563eb", text: "text-neutral-600" },
-  { id: "sky", label: "Sky", dot: "from-cyan-400 to-blue-500", ring: "#06b6d4", text: "text-neutral-600" },
-  { id: "lavender", label: "Lavender", dot: "from-purple-400 to-pink-400", ring: "#a855f7", text: "text-neutral-600" },
-  { id: "mint", label: "Mint", dot: "from-emerald-400 to-teal-400", ring: "#10b981", text: "text-neutral-600" },
-  { id: "netflix", label: "Netflix", dot: "from-red-500 to-red-600", ring: "#dc2626", text: "text-neutral-600" },
-  { id: "spotify", label: "Spotify", dot: "from-green-400 to-green-600", ring: "#22c55e", text: "text-neutral-600" },
-  { id: "coinbase", label: "Coinbase", dot: "from-blue-400 to-blue-600", ring: "#3b82f6", text: "text-neutral-600" },
-  { id: "airbnb", label: "Airbnb", dot: "from-pink-400 to-rose-500", ring: "#ec4899", text: "text-neutral-600" },
-  { id: "discord", label: "Discord", dot: "from-indigo-400 to-indigo-600", ring: "#6366f1", text: "text-neutral-600" },
-  { id: "rabbit", label: "Rabbit", dot: "from-orange-400 to-amber-500", ring: "#f97316", text: "text-neutral-600" },
+const ACCENTS = [
+  { id: "blue", label: "Blue", dot: "#2563eb" },
+  { id: "sky", label: "Sky", dot: "#06b6d4" },
+  { id: "lavender", label: "Lavender", dot: "#a855f7" },
+  { id: "mint", label: "Mint", dot: "#10b981" },
+  { id: "netflix", label: "Netflix", dot: "#dc2626" },
+  { id: "spotify", label: "Spotify", dot: "#22c55e" },
+  { id: "coinbase", label: "Coinbase", dot: "#3b82f6" },
+  { id: "airbnb", label: "Airbnb", dot: "#ec4899" },
+  { id: "discord", label: "Discord", dot: "#6366f1" },
+  { id: "rabbit", label: "Rabbit", dot: "#f97316" },
 ] as const;
 
-const SECTIONS = [
-  { label: "Modes", ids: ["light", "dark"] },
-  {
-    label: "Accents",
-    ids: ["blue", "sky", "lavender", "mint", "netflix", "spotify", "coinbase", "airbnb", "discord", "rabbit"],
-  },
+const FONTS: { id: FontStyle; label: string; className: string }[] = [
+  { id: "default", label: "Default text", className: "" },
+  { id: "display", label: "Display text", className: "[font-family:var(--font-figtree)]" },
+  { id: "system", label: "System text", className: "[font-family:ui-sans-serif,system-ui,sans-serif]" },
 ];
 
+function TrafficLights() {
+  return (
+    <div className="flex gap-1">
+      <span className="size-1.5 rounded-full bg-[#ff5f57]" />
+      <span className="size-1.5 rounded-full bg-[#febc2e]" />
+      <span className="size-1.5 rounded-full bg-[#28c840]" />
+    </div>
+  );
+}
+
+function MockBars({ dark }: { dark?: boolean }) {
+  const bar = dark ? "bg-neutral-700" : "bg-neutral-200";
+  const widths = ["w-3/4", "w-full", "w-5/6", "w-2/3", "w-4/5"];
+  return (
+    <div className="mt-2 space-y-1.5">
+      {widths.map((w) => (
+        <div key={w} className={`h-1 rounded-full ${bar} ${w}`} />
+      ))}
+    </div>
+  );
+}
+
+function ThemeMock({ mode }: { mode: "light" | "dark" | "system" }) {
+  if (mode === "system") {
+    return (
+      <div className="flex h-24 overflow-hidden rounded-md">
+        <div className="w-1/2 bg-white p-2">
+          <TrafficLights />
+          <MockBars />
+        </div>
+        <div className="w-1/2 bg-[#111111] p-2">
+          <TrafficLights />
+          <MockBars dark />
+        </div>
+      </div>
+    );
+  }
+  const dark = mode === "dark";
+  return (
+    <div className={`h-24 rounded-md p-2 ${dark ? "bg-[#111111]" : "bg-white"}`}>
+      <TrafficLights />
+      <MockBars dark={dark} />
+    </div>
+  );
+}
+
+const MODES = [
+  { id: "light", label: "Light" },
+  { id: "dark", label: "Dark" },
+  { id: "system", label: "System" },
+] as const;
+
 export default function AppearanceSettingsPage() {
-  const { theme, accent, setTheme, setAccent, resolvedTheme } = useTheme();
+  const { theme, accent, font, setTheme, setAccent, setFont, resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
   return (
@@ -41,78 +89,99 @@ export default function AppearanceSettingsPage() {
         className={`overflow-hidden rounded-xl border ${isDark ? "border-[#2a2a29] bg-[#191918]" : "border-trell-line bg-white"}`}
       >
         <div className="p-5">
-          <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Color Theme</div>
+          <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Theme</div>
           <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>
-            Choose your accent color for the interface.
+            Customize your UI theme
           </div>
 
-          {SECTIONS.map((section) => (
-            <div key={section.label} className="mt-6">
-              <div
-                className={`mb-3 text-xs font-medium uppercase tracking-wider ${isDark ? "text-[#656565]" : "text-neutral-400"}`}
-              >
-                {section.label}
-              </div>
-              <div className="grid grid-cols-6 gap-x-2 gap-y-4">
-                {section.ids.map((id) => {
-                  const t = THEMES.find((x) => x.id === id)!;
-                  const isSelected = section.label === "Modes" ? theme === id : accent === id;
-                  const isMode = section.label === "Modes";
-                  return (
-                    <button
-                      key={id}
-                      onClick={() => (isMode ? setTheme(id as "light" | "dark") : setAccent(id))}
-                      className="group flex flex-col items-center gap-2"
-                    >
-                      <div
-                        className={`size-10 transition-all duration-200 ${
-                          isMode ? "rounded-xl shadow-sm" : "rounded-full bg-gradient-to-br"
-                        } ${isMode ? "" : t.dot} ${
-                          isSelected ? "ring-2 ring-offset-2 ring-offset-[#191918]" : "hover:scale-110"
-                        } ${isMode ? (id === "light" ? "bg-gradient-to-br from-white to-neutral-300" : "bg-gradient-to-br from-[#111111] to-[#262626]") : ""}`}
-                        style={isSelected ? { boxShadow: `0 0 0 2px ${t.ring}` } : undefined}
-                      />
-                      <span
-                        className={`text-xs ${isSelected ? "font-medium" : isDark ? "text-[#656565]" : "text-neutral-500"}`}
-                      >
-                        {t.label}
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            {MODES.map((m) => {
+              const selected = theme === m.id;
+              return (
+                <button key={m.id} onClick={() => setTheme(m.id)} className="group flex flex-col gap-2">
+                  <span
+                    className={`relative block overflow-hidden rounded-lg border-2 transition-colors ${
+                      selected ? "border-blue-600" : "border-neutral-200 hover:border-neutral-300"
+                    }`}
+                  >
+                    <ThemeMock mode={m.id} />
+                    {selected && (
+                      <span className="absolute bottom-1.5 left-1.5 flex size-4 items-center justify-center rounded-full bg-blue-600 text-white">
+                        <Check size={12} strokeWidth={3} />
                       </span>
-                    </button>
-                  );
-                })}
+                    )}
+                  </span>
+                  <span className={`text-xs ${selected ? "font-medium text-trell-ink" : "text-neutral-500"}`}>
+                    {m.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className={`mx-5 border-t ${isDark ? "border-[#2a2a29]" : "border-trell-line"}`} />
+
+        <div className="p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>
+                Accent color
+              </div>
+              <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>
+                Choose your accent color
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      <div
-        className={`overflow-hidden rounded-xl border ${isDark ? "border-[#2a2a29] bg-[#191918]" : "border-trell-line bg-white"}`}
-      >
-        <div className="p-5">
-          <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Preview</div>
-          <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>
-            See how your theme looks with sample content.
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {ACCENTS.map((a) => {
+                const selected = accent === a.id;
+                return (
+                  <button
+                    key={a.id}
+                    title={a.label}
+                    aria-label={`${a.label} accent`}
+                    onClick={() => setAccent(a.id)}
+                    className={`size-5 rounded-full transition-transform hover:scale-110 ${
+                      selected ? "ring-2 ring-blue-600 ring-offset-2" : ""
+                    }`}
+                    style={{ backgroundColor: a.dot }}
+                  />
+                );
+              })}
+            </div>
           </div>
-          <div
-            className={`mt-4 rounded-lg border p-4 ${
-              isDark
-                ? "border-[#2a2a29] bg-[#111111] text-[#CDCCCC]"
-                : "border-neutral-200 bg-neutral-50 text-neutral-900"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className={`flex size-10 items-center justify-center rounded-xl ${isDark ? "bg-[#1e1e1d]" : "bg-white shadow-sm"}`}
-              >
-                <Icon name="chart-2" size={20} className={isDark ? "text-[#CDCCCC]" : "text-neutral-400"} />
+        </div>
+
+        <div className={`mx-5 border-t ${isDark ? "border-[#2a2a29]" : "border-trell-line"}`} />
+
+        <div className="p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>Font style</div>
+              <div className={`mt-1 text-sm ${isDark ? "text-[#656565]" : "text-trell-ink-muted"}`}>
+                Choose your font style
               </div>
-              <div>
-                <div className="text-sm font-medium">Sample Card</div>
-                <div className={`text-xs ${isDark ? "text-[#656565]" : "text-neutral-500"}`}>
-                  This is how content will appear in {isDark ? "dark" : "light"} mode.
-                </div>
-              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              {FONTS.map((f) => {
+                const selected = font === f.id;
+                return (
+                  <div key={f.id} className="group relative">
+                    <button
+                      onClick={() => setFont(f.id)}
+                      aria-label={`${f.label} font`}
+                      className={`flex h-9 w-11 items-center justify-center rounded-md text-lg transition-colors ${
+                        selected ? "bg-neutral-100 font-semibold text-trell-ink" : "text-neutral-400 hover:bg-neutral-50"
+                      } ${f.className}`}
+                    >
+                      Ag
+                    </button>
+                    <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+                      {f.label}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

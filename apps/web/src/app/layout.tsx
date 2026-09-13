@@ -51,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('trell-theme');var r=t==='dark'||((!t||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(r)document.documentElement.classList.add('dark');var a=localStorage.getItem('trell-accent');if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('trell-theme');var r=t==='dark'||((!t||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(r)document.documentElement.classList.add('dark');var a=localStorage.getItem('trell-accent');if(a)document.documentElement.setAttribute('data-accent',a);var f=localStorage.getItem('trell-font');if(f)document.documentElement.setAttribute('data-font',f);}catch(e){}})();`,
           }}
         />
       </head>
