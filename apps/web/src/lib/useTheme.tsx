@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -39,7 +39,15 @@ function getSystemTheme(): "light" | "dark" {
 }
 
 function applyThemeToDOM(resolved: "light" | "dark") {
-  document.documentElement.classList.toggle("dark", resolved === "dark");
+  const root = document.documentElement;
+  // Kill transitions for this frame so every element snaps to the new theme
+  // together instead of animating at different speeds.
+  root.classList.add("trell-theme-switching");
+  root.classList.toggle("dark", resolved === "dark");
+  root.style.colorScheme = resolved;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => root.classList.remove("trell-theme-switching"));
+  });
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -69,6 +77,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute("data-font", f);
   }, []);
 
+  // Read synchronously from state inside the media listener without making the
+  // listener effect depend on `theme` (that re-ran the whole init on every
+  // toggle and double-applied the theme).
+  const themeRef = useRef<Theme>("system");
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
+
   useEffect(() => {
     const stored = localStorage.getItem("trell-theme") as Theme | null;
     const initial = stored ?? "system";
@@ -87,7 +103,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const handler = () => {
-      if (theme === "system") {
+      if (themeRef.current === "system") {
         const r = getSystemTheme();
         setResolvedTheme(r);
         applyThemeToDOM(r);
@@ -95,7 +111,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     };
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
-  }, [theme]);
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, resolvedTheme, accent, font, setTheme, setAccent, setFont }}>

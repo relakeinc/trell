@@ -15,8 +15,9 @@ const SIZES = {
   lg: "h-9 w-11 text-lg",
 } as const;
 
-// Dark pill in light mode, translucent dark in dark mode — the active
-// segment is never white-on-dark: white in light mode, neutral-600 in dark.
+// Colours come from the `.trell-seg` rules in globals.css: the app-wide dark
+// overrides there target utility classes (`.bg-white` and friends) with
+// !important, so class-based theme colours would be hijacked.
 export function SegmentedControl<T extends string>({
   options,
   value,
@@ -38,7 +39,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="group"
       aria-label={ariaLabel}
-      className={`flex items-center gap-0.5 rounded-lg bg-neutral-900 p-0.5 dark:bg-white/10 ${
+      className={`trell-seg flex items-center gap-0.5 rounded-lg p-0.5 ${
         scrollable ? "scrollbar-hide max-w-full overflow-x-auto whitespace-nowrap" : ""
       } ${className ?? ""}`}
     >
@@ -51,11 +52,7 @@ export function SegmentedControl<T extends string>({
               onClick={() => onChange(o.value)}
               title={o.title}
               aria-pressed={selected}
-              className={`whitespace-nowrap rounded-md font-medium transition-colors ${SIZES[size]} ${
-                selected
-                  ? "bg-white text-neutral-900 shadow-sm dark:bg-neutral-600 dark:text-white"
-                  : "text-neutral-400 hover:text-white"
-              }`}
+              className={`trell-seg-btn whitespace-nowrap rounded-md font-medium transition-colors ${SIZES[size]}`}
             >
               {o.label}
             </button>

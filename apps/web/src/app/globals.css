@@ -59,6 +59,46 @@
   background-color: rgb(255 255 255 / 0.1) !important;
 }
 
+/* ── Segmented control ─────────────────────────────────────
+   Standalone rules so the broad dark overrides above (which target utility
+   classes with !important) cannot hijack the track or the active segment. */
+.trell-seg {
+  background-color: #f4f4f5;
+}
+.trell-seg-btn {
+  color: #71717a;
+}
+.trell-seg-btn:hover {
+  color: #27272a;
+}
+.trell-seg-btn[aria-pressed="true"] {
+  background-color: #ffffff;
+  color: #171717;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.06);
+}
+.dark .trell-seg {
+  background-color: #2b2b2a;
+}
+.dark .trell-seg-btn {
+  color: #a1a1aa;
+}
+.dark .trell-seg-btn:hover {
+  color: #ffffff;
+}
+.dark .trell-seg-btn[aria-pressed="true"] {
+  background-color: #575754;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+/* Suppress every transition for the frame(s) of a theme switch so parts of
+   the UI cannot animate at different speeds (that mismatch reads as a blink). */
+.trell-theme-switching *,
+.trell-theme-switching *::before,
+.trell-theme-switching *::after {
+  transition: none !important;
+}
+
 /* Progress bar bg */
 .dark .bg-neutral-200 {
   background-color: var(--trell-dark-surface-2) !important;
