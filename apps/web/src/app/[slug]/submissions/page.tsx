@@ -315,8 +315,8 @@ export default function SubmissionsPage() {
                       setSort(o.value);
                       setSortOpen(false);
                     }}
-                    className={`flex w-full items-center justify-between px-3 py-2 text-left text-[13px] transition-colors hover:bg-neutral-50 ${
-                      sort === o.value ? "font-medium text-trell-ink" : "text-neutral-600"
+                    className={`flex w-full items-center justify-between px-3 py-2 text-left text-[13px] transition-colors hover:bg-neutral-50 dark:hover:bg-white/5 ${
+                      sort === o.value ? "font-medium text-trell-ink" : "text-neutral-600 dark:text-neutral-400"
                     }`}
                   >
                     {o.label}
@@ -549,7 +549,7 @@ export default function SubmissionsPage() {
                 setQuery("");
                 setTypeFilter("");
               }}
-              className="mt-3 rounded-lg border border-trell-line px-3 py-1.5 text-xs font-medium text-trell-ink transition-colors hover:bg-neutral-50"
+              className="mt-3 rounded-lg border border-trell-line px-3 py-1.5 text-xs font-medium text-trell-ink transition-colors hover:bg-neutral-50 dark:hover:bg-white/5"
             >
               Clear search
             </button>

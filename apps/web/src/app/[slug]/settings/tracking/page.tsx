@@ -103,9 +103,9 @@ export async function POST(req: NextRequest) {
           <>
             <div className="p-4">
               {!hasDomains && (
-                <div className="mb-3 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3">
-                  <Icon name="info" size={15} className="mt-0.5 shrink-0 text-amber-600" />
-                  <p className="text-xs leading-relaxed text-amber-800">
+                <div className="mb-3 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/30 dark:bg-amber-500/10">
+                  <Icon name="info" size={15} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200/90">
                     <span className="font-medium">This workspace accepts events from any website.</span> Anyone with
                     your publishable key can write to it.{" "}
                     <Link href={`/${slug}/settings/domains`} className="font-medium underline hover:text-amber-900">
@@ -268,7 +268,7 @@ export async function POST(req: NextRequest) {
           <div className="flex flex-col gap-2">
             <Link
               href={`/${slug}/events`}
-              className="flex items-center justify-between rounded-md border border-trell-line px-3 py-2.5 transition-colors hover:bg-neutral-50"
+              className="flex items-center justify-between rounded-md border border-trell-line px-3 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-white/5"
             >
               <div className="flex items-center gap-3">
                 <Icon name="events" size={16} className="text-trell-ink-muted" />
@@ -281,7 +281,7 @@ export async function POST(req: NextRequest) {
             </Link>
             <Link
               href={`/${slug}/analytics`}
-              className="flex items-center justify-between rounded-md border border-trell-line px-3 py-2.5 transition-colors hover:bg-neutral-50"
+              className="flex items-center justify-between rounded-md border border-trell-line px-3 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-white/5"
             >
               <div className="flex items-center gap-3">
                 <Icon name="analytics" size={16} className="text-trell-ink-muted" />

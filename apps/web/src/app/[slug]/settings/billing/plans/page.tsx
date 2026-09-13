@@ -177,14 +177,14 @@ export default function BillingPlansPage() {
                   <>
                     <button
                       disabled
-                      className="mt-5 h-9 w-full rounded-lg bg-neutral-100 text-sm font-medium text-neutral-500"
+                      className="mt-5 h-9 w-full rounded-lg bg-neutral-100 text-sm font-medium text-neutral-500 dark:bg-white/10 dark:text-neutral-400"
                     >
                       Current plan
                     </button>
                     <a
                       href={`/api/portal?project=${project.id}`}
                       onClick={() => setManaging(true)}
-                      className="mt-2 flex h-9 w-full items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+                      className="mt-2 flex h-9 w-full items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-white/10 dark:hover:bg-white/5"
                     >
                       {managing ? "Opening…" : "Manage / Cancel subscription"}
                     </a>

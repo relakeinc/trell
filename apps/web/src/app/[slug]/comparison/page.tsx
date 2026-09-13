@@ -119,7 +119,8 @@ export default function ComparisonPage() {
           </fieldset>
           <fieldset>
             <legend className="mb-2 text-xs font-semibold text-trell-ink">
-              Previous period <span className="ml-1 inline-block h-2 w-2 rounded-full bg-neutral-300" />
+              Previous period{" "}
+              <span className="ml-1 inline-block h-2 w-2 rounded-full bg-neutral-300 dark:bg-neutral-600" />
             </legend>
             <div className="space-y-2">
               <label className="block">

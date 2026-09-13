@@ -48,6 +48,17 @@
   background-color: var(--trell-dark-surface-2) !important;
 }
 
+/* Plain bg-neutral-50 fills (settings form footers, empty states, selected
+   options). Exact-class selector: hover: and /opacity variants unaffected. */
+.dark .bg-neutral-50 {
+  background-color: var(--trell-dark-surface-2) !important;
+}
+
+/* Inline code chips (pre code blocks carry no bg-neutral-100, unaffected) */
+.dark code[class*="bg-neutral-100"] {
+  background-color: rgb(255 255 255 / 0.1) !important;
+}
+
 /* Progress bar bg */
 .dark .bg-neutral-200 {
   background-color: var(--trell-dark-surface-2) !important;
@@ -1361,7 +1372,12 @@ body {
     font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   }
   [data-font="system"] body {
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      sans-serif;
   }
   :root {
     --background: oklch(1 0 0);

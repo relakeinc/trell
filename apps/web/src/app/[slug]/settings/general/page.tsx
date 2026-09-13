@@ -266,7 +266,7 @@ export default function GeneralSettingsPage() {
                   setDeleteOpen(false);
                   setDeleteSlug("");
                 }}
-                className="flex h-8 cursor-pointer items-center rounded-lg border border-trell-line bg-white px-3 text-xs font-medium text-trell-ink transition-colors hover:bg-neutral-50"
+                className="flex h-8 cursor-pointer items-center rounded-lg border border-trell-line bg-white px-3 text-xs font-medium text-trell-ink transition-colors hover:bg-neutral-50 dark:hover:bg-white/5"
               >
                 Cancel
               </button>

@@ -108,10 +108,12 @@ export function DateTimeField({ value, onChange }: { value: string; onChange: (v
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         className={`flex h-9 w-full items-center justify-between gap-2 rounded-lg border bg-white px-3 text-left text-xs transition-colors ${
-          open ? "border-neutral-400" : "border-trell-line hover:border-neutral-300"
+          open ? "border-neutral-400" : "border-trell-line hover:border-neutral-300 dark:hover:border-neutral-600"
         }`}
       >
-        <span className="truncate text-trell-ink">{pretty(value)}</span>
+        <span className={`truncate ${parseLocalInput(value) ? "text-trell-ink" : "text-neutral-400"}`}>
+          {pretty(value)}
+        </span>
         <Icon name="calendar-2" size={15} className="shrink-0 text-neutral-400" />
       </button>
 
@@ -123,7 +125,7 @@ export function DateTimeField({ value, onChange }: { value: string; onChange: (v
             <button
               type="button"
               onClick={() => shiftMonth(-1)}
-              className="rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 hover:text-trell-ink"
+              className="rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 hover:text-trell-ink dark:hover:bg-white/10"
               aria-label="Previous month"
             >
               ‹
@@ -132,7 +134,7 @@ export function DateTimeField({ value, onChange }: { value: string; onChange: (v
             <button
               type="button"
               onClick={() => shiftMonth(1)}
-              className="rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 hover:text-trell-ink"
+              className="rounded-md px-2 py-1 text-neutral-500 hover:bg-neutral-100 hover:text-trell-ink dark:hover:bg-white/10"
               aria-label="Next month"
             >
               ›
@@ -159,8 +161,10 @@ export function DateTimeField({ value, onChange }: { value: string; onChange: (v
                   type="button"
                   onClick={() => pickDay(day)}
                   className={`flex h-8 items-center justify-center rounded-lg text-xs tabular-nums transition-colors ${
-                    isSel ? "bg-black font-semibold text-white" : "text-neutral-700 hover:bg-neutral-100"
-                  } ${!isSel && isToday ? "ring-1 ring-inset ring-neutral-300" : ""}`}
+                    isSel
+                      ? "bg-black font-semibold text-white dark:bg-white dark:text-black"
+                      : "text-neutral-700 hover:bg-neutral-100 dark:hover:bg-white/10"
+                  } ${!isSel && isToday ? "ring-1 ring-inset ring-neutral-300 dark:ring-neutral-600" : ""}`}
                 >
                   {day}
                 </button>
@@ -265,8 +269,10 @@ function MiniSelect({
                 onChange(opt);
                 setOpen(false);
               }}
-              className={`block w-full px-2 py-1.5 text-center text-xs tabular-nums transition-colors hover:bg-neutral-100 ${
-                opt === value ? "bg-neutral-50 font-semibold text-trell-ink" : "text-neutral-600"
+              className={`block w-full px-2 py-1.5 text-center text-xs tabular-nums transition-colors hover:bg-neutral-100 dark:hover:bg-white/10 ${
+                opt === value
+                  ? "bg-neutral-50 font-semibold text-trell-ink dark:text-white"
+                  : "text-neutral-600 dark:text-neutral-400"
               }`}
             >
               {opt}

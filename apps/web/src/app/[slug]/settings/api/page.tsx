@@ -28,7 +28,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
           toast.error("Could not copy — select and copy manually");
         }
       }}
-      className="flex shrink-0 items-center gap-1.5 rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-50"
+      className="flex shrink-0 items-center gap-1.5 rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-medium text-amber-800 transition-colors hover:bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/15"
     >
       <Icon name={copied ? "check" : "link"} size={13} />
       {copied ? "Copied!" : label}
@@ -159,25 +159,27 @@ export default function ApiKeysSettingsPage() {
       </div>
 
       {newKey && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
           <div className="flex items-start gap-3">
-            <Icon name="check" size={16} className="mt-0.5 shrink-0 text-amber-600" />
+            <Icon name="check" size={16} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-amber-900">Secret key created: {newKey.name}</div>
-              <div className="mt-1 text-xs text-amber-700">
+              <div className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                Secret key created: {newKey.name}
+              </div>
+              <div className="mt-1 text-xs text-amber-700 dark:text-amber-300/90">
                 Copy it now — it won&apos;t be shown again. Store it as{" "}
                 <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">TRELL_SECRET_KEY</code> in your backend{" "}
                 <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">.env</code>.
               </div>
               <div className="mt-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <code className="min-w-0 flex-1 break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-amber-900 ring-1 ring-amber-200">
+                  <code className="min-w-0 flex-1 break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-amber-900 ring-1 ring-amber-200 dark:bg-black/40 dark:text-amber-200 dark:ring-amber-500/30">
                     {newKey.secret}
                   </code>
                   <CopyButton value={newKey.secret} label="Copy" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <code className="min-w-0 flex-1 break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-amber-900 ring-1 ring-amber-200">
+                  <code className="min-w-0 flex-1 break-all rounded-md bg-white px-3 py-2 font-mono text-xs text-amber-900 ring-1 ring-amber-200 dark:bg-black/40 dark:text-amber-200 dark:ring-amber-500/30">
                     TRELL_SECRET_KEY={newKey.secret}
                   </code>
                   <CopyButton value={`TRELL_SECRET_KEY=${newKey.secret}`} label=".env" />
@@ -263,7 +265,7 @@ export default function ApiKeysSettingsPage() {
                   <button
                     disabled={revoking === k.id}
                     onClick={() => void revokeKey(k.id)}
-                    className={`flex shrink-0 items-center gap-1 text-xs transition-colors disabled:opacity-40 ${confirmRevoke === k.id ? "font-medium text-red-600 hover:text-red-700" : "text-trell-ink-muted hover:text-red-600"}`}
+                    className={`flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs transition-colors disabled:opacity-40 ${confirmRevoke === k.id ? "font-medium text-red-600 hover:text-red-700" : "text-trell-ink-muted hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"}`}
                   >
                     <Icon name="close" size={12} className={revoking === k.id ? "animate-spin" : ""} />
                     {revoking === k.id ? "Revoking…" : confirmRevoke === k.id ? "Click again to revoke" : "Revoke"}

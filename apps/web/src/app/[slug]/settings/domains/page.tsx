@@ -5,11 +5,25 @@ import toast from "react-hot-toast";
 import { Icon } from "@/components/Icon";
 import { useProject } from "../_components/ProjectContext";
 
+const TLD_SUGGESTIONS = ["com", "co", "ai", "sh", "so", "app", "io", "dev"];
+
+// Bare name typed so far (no dot yet) — used to suggest TLD completions.
+function domainBase(v: string): string | null {
+  const base = v
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .split("/")[0]!
+    .split(" ")[0]!;
+  return /^[a-z0-9-]+$/.test(base) ? base : null;
+}
+
 export default function DomainsSettingsPage() {
   const { project, loading, setProject } = useProject();
   const [domain, setDomain] = useState("");
   const [adding, setAdding] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
+  const base = domainBase(domain);
 
   if (loading || !project) return <div className="py-8 text-center text-sm text-neutral-400">Loading…</div>;
 
@@ -84,8 +98,24 @@ export default function DomainsSettingsPage() {
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
               placeholder="example.com"
+              autoComplete="off"
+              spellCheck={false}
               className="trell-input max-w-sm"
             />
+            {base && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {TLD_SUGGESTIONS.map((tld) => (
+                  <button
+                    key={tld}
+                    type="button"
+                    onClick={() => setDomain(`${base}.${tld}`)}
+                    className="rounded-md border border-trell-line px-2 py-1 font-mono text-xs text-trell-ink-muted transition-colors hover:border-blue-300 hover:text-blue-600 dark:hover:border-blue-500/40 dark:hover:text-blue-400"
+                  >
+                    {base}.{tld}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex items-center justify-between border-t border-trell-line bg-neutral-50 px-4 py-2.5">
             <span className="text-xs text-trell-ink-muted">Only the hostname, no protocol or path.</span>
@@ -121,7 +151,7 @@ export default function DomainsSettingsPage() {
                   <button
                     disabled={removing === d}
                     onClick={() => removeDomain(d)}
-                    className="flex items-center gap-1 text-xs text-trell-ink-muted transition-colors hover:text-red-600 disabled:opacity-40"
+                    className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-trell-ink-muted transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-40 dark:hover:bg-red-500/10"
                   >
                     <Icon name="close" size={12} className={removing === d ? "animate-spin" : ""} />
                     Remove

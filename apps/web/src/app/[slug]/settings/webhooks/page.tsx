@@ -139,7 +139,7 @@ export default function WebhooksSettingsPage() {
 
       {isFree && (
         <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-trell-line bg-white px-6 py-12 text-center">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-neutral-100">
+          <div className="flex size-12 items-center justify-center rounded-xl bg-neutral-100 dark:bg-white/10">
             <Icon name="webhooks" size={24} className="text-neutral-500" />
           </div>
           <div>
@@ -185,8 +185,8 @@ export default function WebhooksSettingsPage() {
                         key={event.value}
                         className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors cursor-pointer ${
                           selectedEvents.includes(event.value)
-                            ? "border-blue-200 bg-blue-50"
-                            : "border-trell-line hover:bg-neutral-50"
+                            ? "border-blue-200 bg-blue-50 dark:border-blue-500/40 dark:bg-blue-500/10"
+                            : "border-trell-line hover:bg-neutral-50 dark:hover:bg-white/5"
                         }`}
                       >
                         <input
