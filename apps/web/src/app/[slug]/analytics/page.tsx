@@ -44,6 +44,7 @@ export default function AnalyticsPage() {
   const [interval, setInterval] = useState("day");
   const [dim, setDim] = useState<(typeof DIMS)[number]>("page");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [preset, setPresetSel] = useState<number | null>(30);
   const filtersT = useMounted(filtersOpen, 150);
   const filtersRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +68,7 @@ export default function AnalyticsPage() {
     const t = new Date();
     setTo(localInput(new Date(t.getTime() + 86400000)));
     setFrom(localInput(new Date(t.getTime() - days * 86400000)));
+    setPresetSel(days);
   }
 
   const qs = useMemo(() => rangeQs(from, to), [from, to]);
@@ -146,28 +148,38 @@ export default function AnalyticsPage() {
                 className={`absolute right-0 z-30 mt-2 w-72 rounded-xl border border-trell-line bg-white p-4 shadow-xl ${filtersT.closing ? "trell-pop-out" : "trell-pop-in"}`}
               >
                 <div className="mb-3 text-xs font-medium text-trell-ink-muted">Range</div>
-                <div className="mb-3 flex rounded-lg bg-neutral-100 p-0.5">
-                  {[
-                    { d: 7, label: "7D" },
-                    { d: 30, label: "30D" },
-                    { d: 90, label: "90D" },
-                  ].map((p) => (
-                    <button
-                      key={p.d}
-                      onClick={() => setPreset(p.d)}
-                      className="flex-1 rounded-md px-2.5 py-1 text-xs font-medium text-neutral-500 transition-colors hover:text-neutral-700"
-                    >
-                      {p.label}
-                    </button>
-                  ))}
+                <div className="mb-3">
+                  <SegmentedControl
+                    className="w-full [&>div]:flex-1 [&_button]:w-full"
+                    ariaLabel="Date range"
+                    value={preset != null ? String(preset) : null}
+                    onChange={(v) => setPreset(Number(v))}
+                    options={[
+                      { value: "7", label: "7D" },
+                      { value: "30", label: "30D" },
+                      { value: "90", label: "90D" },
+                    ]}
+                  />
                 </div>
                 <label className="mb-1 block text-xs text-trell-ink-muted">From</label>
                 <div className="mb-3">
-                  <DateTimeField value={from} onChange={setFrom} />
+                  <DateTimeField
+                    value={from}
+                    onChange={(v) => {
+                      setFrom(v);
+                      setPresetSel(null);
+                    }}
+                  />
                 </div>
                 <label className="mb-1 block text-xs text-trell-ink-muted">To</label>
                 <div className="mb-3">
-                  <DateTimeField value={to} onChange={setTo} />
+                  <DateTimeField
+                    value={to}
+                    onChange={(v) => {
+                      setTo(v);
+                      setPresetSel(null);
+                    }}
+                  />
                 </div>
                 <label className="mb-1 block text-xs text-trell-ink-muted">Bucket interval</label>
                 <div className="mb-4">
@@ -291,7 +303,7 @@ export default function AnalyticsPage() {
         </PanelCard>
 
         <PanelCard title="Metrics" flush auto>
-          <div className="grid h-full grid-cols-2 auto-rows-fr gap-px bg-trell-line dark:bg-white/10">
+          <div className="grid h-full grid-cols-2 auto-rows-fr gap-px bg-trell-line dark:bg-[#2a2a29]">
             <MetricTile color="bg-blue-500" label="Starts" value={metrics?.starts ?? 0} loading={loading} />
             <MetricTile color="bg-green-600" label="Submits" value={metrics?.submits ?? 0} loading={loading} />
             <MetricTile color="bg-orange-500" label="Abandons" value={metrics?.abandons ?? 0} loading={loading} />
@@ -461,7 +473,7 @@ function MetricTile({
 }) {
   const isNumeric = typeof value === "number";
   return (
-    <div className="flex min-h-[112px] min-w-0 flex-col justify-center bg-white p-5 dark:bg-neutral-900">
+    <div className="flex min-h-[112px] min-w-0 flex-col justify-center bg-white p-5 dark:bg-[#191918]">
       <div className="flex items-center gap-2 text-[13px] font-medium text-neutral-600 dark:text-neutral-400">
         <span className={`h-2 w-2 shrink-0 rounded-sm ${color}`} />
         <span className="truncate">{label}</span>

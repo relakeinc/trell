@@ -374,7 +374,7 @@ export default function SubmissionsPage() {
                     <Fragment key={g.key}>
                       <tr
                         onClick={() => setExpanded(isOpen ? null : g.key)}
-                        className={`cursor-pointer border-t border-trell-line transition-colors hover:bg-neutral-50 ${isOpen ? "bg-neutral-50/60" : ""}`}
+                        className={`cursor-pointer border-t border-trell-line transition-colors hover:bg-neutral-50 dark:hover:bg-white/5 ${isOpen ? "bg-neutral-50/60 dark:bg-white/10" : ""}`}
                       >
                         <td className="max-w-[220px] py-3 pl-4 sm:max-w-none sm:pl-5">
                           <div className="flex min-w-0 items-center gap-3">
@@ -417,15 +417,15 @@ export default function SubmissionsPage() {
                                 setSortOpen(false);
                               }}
                               aria-label={`Actions for ${g.name}`}
-                              className="rounded-md px-1.5 py-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+                              className="rounded-md px-1.5 py-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-white/10 dark:hover:text-neutral-200"
                             >
                               ⋮
                             </button>
                             {menuForRow && (
-                              <div className="trell-pop-in absolute right-0 z-30 mt-1 w-44 overflow-hidden rounded-xl border border-trell-line bg-white py-1 text-left shadow-xl">
+                              <div className="trell-pop-in absolute right-0 z-30 mt-1 w-44 overflow-hidden rounded-xl border border-trell-line bg-white py-1 text-left shadow-xl dark:border-white/10 dark:bg-[#1e1e1d]">
                                 <button
                                   onClick={() => exportGroup(g)}
-                                  className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50"
+                                  className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-white/5"
                                 >
                                   <Icon name="download" size={14} />
                                   Export CSV
@@ -435,7 +435,7 @@ export default function SubmissionsPage() {
                                     copy(g.formId, `form:${g.key}`);
                                     setOpenMenu(null);
                                   }}
-                                  className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50"
+                                  className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-neutral-600 transition-colors hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-white/5"
                                 >
                                   <Icon name={copied === `form:${g.key}` ? "check" : "send"} size={14} />
                                   {copied === `form:${g.key}` ? "Copied ID" : "Copy form ID"}
@@ -447,7 +447,7 @@ export default function SubmissionsPage() {
                       </tr>
                       {isOpen && (
                         <tr className="border-t border-trell-line">
-                          <td colSpan={5} className="bg-white px-4 py-3 sm:px-5">
+                          <td colSpan={5} className="bg-white px-4 py-3 dark:bg-[#191918] sm:px-5">
                             <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
                               <span>
                                 <strong className="font-semibold tabular-nums text-trell-ink">{g.count}</strong>{" "}
@@ -460,13 +460,13 @@ export default function SubmissionsPage() {
                               {g.pages.length > 1 && <span>{g.pages.length} pages</span>}
                               <button
                                 onClick={() => exportGroup(g)}
-                                className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-trell-line bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
+                                className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-trell-line bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-100 dark:border-white/10 dark:bg-white/10 dark:text-neutral-200 dark:hover:bg-white/15"
                               >
                                 <Icon name="download" size={13} />
                                 Export this form
                               </button>
                             </div>
-                            <ul className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-trell-line">
+                            <ul className="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-trell-line dark:divide-white/10">
                               {g.recent.slice(0, 5).map((s) => {
                                 const entries = fieldEntries(s.fields);
                                 const summary = entries

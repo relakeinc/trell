@@ -53,7 +53,7 @@ export function ComparisonPanel({
             <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-500">
               {baselineLabel && (
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="inline-block h-2 w-2 rounded-full bg-neutral-300" />
+                  <span className="inline-block h-2 w-2 rounded-full bg-neutral-300 dark:bg-neutral-600" />
                   {baselineLabel}
                 </span>
               )}
@@ -83,7 +83,7 @@ export function ComparisonPanel({
           return (
             <div key={key} className="group" title={`${label}: ${fmt(b)} → ${fmt(c)}`}>
               <div className="mb-1.5 flex items-baseline justify-between gap-3">
-                <span className="truncate text-[13px] text-neutral-600">{label}</span>
+                <span className="truncate text-[13px] text-neutral-600 dark:text-neutral-400">{label}</span>
                 <span className="flex shrink-0 items-baseline gap-2">
                   <span className="text-[13px] tabular-nums text-neutral-400">{fmt(b)}</span>
                   <span className="text-[13px] font-bold tabular-nums text-trell-ink">{fmt(c)}</span>
@@ -91,24 +91,24 @@ export function ComparisonPanel({
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${
                         up
-                          ? "bg-green-50 text-green-700"
+                          ? "bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-400"
                           : down
-                            ? "bg-red-50 text-red-600"
-                            : "bg-neutral-100 text-neutral-500"
+                            ? "bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-400"
+                            : "bg-neutral-100 text-neutral-500 dark:bg-white/10 dark:text-neutral-400"
                       }`}
                     >
                       {up ? "↗" : down ? "↘" : "→"}
                       {pctStr ? ` ${pctStr}` : ""}
                     </span>
                   ) : (
-                    <span className="text-xs text-neutral-300">–</span>
+                    <span className="text-xs text-neutral-300 dark:text-neutral-600">–</span>
                   )}
                 </span>
               </div>
               <div className="space-y-1">
                 <div className="h-1.5 w-full overflow-hidden rounded-r-full bg-transparent">
                   <div
-                    className="h-full rounded-l-none rounded-r-full bg-neutral-300 transition-all duration-500"
+                    className="h-full rounded-l-none rounded-r-full bg-neutral-300 transition-all duration-500 dark:bg-neutral-700"
                     style={{ width: `${Math.max(bv > 0 ? 2 : 0, (bv / max) * 100)}%` }}
                   />
                 </div>

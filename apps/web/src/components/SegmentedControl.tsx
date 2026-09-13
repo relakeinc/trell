@@ -27,7 +27,7 @@ export function SegmentedControl<T extends string>({
   className,
 }: {
   options: SegmentOption<T>[];
-  value: T;
+  value: T | null;
   onChange: (value: T) => void;
   ariaLabel?: string;
   size?: keyof typeof SIZES;

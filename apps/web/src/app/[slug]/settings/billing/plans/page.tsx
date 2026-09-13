@@ -235,7 +235,7 @@ export default function BillingPlansPage() {
                 Learn more ↗
               </Link>
             </div>
-            <div className="divide-y divide-neutral-100">
+            <div className="divide-y divide-neutral-100 dark:divide-white/10">
               {group.rows.map((row) => (
                 <div key={row.name} className="grid grid-cols-[1fr_85px_85px] items-center px-5 py-2">
                   <div className="text-sm text-neutral-700">{row.name}</div>
