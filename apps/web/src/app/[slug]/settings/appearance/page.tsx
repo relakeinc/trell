@@ -35,11 +35,11 @@ function TrafficLights() {
 
 function MockBars({ dark }: { dark?: boolean }) {
   const bar = dark ? "bg-neutral-700" : "bg-neutral-200";
-  const widths = ["w-3/4", "w-full", "w-5/6", "w-2/3", "w-4/5"];
+  const widths = ["w-3/4", "w-full", "w-5/6", "w-2/3", "w-4/5", "w-3/5", "w-11/12"];
   return (
-    <div className="mt-2 space-y-1.5">
+    <div className="mt-3 space-y-2">
       {widths.map((w) => (
-        <div key={w} className={`h-1 rounded-full ${bar} ${w}`} />
+        <div key={w} className={`h-1.5 rounded-full ${bar} ${w}`} />
       ))}
     </div>
   );
@@ -55,10 +55,10 @@ function MockAvatar({ dark }: { dark?: boolean }) {
 }
 
 function MockSpark({ dark }: { dark?: boolean }) {
-  const heights = [38, 62, 45, 78, 58, 88, 66, 96];
+  const heights = [38, 62, 45, 78, 58, 88, 66, 96, 72, 84];
   const bar = dark ? "bg-neutral-600" : "bg-neutral-300";
   return (
-    <div className="mt-auto flex h-12 items-end gap-1 pt-2">
+    <div className="mt-auto flex h-20 items-end gap-1.5 pt-4">
       {heights.map((h, i) => (
         <div key={i} className={`flex-1 rounded-sm ${bar}`} style={{ height: `${h}%` }} />
       ))}
@@ -69,7 +69,7 @@ function MockSpark({ dark }: { dark?: boolean }) {
 function ThemeMock({ mode }: { mode: "light" | "dark" | "system" }) {
   if (mode === "system") {
     return (
-      <div className="flex h-48 overflow-hidden rounded-md">
+      <div className="flex h-72 overflow-hidden rounded-md">
         <div className="flex w-1/2 flex-col bg-white p-2.5">
           <TrafficLights />
           <MockAvatar />
@@ -87,7 +87,7 @@ function ThemeMock({ mode }: { mode: "light" | "dark" | "system" }) {
   }
   const dark = mode === "dark";
   return (
-    <div className={`flex h-48 flex-col rounded-md p-2.5 ${dark ? "bg-[#111111]" : "bg-white"}`}>
+    <div className={`flex h-72 flex-col rounded-md p-2.5 ${dark ? "bg-[#111111]" : "bg-white"}`}>
       <TrafficLights />
       <MockAvatar dark={dark} />
       <MockBars dark={dark} />
