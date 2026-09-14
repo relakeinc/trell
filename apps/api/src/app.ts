@@ -13,6 +13,7 @@ import { makeProjects } from "./routes/projects";
 import { makeAnalytics } from "./routes/analytics";
 import { makeFunnels } from "./routes/funnels";
 import { makeViews } from "./routes/views";
+import { eventLoopLagMs } from "./lib/eventLoop";
 import { sendError } from "./lib/errors";
 
 export interface AppDeps {
@@ -48,6 +49,10 @@ export function createApp(deps: AppDeps): Hono {
   });
 
   app.get("/health", (c) => c.json({ ok: true }));
+
+  // Event-loop delay percentiles (ms, cumulative since boot). Cheap to read;
+  // poll it to decide whether heavy analytics work needs isolating.
+  app.get("/health/event-loop", (c) => c.json({ ok: true, eventLoopLagMs: eventLoopLagMs() }));
 
   app.get("/sdk/trell.js", async (c) => {
     if (!cachedSdk) {

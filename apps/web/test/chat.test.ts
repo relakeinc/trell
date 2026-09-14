@@ -183,6 +183,14 @@ describe("chatAgent helpers", () => {
     expect(answerLocalIntent("what can you do")).toMatch(/Do/);
   });
 
+  it("refuses off-topic questions locally without AI", () => {
+    expect(answerLocalIntent("2+2")).toMatch(/Yoi/);
+    expect(answerLocalIntent("cuánto es 2+2")).toMatch(/se me escapa/);
+    expect(answerLocalIntent("explícame python")).toMatch(/se me escapa/);
+    expect(answerLocalIntent("solve this homework")).toMatch(/outside my lane/);
+    expect(answerLocalIntent("hola, cuánto es 2+2")).toMatch(/se me escapa/);
+  });
+
   it("sends real content to the model, not the local matcher", () => {
     expect(answerLocalIntent("hola, dame el resumen semanal")).toBeNull();
     expect(answerLocalIntent("help me create a funnel")).toBeNull();

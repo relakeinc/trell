@@ -24,13 +24,23 @@ function SparkleMark({ size = 16 }: { size?: number }) {
  */
 export function AskYoiButton() {
   const { openChat, setAskHover } = useChat();
+  // Warm up the lazily-loaded panel chunk so the first open feels instant.
+  function preload() {
+    void import("./ChatWidget").catch(() => {});
+  }
   return (
     <button
       type="button"
       onClick={openChat}
-      onMouseEnter={() => setAskHover(true)}
+      onMouseEnter={() => {
+        setAskHover(true);
+        preload();
+      }}
       onMouseLeave={() => setAskHover(false)}
-      onFocus={() => setAskHover(true)}
+      onFocus={() => {
+        setAskHover(true);
+        preload();
+      }}
       onBlur={() => setAskHover(false)}
       className="trell-btn-outline trell-mobile-hidden h-9 gap-1.5"
       title="Ask Yoi"

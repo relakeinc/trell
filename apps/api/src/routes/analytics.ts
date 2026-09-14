@@ -24,9 +24,10 @@ function parseDateQuery(raw: string | undefined, name: string): Date | undefined
   return d;
 }
 
-function intQuery(raw: string | undefined, fallback: number): number {
+function intQuery(raw: string | undefined, fallback: number, max = 500): number {
   const n = Number(raw);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
+  if (!Number.isFinite(n) || n <= 0) return fallback;
+  return Math.min(Math.floor(n), max);
 }
 
 function parseSegment(c: Context): Record<string, string> | undefined {
@@ -133,7 +134,7 @@ export function makeAnalytics(repo: Repo) {
       const from = parseDateQuery(c.req.query("from"), "from");
       const to = parseDateQuery(c.req.query("to"), "to");
       const type = c.req.query("type");
-      const topN = intQuery(c.req.query("limit"), 25);
+      const topN = intQuery(c.req.query("limit"), 25, 100);
       const form = c.req.query("form");
       const segment = parseSegment(c);
 
@@ -149,7 +150,15 @@ export function makeAnalytics(repo: Repo) {
 
     forms: guard(async (c: Context): Promise<Response> => {
       const projectId = c.get("projectId");
-      const events = await repo.getEventsForAnalytics(projectId, {});
+      // Perf bug fix: previously ignored from/to and fetched the ENTIRE
+      // event history on every dashboard load. Respect the date filter.
+      const filter = buildFilter({
+        from: c.req.query("from"),
+        to: c.req.query("to"),
+        type: c.req.query("type"),
+        form: c.req.query("form"),
+      });
+      const events = await repo.getEventsForAnalytics(projectId, filter);
       const map = new Map<
         string,
         { id: string; name: string | null; events: number; starts: number; successes: number }
@@ -177,7 +186,7 @@ export function makeAnalytics(repo: Repo) {
       const from = parseDateQuery(c.req.query("from"), "from");
       const to = parseDateQuery(c.req.query("to"), "to");
       const type = c.req.query("type");
-      const limit = intQuery(c.req.query("limit"), 100);
+      const limit = intQuery(c.req.query("limit"), 100, 500);
       const form = c.req.query("form");
       const segment = parseSegment(c);
       const funnelId = c.req.query("funnelId");

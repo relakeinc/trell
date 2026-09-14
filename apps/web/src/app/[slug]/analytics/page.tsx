@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { Icon } from "@/components/Icon";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
@@ -23,7 +22,6 @@ import {
   useProjectBreakdown,
   useProjectForms,
   useProjectEvents,
-  fetchBreakdown,
 } from "@/lib/hooks";
 import { localInput, pct, humanMs, fmtShortDate, rangeQs } from "@/lib/format";
 
@@ -198,19 +196,6 @@ export default function AnalyticsPage() {
   const { data: prevSeriesData } = useProjectSeries(projectId, interval, prevQs || null);
   const { data: breakdownData } = useProjectBreakdown(projectId, dim, qs);
 
-  // Prefetch the other dimensions in parallel so switching tabs feels instant.
-  const queryClient = useQueryClient();
-  useEffect(() => {
-    if (!projectId) return;
-    for (const d of DIMS) {
-      if (d === dim) continue;
-      void queryClient.prefetchQuery({
-        queryKey: ["breakdown", projectId, d, qs],
-        queryFn: () => fetchBreakdown(projectId, d, qs),
-        staleTime: 60_000,
-      });
-    }
-  }, [projectId, qs, dim, queryClient]);
   const { data: formsData } = useProjectForms(projectId, qs);
   const { data: eventsData } = useProjectEvents(projectId, qs, 15);
 
@@ -251,7 +236,8 @@ export default function AnalyticsPage() {
         />
       </MobileTopBarActions>
 
-      <header className="trell-header -mx-6 -mt-3 mb-6 px-6 pt-6">
+      {/* Desktop-only: on phones the app bar carries the title and filters. */}
+      <header className="trell-header trell-mobile-hidden -mx-6 -mt-3 mb-6 px-6 pt-6">
         <h1 className="hidden text-base font-semibold text-trell-ink md:block">Analytics</h1>
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden md:block">

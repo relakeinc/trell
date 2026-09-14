@@ -98,7 +98,7 @@ async function postChatCompletions(args: {
     messages: args.messages,
     tools: args.tools,
     temperature: 0.3,
-    max_tokens: 2048,
+    max_tokens: 1024,
     stream: true,
   };
   if (!args.reasoningOff) body.reasoning = { effort: "medium" };

@@ -634,7 +634,7 @@ body {
   .trell-page {
     gap: 0;
     padding: 0;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
+    padding-top: calc(env(safe-area-inset-top, 0px) + 232px);
     /* No reserved strip at the bottom: the content runs to the edge and the
        floating dock sits over it (the iOS pattern). The scroll area carries the
        bottom padding instead, so the last rows clear the dock. */
@@ -662,7 +662,7 @@ body {
     border-radius: 0;
     /* Clears the floating chrome (Yoi pill + dock) so content can scroll fully
        past it instead of stopping short. */
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 138px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 172px);
   }
 }
 
@@ -679,19 +679,52 @@ body {
 .dark .trell-mobile-bar {
   background-color: #111111 !important;
 }
-
 /* Floating dock (iOS-style). Solid, not frosted: the translucent + blurred
    fill picked up whatever scrolled underneath and read as a gray slab. */
 .trell-mobile-dock {
-  background-color: #ffffff;
+  background-color: #f4f4f5;
   border: 1px solid rgb(0 0 0 / 0.06);
   box-shadow: 0 8px 24px -14px rgb(0 0 0 / 0.22);
 }
 
 .dark .trell-mobile-dock {
-  background-color: #1e1e1d !important;
-  border-color: var(--trell-dark-border) !important;
+  background-color: #1c1c1d !important;
+  border-color: rgb(255 255 255 / 0.09) !important;
   box-shadow: 0 8px 24px -14px rgb(0 0 0 / 0.75);
+}
+
+/* ── Mobile shell surfaces (ClickUp-style) ──────────────────────
+   Explicit colours: the broad `.dark .bg-*` overrides above would otherwise
+   hijack utility classes like `bg-white`. */
+.trell-shell-fill {
+  background-color: #f1f1f2;
+}
+.dark .trell-shell-fill {
+  background-color: #1c1c1d !important;
+}
+.trell-shell-tile {
+  background-color: #f4f4f5;
+}
+.dark .trell-shell-tile {
+  background-color: #17171a !important;
+}
+.trell-shell-chip {
+  background-color: #ffffff;
+}
+.dark .trell-shell-chip {
+  background-color: rgb(255 255 255 / 0.06) !important;
+}
+.trell-shell-active {
+  background-color: #6c4cf1;
+}
+.dark .trell-shell-active {
+  background-color: #6c4cf1 !important;
+}
+.trell-dock-active {
+  background-color: rgb(0 0 0 / 0.06);
+}
+.dark .trell-dock-active {
+  background-color: rgb(255 255 255 / 0.1) !important;
 }
 
 /* Bottom dock row. In a browser the extra padding clears the browser's own

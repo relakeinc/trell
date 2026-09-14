@@ -135,7 +135,12 @@ export function ProjectSidebar({
 
   const usagePct = usage ? Math.min((usage.events / (usage.limit || 1)) * 100, 100) : 0;
   const domainPct = usage ? Math.min((usage.domains / (usage.domainLimit || 1)) * 100, 100) : 0;
-  const resetDate = nextBillingReset(usage?.billingPeriodStart);
+  // Computed after mount: the server has no usage yet, and the date formatting
+  // depends on the viewer's timezone (SSR vs client would disagree).
+  const [resetDate, setResetDate] = useState<string | null>(null);
+  useEffect(() => {
+    setResetDate(nextBillingReset(usage?.billingPeriodStart));
+  }, [usage?.billingPeriodStart]);
 
   return (
     <>
@@ -313,7 +318,7 @@ export function ProjectSidebar({
             </div>
           )}
 
-          <p className="text-[11px] text-neutral-400">Resets {resetDate}</p>
+          <p className="text-[11px] text-neutral-400">Resets {resetDate ?? "—"}</p>
 
           <Link
             href={`/${projectSlug}/settings/billing`}

@@ -124,6 +124,8 @@ export function useProjectSeries(projectId: string | null, interval: string, qs:
         (r) => r.json() as Promise<SeriesResponse>,
       ),
     enabled: !!projectId && !!qs,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
   });
 }
 
@@ -170,6 +172,8 @@ export function useProjectForms(projectId: string | null, qs: string) {
     queryKey: ["forms", projectId, qs],
     queryFn: () => fetch(`/api/projects/${projectId}/forms?${qs}`).then((r) => r.json() as Promise<FormsResponse>),
     enabled: !!projectId,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
   });
 }
 
@@ -201,6 +205,8 @@ export function useProjectEvents(projectId: string | null, qs: string, limit = 5
     queryFn: () =>
       fetch(`/api/projects/${projectId}/events?limit=${limit}&${qs}`).then((r) => r.json() as Promise<EventsResponse>),
     enabled: !!projectId,
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
   });
 }
 

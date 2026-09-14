@@ -6,7 +6,7 @@ import { RateLimiter } from "../middleware/ratelimit";
 import { payloadTooLarge, sendError, sendOk, tooMany } from "../lib/errors";
 import { EventQuota } from "../lib/quota";
 import { parseAndValidate, toStoredEvent, BatchTooLargeError, InvalidEventError } from "../validation";
-import { deliverWebhooks } from "../lib/webhook-delivery";
+import { deliverWebhooks, mapWithConcurrency, DELIVERY_FANOUT } from "../lib/webhook-delivery";
 
 const PLAN_LIMITS = {
   free: { events: 5000 },
@@ -77,26 +77,26 @@ export function makeIngest(deps: IngestDeps): {
         if (!prisma || events.length === 0) {
           return sendOk(c, 202, { inserted: result.inserted, duplicates: result.duplicates });
         }
-        Promise.allSettled(
-          events.map((e) => {
-            const form = "form" in e ? e.form : undefined;
-            return deliverWebhooks(
-              projectId,
-              e.type,
-              {
-                event_id: e.event_id,
-                type: e.type,
-                page: e.page,
-                form_id: form?.id ?? null,
-                properties: e.properties,
-                visitor_id: e.visitor_id,
-                session_id: e.session_id,
-                timestamp: e.ts,
-              },
-              prisma,
-            );
-          }),
-        ).catch(() => {});
+        // Fire-and-forget, bounded: at most DELIVERY_FANOUT webhook batches
+        // in flight so one big ingest batch can't fan out unbounded sockets.
+        void mapWithConcurrency(events, DELIVERY_FANOUT, (e) => {
+          const form = "form" in e ? e.form : undefined;
+          return deliverWebhooks(
+            projectId,
+            e.type,
+            {
+              event_id: e.event_id,
+              type: e.type,
+              page: e.page,
+              form_id: form?.id ?? null,
+              properties: e.properties,
+              visitor_id: e.visitor_id,
+              session_id: e.session_id,
+              timestamp: e.ts,
+            },
+            prisma,
+          ).catch(() => {});
+        }).catch(() => {});
 
         return sendOk(c, 202, { inserted: result.inserted, duplicates: result.duplicates });
       } catch (e) {

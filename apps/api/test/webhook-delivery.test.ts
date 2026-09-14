@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import type { WebhookStore } from "../src/lib/webhook-delivery";
-import { deliverWebhooks, retryStuckDeliveries } from "../src/lib/webhook-delivery";
+import { deliverWebhooks, retryStuckDeliveries, mapWithConcurrency, DELIVERY_FANOUT } from "../src/lib/webhook-delivery";
 
 const { mockLookup } = vi.hoisted(() => ({ mockLookup: vi.fn() }));
 vi.mock("node:dns/promises", () => ({ lookup: mockLookup }));
@@ -100,6 +100,23 @@ describe("webhook delivery retries", () => {
     const body = JSON.parse(init.body as string) as Record<string, unknown>;
     expect(body["project_id"]).toBe("proj");
     expect(body["event"]).toBe("form_submit");
+  });
+});
+
+describe("mapWithConcurrency", () => {
+  it("never exceeds the lane limit and preserves order", async () => {
+    let inFlight = 0;
+    let peak = 0;
+    const out = await mapWithConcurrency(Array.from({ length: 20 }, (_, i) => i), DELIVERY_FANOUT, async (n) => {
+      inFlight++;
+      peak = Math.max(peak, inFlight);
+      await new Promise((r) => setTimeout(r, 5));
+      inFlight--;
+      return n * 2;
+    });
+    expect(peak).toBeLessThanOrEqual(DELIVERY_FANOUT);
+    expect(peak).toBeGreaterThan(1);
+    expect(out).toEqual(Array.from({ length: 20 }, (_, i) => i * 2));
   });
 });
 

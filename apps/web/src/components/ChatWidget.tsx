@@ -342,39 +342,25 @@ export function ChatWidget() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [leaving, setLeaving] = useState(false);
-  const [entered, setEntered] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [menu, setMenu] = useState<{ kind: "@" | "/"; query: string } | null>(null);
   const [menuIndex, setMenuIndex] = useState(0);
   const greet = useMemo(greeting, []);
   const closeTimer = useRef<number | null>(null);
 
-  // Mount collapsed then expand after paint so the sibling glides; close collapses first, reopen cancels unmount.
+  // Mount instantly and animate with pure CSS: grid-template-columns on
+  // desktop (no width reflow of the page), opacity/transform on mobile.
+  // Close fades first and unmounts after, so there is no blink.
+  const shown = open && !closing;
   useEffect(() => {
-    if (closeTimer.current !== null) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
+    if (open && closing) {
+      setClosing(false);
+      if (closeTimer.current !== null) {
+        window.clearTimeout(closeTimer.current);
+        closeTimer.current = null;
+      }
     }
-    if (open) {
-      setLeaving(false);
-      setEntered(false);
-      let raf2 = 0;
-      const raf1 = requestAnimationFrame(() => {
-        raf2 = requestAnimationFrame(() => setEntered(true));
-      });
-      return () => {
-        cancelAnimationFrame(raf1);
-        cancelAnimationFrame(raf2);
-      };
-    }
-    setLeaving(true);
-    setEntered(false);
-    closeTimer.current = window.setTimeout(() => {
-      setLeaving(false);
-      closeTimer.current = null;
-    }, 320);
-    return;
-  }, [open]);
+  }, [open, closing]);
 
   useEffect(
     () => () => {
@@ -486,9 +472,14 @@ export function ChatWidget() {
   }
 
   function close() {
-    if (leaving) return;
+    if (closing) return;
     setHistoryOpen(false);
+    setClosing(true);
     setOpen(false);
+    closeTimer.current = window.setTimeout(() => {
+      closeTimer.current = null;
+      setClosing(false);
+    }, 280);
   }
 
   function selectMenuItemAt(idx: number) {
@@ -764,7 +755,7 @@ export function ChatWidget() {
   const lastMsg = messages[messages.length - 1];
   const awaitingResponse = busy && lastMsg && (lastMsg.role === "user" || (lastMsg.role === "model" && !lastMsg.text));
 
-  if (!open && !leaving) {
+  if (!open && !closing) {
     return (
       <div
         aria-hidden
@@ -781,13 +772,14 @@ export function ChatWidget() {
 
   return (
     <aside
-      className={`yoi-chat fixed inset-0 z-50 h-full w-full shrink-0 overflow-hidden bg-neutral-100 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:relative md:inset-auto md:z-40 md:h-full md:w-auto md:max-w-[calc(100vw-2rem)] md:rounded-xl md:pt-0 md:pb-0 md:transition-[width,opacity,margin-left,visibility] ${
-        entered && !leaving
-          ? "translate-y-0 opacity-100 md:w-[440px]"
-          : "pointer-events-none translate-y-3 opacity-0 md:invisible md:-ml-2 md:w-0 md:translate-y-0"
+      className={`yoi-chat fixed inset-0 z-50 h-full w-full shrink-0 bg-neutral-100 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] transition-[opacity,transform] duration-200 ease-out md:relative md:inset-auto md:z-40 md:grid md:h-full md:w-auto md:bg-transparent md:p-0 md:pt-0 md:pb-0 md:transition-[grid-template-columns,opacity] md:duration-300 md:ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        shown
+          ? "translate-y-0 opacity-100 md:translate-y-0 md:grid-cols-[1fr] md:opacity-100"
+          : "pointer-events-none translate-y-2 opacity-0 md:translate-y-0 md:grid-cols-[0fr] md:opacity-0"
       }`}
     >
-      <div className="relative flex h-full w-full flex-col gap-1 p-3 md:w-[440px] md:max-w-[calc(100vw-2rem)]">
+      <div className="h-full min-h-0 min-w-0 overflow-hidden">
+        <div className="relative flex h-full w-full flex-col gap-1 overflow-hidden bg-neutral-100 p-3 md:w-[440px] md:max-w-[calc(100vw-2rem)] md:rounded-xl">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(0_0_0/0.05)_1px,transparent_0)] bg-[size:22px_22px] dark:bg-[radial-gradient(circle_at_1px_1px,rgb(255_255_255/0.06)_1px,transparent_0)]"
@@ -1256,6 +1248,7 @@ export function ChatWidget() {
               </div>
             </PromptInputActions>
           </PromptInput>
+        </div>
         </div>
       </div>
     </aside>

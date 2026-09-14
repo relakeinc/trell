@@ -3,6 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import { ThemeProvider } from "@/lib/useTheme";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -29,7 +31,11 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>{children}</ThemeProvider>
+      <ThemeProvider>
+        {children}
+        <ServiceWorkerRegister />
+        <PWAInstallPrompt />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

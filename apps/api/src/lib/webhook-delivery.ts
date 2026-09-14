@@ -16,6 +16,37 @@ interface WebhookTarget {
 }
 
 /**
+ * Max concurrent outbound deliveries. Unbounded fan-out (one task per event
+ * × webhooks per event) can open hundreds of sockets at once and stall the
+ * event loop; a small pool keeps tail latency flat.
+ */
+export const DELIVERY_FANOUT = 5;
+
+/**
+ * Promise-pool mapper: runs `fn` over `items` with at most `limit` in flight,
+ * preserving result order. Rejects if any `fn` rejects (wrap with .catch to
+ * keep allSettled semantics).
+ */
+export async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const lanes = Math.min(Math.max(limit, 1), items.length);
+  await Promise.all(
+    Array.from({ length: lanes }, async () => {
+      while (next < items.length) {
+        const i = next++;
+        results[i] = await fn(items[i]!, i);
+      }
+    }),
+  );
+  return results;
+}
+
+/**
  * Narrow seam over the Prisma client so delivery logic is unit-testable and
  * the process shares a single injected client (see index.ts) instead of a
  * module-global singleton. `any` keeps it assignable to the real delegates.
@@ -53,7 +84,9 @@ export async function deliverWebhooks(
 
   const deliverables = webhooks.slice(0, 10); // cap at 10
 
-  await Promise.allSettled(deliverables.map((wh) => deliverOne(store, wh, projectId, event, payload)));
+  await mapWithConcurrency(deliverables, DELIVERY_FANOUT, (wh) =>
+    deliverOne(store, wh, projectId, event, payload).catch(() => {}),
+  );
 }
 
 async function deliverOne(

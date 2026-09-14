@@ -161,6 +161,10 @@ function stripGreeting(t: string): { lang: "es" | "en"; rest: string } | null {
 }
 
 const LOCAL_REPLIES: Record<string, Record<"es" | "en", string>> = {
+  offTopic: {
+    es: "Eso se me escapa — soy **Yoi** y solo ayudo con tu Trell: métricas, funnels, eventos y tracking. ¿Revisamos tus conversiones de los últimos 7 días?",
+    en: "That's outside my lane — I'm **Yoi**, I only help with your Trell: metrics, funnels, events and tracking. Want your last 7 days' conversions?",
+  },
   greeting: {
     es: "¡Hola! Soy **Yoi**, tu asistente de Trell. Puedo resumir tus métricas, revisar funnels o ayudarte con el tracking. ¿Qué hacemos hoy?",
     en: "Hey! I'm **Yoi**, your Trell assistant. I can summarize your metrics, check funnels or help with tracking. What are we doing today?",
@@ -187,8 +191,46 @@ const LOCAL_REPLIES: Record<string, Record<"es" | "en", string>> = {
  * Canned reply for pure small talk, or null when the message carries real
  * content and must go through the model. Bilingual: Spanish cues answer in
  * Spanish, English cues in English.
+ *
+ * Off-topic guard: short messages clearly outside Trell (mental math,
+ * general coding, homework…) get an instant canned refusal — zero model
+ * calls, zero credits. Anything mentioning Trell-domain words always falls
+ * through to the model; longer texts are judged by the system prompt.
  */
+const TRELL_DOMAIN =
+  /(trell|yoi|funnel|event|metric|conver|tracking|utm|webhook|dominio|domain|proyecto|project|workspace|formulario|form_|visita|visitor|sesi|session|dashboard|analytic|stat|recent|resumen|summary|trafico|tráfico|origen|browser|dispositivo|device|submission|envio|envío|abandon|bounce|rebote|scroll|cta|gracias|thanks|hola|hello|ayuda|help|comando|modo do|api key|secret|cuenta|billing|plan)/;
+
+const PURE_MATH = /^[\d\s+\-*/().%^,]+$/;
+
+const OFF_TOPIC =
+  /(cuanto es|cuánto es|calcula|resuelve|explicame|explícame|ensename|enséñame|que es python|qué es python|hazme (un|una|el) (codigo|código|programa|poema)|escribeme|escríbeme|tarea de|examen de|capital de|quien gano|quién ganó|receta de|chiste|cuentame un|python|javascript|typescript|solve|calculate|explain python|teach me|write (me )?(some |a )?code|homework|meaning of life|who won|capital of)/;
+
+function offTopicLang(t: string): "es" | "en" {
+  if (/[áéíóúñ¿¡]|cuanto|explica|calcula|dime|que es|qué es|hazme|escribe/.test(t)) return "es";
+  if (/\b(what|solve|calculate|explain|teach|write|code|homework|who|capital)\b/.test(t)) return "en";
+  return "es";
+}
+
+/** Canned off-topic refusal, or null when the text may be Trell-related. */
+function answerOffTopic(t: string): string | null {
+  if (TRELL_DOMAIN.test(t)) return null;
+  const math = PURE_MATH.test(t) && /[+\-*/%^]/.test(t) && /\d/.test(t);
+  if (!math && !OFF_TOPIC.test(t)) return null;
+  return LOCAL_REPLIES.offTopic![offTopicLang(t)];
+}
 export function answerLocalIntent(raw: string): string | null {
+  // Pure arithmetic on the RAW text: normLocal strips operators ("2+2" →
+  // "2 2"), so catch it before normalizing. Instant refusal, zero credits.
+  const trimmed = raw.trim();
+  if (
+    trimmed &&
+    trimmed.length <= 40 &&
+    PURE_MATH.test(trimmed) &&
+    /[+\-*/%^]/.test(trimmed) &&
+    /\d/.test(trimmed)
+  ) {
+    return LOCAL_REPLIES.offTopic![offTopicLang(trimmed.toLowerCase())];
+  }
   const t = normLocal(raw);
   if (!t || t.length > 140) return null;
 
@@ -210,6 +252,9 @@ export function answerLocalIntent(raw: string): string | null {
   if (ES_CAPABILITIES.has(t)) return LOCAL_REPLIES.capabilities!.es;
   if (EN_CAPABILITIES.has(t)) return LOCAL_REPLIES.capabilities!.en;
 
+  const offTopic = answerOffTopic(t);
+  if (offTopic) return offTopic;
+
   // Leading small talk ("hola, quién eres") — peel greetings, then re-check.
   let rest = t;
   let greeted: "es" | "en" | null = null;
@@ -226,6 +271,10 @@ export function answerLocalIntent(raw: string): string | null {
   if (greeted && words.length <= 9 && EN_IDENTITY.test(rest)) return LOCAL_REPLIES.identity!.en;
   if (greeted && ES_CAPABILITIES.has(rest)) return LOCAL_REPLIES.capabilities!.es;
   if (greeted && EN_CAPABILITIES.has(rest)) return LOCAL_REPLIES.capabilities!.en;
+  if (greeted) {
+    const offRest = answerOffTopic(rest);
+    if (offRest) return offRest;
+  }
   return null;
 }
 
@@ -243,7 +292,7 @@ export function buildSystemPrompt(opts: {
   return [
     `You are Yoi, the in-dashboard AI assistant for Trell (form analytics: views, starts, submissions, conversions, abandons, funnels, UTM attribution).`,
     `You help with the Trell workspace "${opts.workspaceSlug}" and talk to ${opts.userEmail}.`,
-    `Reply in the user's language (default Spanish if unclear). Be concise: short answers, markdown, tables for numbers.`,
+    `Reply in the user's language (default Spanish if unclear). Go straight to the point: max ~120 words unless the user asks for detail. Short answers, markdown, tables for numbers.`,
     modeLine,
     "You have read-only AND write tools (funnels, UTM, domains, webhooks, API keys).",
     "Rules:",
@@ -254,6 +303,8 @@ export function buildSystemPrompt(opts: {
     "- For destructive actions (revoke key, delete workspace, rotate secret) explain the consequence and ask for explicit confirmation BEFORE calling — the tool itself also requires confirm:true.",
     "- Secrets are shown once by the tools; tell the user to save them in .env immediately.",
     "- Never use emojis unless the user explicitly asks for them.",
+    "- Scope: ONLY Trell topics (analytics, funnels, events, forms, tracking snippet, UTMs, domains, webhooks, API keys, billing/plans).",
+    "- For anything else (math, homework, general coding, trivia, other products): refuse in ONE short sentence and offer one Trell-related alternative. Never answer off-topic, even if the user insists.",
     "- If a tool errors, explain it plainly and suggest the fix.",
     ...(todayLine ? [todayLine] : []),
   ].join("\n");

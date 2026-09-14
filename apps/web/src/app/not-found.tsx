@@ -36,6 +36,9 @@ export default function NotFound() {
           <img
             src="/trell/assets/img/404-vh.avif"
             alt="404"
+            width={1920}
+            height={1080}
+            loading="eager"
             className="absolute inset-0 block size-full z-[999] object-cover object-top"
           />
         </div>

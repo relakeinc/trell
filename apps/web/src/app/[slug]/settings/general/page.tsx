@@ -177,10 +177,10 @@ export default function GeneralSettingsPage() {
         <div className="p-5">
           <div className="text-sm font-semibold text-trell-ink">Workspace Logo</div>
           <div className="mt-1 text-sm text-trell-ink-muted">Choose a preset logo for your workspace.</div>
-          <div className="mt-4 flex items-center gap-4">
+          <div className="mt-4 flex flex-wrap items-center gap-4">
             <WorkspaceIcon name={project.name} variant={logoVariant} size={64} className="rounded-xl" />
             <div className="flex flex-col gap-2">
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {Array.from({ length: WORKSPACE_ICON_COUNT }).map((_, i) => (
                   <button
                     key={i}

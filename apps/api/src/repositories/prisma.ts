@@ -230,11 +230,39 @@ export class PrismaRepo implements Repo {
   }
 
   async getEventsForAnalytics(projectId: string, filter: AnalyticsFilter): Promise<StoredEvent[]> {
+    // Perf: `raw` is a large debug TEXT column never used by analytics
+    // computation — exclude it. Cap rows so one dashboard load can't OOM
+    // the API when a project has months of history.
     const rows = await this.prisma.event.findMany({
       where: this.buildWhere(projectId, filter),
       orderBy: { ts: "asc" },
+      take: 50_000,
+      select: {
+        eventId: true,
+        type: true,
+        ts: true,
+        sessionId: true,
+        visitorId: true,
+        url: true,
+        referrer: true,
+        pagePath: true,
+        pageTitle: true,
+        utmSource: true,
+        utmMedium: true,
+        utmCampaign: true,
+        utmTerm: true,
+        utmContent: true,
+        deviceType: true,
+        os: true,
+        browser: true,
+        viewportWidth: true,
+        viewportHeight: true,
+        formId: true,
+        formName: true,
+        properties: true,
+      },
     });
-    return rows.map((r) => this.fromRow(r));
+    return rows.map((r) => this.fromRow({ ...r, raw: null }));
   }
 
   async countEventsForAnalytics(projectId: string, filter: AnalyticsFilter): Promise<number> {

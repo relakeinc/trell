@@ -16,6 +16,7 @@
     }
   },
   "scripts": {
+    "predev": "node scripts/ensure-prod-tunnel.mjs",
     "dev": "turbo run dev",
     "build": "turbo run build",
     "test": "turbo run test",

@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
-import { codeToHtml } from "shiki";
 
 export type CodeBlockProps = {
   children?: React.ReactNode;
@@ -35,16 +34,23 @@ function CodeBlockCode({ code, language = "tsx", theme = "github-light", classNa
   const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     async function highlight() {
       if (!code) {
-        setHighlightedHtml("<pre><code></code></pre>");
+        if (!cancelled) setHighlightedHtml("<pre><code></code></pre>");
         return;
       }
-
+      // Dynamic import: shiki is heavy (~1MB) — keep it out of the initial
+      // bundle so pages without code blocks load fast.
+      const { codeToHtml } = await import("shiki");
+      if (cancelled) return;
       const html = await codeToHtml(code, { lang: language, theme });
-      setHighlightedHtml(html);
+      if (!cancelled) setHighlightedHtml(html);
     }
     highlight();
+    return () => {
+      cancelled = true;
+    };
   }, [code, language, theme]);
 
   const classNames = cn("w-full overflow-x-auto text-[13px] [&>pre]:px-4 [&>pre]:py-4", className);

@@ -57,6 +57,17 @@ describe("API auth + ingestion", () => {
     expect(await res.json()).toEqual({ ok: true });
   });
 
+  it("GET /health/event-loop reports delay percentiles", async () => {
+    const { app } = await makeApp(false);
+    const res = await app.request("/health/event-loop");
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { ok: boolean; eventLoopLagMs: { p50: number; p99: number; max: number } };
+    expect(body.ok).toBe(true);
+    expect(body.eventLoopLagMs.p50).toEqual(expect.any(Number));
+    expect(body.eventLoopLagMs.p99).toEqual(expect.any(Number));
+    expect(body.eventLoopLagMs.max).toEqual(expect.any(Number));
+  });
+
   it("accepts a valid event from an allowed origin", async () => {
     const { app } = await makeApp();
     const res = await app.request("/v1/events", { method: "POST", headers: await headers(), body: validEvent() });
