@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { Icon } from "@/components/Icon";
@@ -79,6 +80,15 @@ const TABS = [
   { label: "Settings", href: "settings/general", icon: "setting-2" },
 ];
 
+/** Quick-create shortcuts behind the dock "+" (ClickUp-style). */
+const CREATE_ACTIONS = [
+  { label: "New funnel", href: "funnels", icon: "funnels" },
+  { label: "Add domain", href: "settings/domains", icon: "domains" },
+  { label: "API key", href: "settings/api", icon: "api" },
+  { label: "UTM template", href: "settings/utm-templates", icon: "links" },
+  { label: "Webhook", href: "settings/webhooks", icon: "webhooks" },
+];
+
 export function MobileShell({
   children,
   projectSlug,
@@ -96,22 +106,22 @@ export function MobileShell({
   const { openChat } = useChat();
   const t = useMounted(sidebarOpen, 200);
   const pathname = usePathname();
+  const [createOpen, setCreateOpen] = useState(false);
+  const createT = useMounted(createOpen, 200);
   const project = projects.find((p) => p.slug === projectSlug);
 
   useEffect(() => {
     closeSidebar();
+    setCreateOpen(false);
   }, [pathname, closeSidebar]);
 
   useEffect(() => {
-    if (sidebarOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    const locked = sidebarOpen || createOpen;
+    document.body.style.overflow = locked ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [sidebarOpen]);
+  }, [sidebarOpen, createOpen]);
 
   return (
     <>
@@ -149,8 +159,9 @@ export function MobileShell({
             className="flex size-9 shrink-0 items-center justify-center rounded-full active:opacity-80"
             aria-label="Account and workspace menu"
           >
-            <span className="flex size-8 items-center justify-center rounded-full bg-[#1f1f1f] text-[12px] font-semibold text-white dark:bg-[#CDCCCC] dark:text-[#111111]">
+            <span className="relative flex size-8 items-center justify-center rounded-full bg-[#1f1f1f] text-[12px] font-semibold text-white dark:bg-[#CDCCCC] dark:text-[#111111]">
               {(userEmail.charAt(0) || "T").toUpperCase()}
+              <span className="absolute -bottom-px -right-px size-2.5 rounded-full border-2 border-white bg-emerald-500 dark:border-[#111111]" />
             </span>
           </button>
         </div>
@@ -180,42 +191,103 @@ export function MobileShell({
 
       {children}
 
-      {/* ── Bottom dock (mobile only): tabs + Yoi, one row ────────── */}
+      {/* ── Bottom chrome (mobile only): Yoi pill over the dock ───── */}
       <div className="trell-mobile-dockrow fixed inset-x-0 bottom-0 z-40 px-3 md:hidden">
-        <div className="mx-auto flex max-w-md items-center gap-2">
-          <nav className="trell-mobile-dock flex flex-1 items-stretch rounded-[26px] p-1" aria-label="Primary">
-            {TABS.map((tab) => {
-              const active = tab.href.startsWith("settings/")
-                ? pathname.startsWith(`/${projectSlug}/settings`)
-                : pathname.startsWith(`/${projectSlug}/${tab.href}`);
-              return (
-                <Link
-                  key={tab.href}
-                  href={`/${projectSlug}/${tab.href}`}
-                  aria-current={active ? "page" : undefined}
-                  className={`flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 text-[10px] font-medium transition-colors ${
-                    active
-                      ? "bg-blue-500/10 text-blue-600"
-                      : "text-neutral-400 active:bg-black/5 dark:active:bg-white/10"
-                  }`}
-                >
-                  <Icon name={tab.icon} size={21} strokeWidth={active ? 2.1 : 1.6} />
-                  {tab.label}
-                </Link>
-              );
-            })}
-          </nav>
-
+        <div className="mx-auto flex max-w-md flex-col items-center gap-2">
+          {/* Yoi floats above the dock, like ClickUp's "Find" pill. */}
           <button
             type="button"
             onClick={openChat}
             aria-label="Ask Yoi"
-            className="trell-mobile-dock flex size-[54px] shrink-0 items-center justify-center rounded-full text-neutral-500 transition-opacity active:opacity-80 dark:text-neutral-300"
+            className="trell-mobile-dock flex h-10 items-center gap-2 rounded-full pl-1.5 pr-4 text-[13px] font-medium text-trell-ink transition-opacity active:opacity-90"
           >
-            <Icon name="chat" size={22} strokeWidth={1.7} />
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#8b5cf6,#2563eb)] text-white">
+              <Icon name="chat" size={15} strokeWidth={1.9} />
+            </span>
+            Yoi
           </button>
+
+          <div className="flex w-full items-center gap-2">
+            <nav className="trell-mobile-dock flex flex-1 items-stretch rounded-[30px] p-1" aria-label="Primary">
+              {TABS.map((tab) => {
+                const active = tab.href.startsWith("settings/")
+                  ? pathname.startsWith(`/${projectSlug}/settings`)
+                  : pathname.startsWith(`/${projectSlug}/${tab.href}`);
+                return (
+                  <Link
+                    key={tab.href}
+                    href={`/${projectSlug}/${tab.href}`}
+                    aria-current={active ? "page" : undefined}
+                    className={`flex flex-1 flex-col items-center justify-center gap-0.5 rounded-[22px] py-1.5 text-[10px] font-medium transition-colors ${
+                      active
+                        ? "bg-blue-500/10 text-blue-600"
+                        : "text-neutral-400 active:bg-black/5 dark:active:bg-white/10"
+                    }`}
+                  >
+                    <Icon name={tab.icon} size={21} strokeWidth={active ? 2.1 : 1.6} />
+                    {tab.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <button
+              type="button"
+              onClick={() => setCreateOpen(true)}
+              aria-label="Create"
+              className="trell-mobile-dock flex size-[54px] shrink-0 items-center justify-center rounded-full text-trell-ink transition-opacity active:opacity-70"
+            >
+              <Plus size={24} strokeWidth={2} />
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* ── Quick-create sheet (mobile only) ──────────────────────── */}
+      {createT.mounted && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className={`absolute inset-0 bg-black/40 ${createT.closing ? "trell-fade-out" : "trell-fade-in"}`}
+            onClick={() => setCreateOpen(false)}
+          />
+          <div
+            className={`trell-sheet absolute inset-x-0 bottom-0 rounded-t-[28px] bg-white px-4 pt-2.5 pb-[calc(env(safe-area-inset-bottom,0px)+20px)] dark:bg-[#191918] ${
+              createT.closing ? "trell-sheet-out" : "trell-sheet-in"
+            }`}
+          >
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-neutral-300 dark:bg-white/20" />
+            <div className="mb-3 px-1 text-[15px] font-semibold text-trell-ink">Create</div>
+            <div className="grid grid-cols-2 gap-2">
+              {CREATE_ACTIONS.map((a) => (
+                <Link
+                  key={a.href}
+                  href={`/${projectSlug}/${a.href}`}
+                  onClick={() => setCreateOpen(false)}
+                  className="flex items-center gap-3 rounded-2xl border border-trell-line px-3 py-3 text-[13px] font-medium text-trell-ink active:bg-black/5 dark:active:bg-white/10"
+                >
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-600 dark:bg-white/10 dark:text-neutral-300">
+                    <Icon name={a.icon} size={18} />
+                  </span>
+                  {a.label}
+                </Link>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  setCreateOpen(false);
+                  openChat();
+                }}
+                className="flex items-center gap-3 rounded-2xl border border-trell-line px-3 py-3 text-[13px] font-medium text-trell-ink active:bg-black/5 dark:active:bg-white/10"
+              >
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#8b5cf6,#2563eb)] text-white">
+                  <Icon name="chat" size={18} />
+                </span>
+                Ask Yoi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

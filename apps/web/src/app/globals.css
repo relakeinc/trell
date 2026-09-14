@@ -660,9 +660,9 @@ body {
 @media (max-width: 767px) {
   .trell-main {
     border-radius: 0;
-    /* Clears the floating dock (~62px) + its gap, so content can scroll fully
+    /* Clears the floating chrome (Yoi pill + dock) so content can scroll fully
        past it instead of stopping short. */
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 138px);
   }
 }
 
@@ -1417,6 +1417,22 @@ body {
     opacity: 0;
   }
 }
+@keyframes trell-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes trell-sheet-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
 @keyframes trell-modal-in {
   from {
     opacity: 0;
@@ -1522,6 +1538,12 @@ body {
 }
 .trell-modal-in {
   animation: trell-modal-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.trell-sheet-in {
+  animation: trell-sheet-in 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.trell-sheet-out {
+  animation: trell-sheet-out 0.18s ease-in forwards;
 }
 .trell-modal-out {
   animation: trell-modal-out 0.14s ease-in forwards;
