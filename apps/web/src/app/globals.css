@@ -635,11 +635,11 @@ body {
     gap: 0;
     padding: 0;
     padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
-    /* Floating dock (~62px) + its 8px gap + a little breathing room. */
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px);
+    /* No reserved strip at the bottom: the content runs to the edge and the
+       floating dock sits over it (the iOS pattern). The scroll area carries the
+       bottom padding instead, so the last rows clear the dock. */
+    padding-bottom: 0;
     height: 100dvh;
-    /* Match the content surface so the chrome band behind the dock is not a
-       gray strip (desktop keeps the gray frame). */
     background-color: #ffffff;
   }
 }
@@ -660,6 +660,9 @@ body {
 @media (max-width: 767px) {
   .trell-main {
     border-radius: 0;
+    /* Clears the floating dock (~62px) + its gap, so content can scroll fully
+       past it instead of stopping short. */
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px);
   }
 }
 

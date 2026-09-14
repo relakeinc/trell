@@ -204,10 +204,10 @@ export function MobileShell({
             type="button"
             onClick={openChat}
             aria-label="Ask Yoi"
-            className="trell-mobile-dock flex w-[67px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[22px] p-1 text-[10px] font-medium text-neutral-400 transition-colors active:bg-black/5 dark:active:bg-white/10"
+            className="trell-mobile-dock flex w-[82px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[22px] p-1 text-[10px] font-medium text-neutral-400 transition-colors active:bg-black/5 dark:active:bg-white/10"
           >
             <Icon name="chat" size={21} strokeWidth={1.6} />
-            Ask
+            Ask Yoi
           </button>
         </div>
       </div>
