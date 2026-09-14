@@ -1,10 +1,13 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { Icon } from "@/components/Icon";
+import { WorkspaceIcon } from "@/components/WorkspaceIcon";
 import { useMounted } from "@/components/Transitions";
+import { useChat } from "@/components/ChatProvider";
 
 interface SidebarProject {
   id: string;
@@ -46,6 +49,21 @@ export function MobileShellProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/** Primary destinations, mirrored as a native bottom tab bar on mobile. */
+const TABS = [
+  { label: "Analytics", href: "analytics", icon: "analytics" },
+  { label: "Funnels", href: "funnels", icon: "funnels" },
+  { label: "Events", href: "events", icon: "events" },
+  { label: "Forms", href: "submissions", icon: "send" },
+  { label: "Settings", href: "settings/general", icon: "setting-2" },
+];
+
+function sectionTitle(pathname: string, slug: string): string {
+  if (pathname.includes(`/${slug}/settings`)) return "Settings";
+  const tab = TABS.find((t) => pathname.startsWith(`/${slug}/${t.href}`));
+  return tab?.label ?? "Analytics";
+}
+
 export function MobileShell({
   children,
   projectSlug,
@@ -60,8 +78,11 @@ export function MobileShell({
   userEmail: string;
 }) {
   const { sidebarOpen, openSidebar, closeSidebar } = useMobileShell();
+  const { openChat } = useChat();
   const t = useMounted(sidebarOpen, 200);
   const pathname = usePathname();
+  const project = projects.find((p) => p.slug === projectSlug);
+  const title = sectionTitle(pathname, projectSlug);
 
   useEffect(() => {
     closeSidebar();
@@ -80,22 +101,44 @@ export function MobileShell({
 
   return (
     <>
-      <button
-        onClick={openSidebar}
-        className="fixed left-3 top-3 z-50 flex size-9 items-center justify-center rounded-lg bg-neutral-100 text-neutral-600 transition-colors hover:bg-neutral-200 md:hidden"
-        aria-label="Open menu"
-      >
-        <Icon name="menu-01" size={18} />
-      </button>
+      {/* ── Top app bar (mobile only) ─────────────────────────────── */}
+      <header className="trell-mobile-bar fixed inset-x-0 top-0 z-40 md:hidden">
+        <div className="flex h-14 items-center gap-2 px-2">
+          <button
+            onClick={openSidebar}
+            className="flex size-10 shrink-0 items-center justify-center rounded-xl text-neutral-600 active:bg-neutral-100"
+            aria-label="Open menu"
+          >
+            <Icon name="menu-01" size={20} />
+          </button>
+          <h1 className="min-w-0 flex-1 truncate text-[15px] font-semibold text-trell-ink">{title}</h1>
+          <button
+            onClick={openSidebar}
+            className="flex size-10 shrink-0 items-center justify-center rounded-xl active:bg-neutral-100"
+            aria-label="Switch project"
+          >
+            {project ? (
+              <WorkspaceIcon name={project.name} variant={project.logoVariant} size={26} className="rounded-lg" />
+            ) : (
+              <span className="flex size-6 items-center justify-center rounded-lg bg-neutral-200 text-[11px] font-medium text-neutral-600">
+                {projectName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </button>
+        </div>
+      </header>
 
+      {/* ── Drawer: projects, usage, account ──────────────────────── */}
       {t.mounted && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-50 md:hidden">
           <div
             className={`absolute inset-0 bg-black/40 ${t.closing ? "trell-fade-out" : "trell-fade-in"}`}
             onClick={closeSidebar}
           />
           <div
-            className={`absolute inset-y-0 left-0 flex w-[280px] flex-col overflow-hidden bg-neutral-100 py-2 pr-2 ${t.closing ? "trell-drawer-left-out" : "trell-drawer-left-in"}`}
+            className={`trell-mobile-drawer absolute inset-y-0 left-0 flex w-[290px] max-w-[86vw] flex-col overflow-hidden bg-neutral-100 py-2 pr-2 ${
+              t.closing ? "trell-drawer-left-out" : "trell-drawer-left-in"
+            }`}
           >
             <ProjectSidebar
               projectSlug={projectSlug}
@@ -108,6 +151,42 @@ export function MobileShell({
       )}
 
       {children}
+
+      {/* ── Yoi action (mobile only): floats just above the dock ─── */}
+      <button
+        onClick={openChat}
+        aria-label="Ask Yoi"
+        className="trell-mobile-fab fixed right-4 z-40 flex h-[52px] w-[52px] items-center justify-center rounded-full text-white transition-transform active:scale-95 md:hidden"
+      >
+        <Icon name="magic-star" size={22} />
+      </button>
+
+      {/* ── Bottom dock (mobile only) ─────────────────────────────── */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+8px)] md:hidden"
+        aria-label="Primary"
+      >
+        <div className="trell-mobile-dock mx-auto flex max-w-md items-stretch rounded-[22px] p-1">
+          {TABS.map((tab) => {
+            const active = tab.href.startsWith("settings/")
+              ? pathname.startsWith(`/${projectSlug}/settings`)
+              : pathname.startsWith(`/${projectSlug}/${tab.href}`);
+            return (
+              <Link
+                key={tab.href}
+                href={`/${projectSlug}/${tab.href}`}
+                aria-current={active ? "page" : undefined}
+                className={`flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 text-[10px] font-medium transition-colors ${
+                  active ? "bg-blue-500/10 text-blue-600" : "text-neutral-400 active:bg-black/5 dark:active:bg-white/10"
+                }`}
+              >
+                <Icon name={tab.icon} size={21} strokeWidth={active ? 2.1 : 1.6} />
+                {tab.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </>
   );
 }

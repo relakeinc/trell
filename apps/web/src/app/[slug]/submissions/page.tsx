@@ -248,13 +248,13 @@ export default function SubmissionsPage() {
   return (
     <div className="trell-content">
       <header className="trell-header -mx-6 -mt-3 mb-6 px-6 pt-6">
-        <div>
+        <div className="hidden md:block">
           <h1 className="text-base font-semibold text-trell-ink">Submissions</h1>
           {/* <p className="mt-0.5 text-xs text-trell-ink-muted">
             {isLoading ? "Loading…" : `${groups.length} form${groups.length === 1 ? "" : "s"} · ${submissions.length} responses`}
           </p> */}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           <AskYoiButton />
         </div>
       </header>

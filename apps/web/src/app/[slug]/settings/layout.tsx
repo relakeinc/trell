@@ -76,25 +76,25 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       />
 
       <div className="flex flex-col md:flex md:h-full md:gap-3 md:p-0">
-        <div className="flex flex-col gap-2 px-1 pb-2 md:hidden">
+        <div className="flex flex-col gap-3 px-3 pb-3 pt-1 md:hidden">
           <Link
             href={`/${slug}/analytics`}
-            className="group flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200/70"
+            className="flex w-fit items-center gap-1.5 py-1 text-[13px] font-medium text-neutral-500 transition-colors active:text-neutral-900"
           >
             <Icon name="arrow-right-01" size={14} className="rotate-180" />
             Back to Analytics
           </Link>
-          <div className="scrollbar-hide flex gap-1.5 overflow-x-auto">
+          <div className="scrollbar-hide -mx-3 flex gap-2 overflow-x-auto px-3 pb-1">
             {ALL_ITEMS.map((item) => {
               const active = currentSection === item.id;
               return (
                 <Link
                   key={item.id}
                   href={`/${slug}/settings/${item.id}`}
-                  className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-[13px] font-medium transition-colors ${
                     active
-                      ? "bg-neutral-900 text-white dark:bg-[#CDCCCC] dark:text-[#111111]"
-                      : "text-neutral-500 hover:bg-neutral-200/70 hover:text-neutral-900"
+                      ? "border-transparent bg-neutral-900 text-white dark:bg-[#CDCCCC] dark:text-[#111111]"
+                      : "border-trell-line bg-white text-neutral-600 active:bg-neutral-100"
                   }`}
                 >
                   <Icon name={item.icon} size={14} />

@@ -140,11 +140,15 @@ export default function AppearanceSettingsPage() {
             Customize your UI theme
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-3">
+          <div className="scrollbar-hide -mx-5 mt-4 flex gap-3 overflow-x-auto px-5 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
             {MODES.map((m) => {
               const selected = theme === m.id;
               return (
-                <button key={m.id} onClick={() => setTheme(m.id)} className="group flex flex-col gap-2">
+                <button
+                  key={m.id}
+                  onClick={() => setTheme(m.id)}
+                  className="group flex w-[168px] shrink-0 flex-col gap-2 sm:w-auto sm:shrink"
+                >
                   <span
                     className={`relative block overflow-hidden rounded-lg border-2 transition-colors ${
                       selected ? "border-blue-600" : "border-neutral-200 hover:border-neutral-300"
@@ -169,7 +173,7 @@ export default function AppearanceSettingsPage() {
         <div className={`mx-5 border-t ${isDark ? "border-[#2a2a29]" : "border-trell-line"}`} />
 
         <div className="p-5">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
               <div className={`text-sm font-semibold ${isDark ? "text-[#CDCCCC]" : "text-trell-ink"}`}>
                 Accent color
@@ -178,7 +182,7 @@ export default function AppearanceSettingsPage() {
                 Choose your accent color
               </div>
             </div>
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="grid grid-cols-5 justify-items-center gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
               {ACCENTS.map((a) => {
                 const selected = accent === a.id;
                 return (
@@ -187,7 +191,7 @@ export default function AppearanceSettingsPage() {
                     title={a.label}
                     aria-label={`${a.label} accent`}
                     onClick={() => setAccent(a.id)}
-                    className={`size-5 rounded-full transition-transform hover:scale-110 ${
+                    className={`size-7 rounded-full transition-transform active:scale-95 sm:hover:scale-110 ${
                       selected ? "ring-2 ring-blue-600 ring-offset-2" : ""
                     }`}
                     style={{ backgroundColor: a.dot }}

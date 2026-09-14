@@ -122,8 +122,8 @@ export default function AnalyticsPage() {
   return (
     <div className="trell-content">
       <header className="trell-header -mx-6 -mt-3 mb-6 px-6 pt-6">
-        <h1 className="text-base font-semibold text-trell-ink">Analytics</h1>
-        <div className="flex items-center gap-2">
+        <h1 className="hidden text-base font-semibold text-trell-ink md:block">Analytics</h1>
+        <div className="ml-auto flex items-center gap-2">
           <div ref={filtersRef} className="relative">
             <button
               onClick={() => setFiltersOpen((o) => !o)}

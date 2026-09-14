@@ -629,12 +629,15 @@ body {
   @apply flex h-screen gap-2 bg-neutral-200 p-2;
 }
 
-/* Mobile: no gap, compact padding, top space for hamburger */
+/* Mobile: fixed app bar + tab bar provide chrome; content fills between. */
 @media (max-width: 767px) {
   .trell-page {
     gap: 0;
     padding: 0;
-    padding-top: 48px;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
+    /* Floating dock (~62px) + its 8px gap + a little breathing room. */
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px);
+    height: 100dvh;
   }
 }
 
@@ -654,6 +657,128 @@ body {
 @media (max-width: 767px) {
   .trell-main {
     border-radius: 0;
+  }
+}
+
+/* ── Mobile app chrome (top bar, tab bar, drawer) ────────────────
+   Only ever attached to md:hidden elements, so desktop is untouched. */
+.trell-mobile-bar {
+  padding-top: env(safe-area-inset-top, 0px);
+  background-color: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-card);
+}
+
+.dark .trell-mobile-bar {
+  background-color: rgba(17, 17, 17, 0.92) !important;
+  border-color: var(--trell-dark-border) !important;
+}
+
+/* Floating dock (iOS-style) instead of an edge-to-edge tab bar. */
+.trell-mobile-dock {
+  background-color: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgb(0 0 0 / 0.06);
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.25);
+}
+
+.dark .trell-mobile-dock {
+  background-color: rgba(30, 30, 29, 0.82) !important;
+  border-color: var(--trell-dark-border) !important;
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.7);
+}
+
+/* Hide on phones. Needed because the button classes below are unlayered and
+   would otherwise beat a `hidden` utility. */
+@media (max-width: 767px) {
+  .trell-mobile-hidden {
+    display: none !important;
+  }
+}
+
+/* Yoi action, hovering just above the dock. */
+.trell-mobile-fab {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 74px);
+  background-color: #2563eb;
+  background-image: linear-gradient(to bottom, #8b5cf6, #2563eb);
+  box-shadow:
+    0 12px 26px -8px rgb(37 99 235 / 0.55),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.25);
+}
+
+.trell-mobile-drawer {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+}
+
+/* ── Mobile: native feel + no lateral overflow ───────────────────
+   Scoped to <768px so nothing here can move the desktop layout. */
+@media (max-width: 767px) {
+  html,
+  body {
+    /* clip (not hidden) so position: sticky keeps working */
+    overflow-x: clip;
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  a,
+  button,
+  [role="button"],
+  label {
+    touch-action: manipulation;
+  }
+
+  .trell-main {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  /* The page header is full-bleed on desktop via -mx-6, which overshoots the
+     px-4 content column on mobile and pushes a horizontal scrollbar. */
+  .trell-header {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 0 !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 0.75rem !important;
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  .trell-content {
+    overflow-x: clip;
+    /* Long unbroken tokens (emails, URLs, API secrets) must not widen the page. */
+    overflow-wrap: anywhere;
+  }
+
+  /* Data tables (Events, Submissions) pan horizontally instead of clipping. */
+  .trell-card.overflow-hidden:has(> .trell-table) {
+    overflow-x: auto !important;
+  }
+
+  /* iOS Safari zooms the whole page when a focused field is under 16px. */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Dynamic viewport units: 100vh is taller than the visible area under the
+     mobile browser chrome and clips content at the bottom. */
+  .h-screen {
+    height: 100dvh !important;
+  }
+  .min-h-screen {
+    min-height: 100dvh !important;
   }
 }
 

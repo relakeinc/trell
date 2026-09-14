@@ -32,7 +32,7 @@ export function AskYoiButton() {
       onMouseLeave={() => setAskHover(false)}
       onFocus={() => setAskHover(true)}
       onBlur={() => setAskHover(false)}
-      className="trell-btn-outline h-9 gap-1.5"
+      className="trell-btn-outline trell-mobile-hidden h-9 gap-1.5"
       title="Ask Yoi"
     >
       <SparkleMark />

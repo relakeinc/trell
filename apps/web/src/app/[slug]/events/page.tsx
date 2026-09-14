@@ -215,10 +215,10 @@ export default function EventsPage() {
   return (
     <div className="trell-content">
       <header className="trell-header -mx-6 -mt-3 mb-6 px-6 pt-6">
-        <div>
+        <div className="hidden md:block">
           <h1 className="text-base font-semibold text-trell-ink">Events</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           <button
             onClick={() => events.length > 0 && exportEventsCSV(events)}
             disabled={events.length === 0}

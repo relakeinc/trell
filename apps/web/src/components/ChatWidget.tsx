@@ -778,9 +778,13 @@ export function ChatWidget() {
 
   return (
     <aside
-      className={`yoi-chat relative hidden h-full max-w-[calc(100vw-2rem)] shrink-0 overflow-hidden rounded-xl bg-neutral-100 transition-[width,opacity,margin-left,visibility] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:block ${entered && !leaving ? "w-[440px] opacity-100" : "w-0 opacity-0 invisible pointer-events-none -ml-2"}`}
+      className={`yoi-chat fixed inset-0 z-50 h-full w-full shrink-0 overflow-hidden bg-neutral-100 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:relative md:inset-auto md:z-40 md:h-full md:w-auto md:max-w-[calc(100vw-2rem)] md:rounded-xl md:pt-0 md:pb-0 md:transition-[width,opacity,margin-left,visibility] ${
+        entered && !leaving
+          ? "translate-y-0 opacity-100 md:w-[440px]"
+          : "pointer-events-none translate-y-3 opacity-0 md:invisible md:-ml-2 md:w-0 md:translate-y-0"
+      }`}
     >
-      <div className="relative flex h-full w-[440px] max-w-[calc(100vw-2rem)] flex-col gap-1 p-3">
+      <div className="relative flex h-full w-full flex-col gap-1 p-3 md:w-[440px] md:max-w-[calc(100vw-2rem)]">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(0_0_0/0.05)_1px,transparent_0)] bg-[size:22px_22px] dark:bg-[radial-gradient(circle_at_1px_1px,rgb(255_255_255/0.06)_1px,transparent_0)]"

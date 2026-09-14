@@ -38,8 +38,21 @@ function getSystemTheme(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+// The device status bar / PWA chrome colour. The viewport export emits
+// `prefers-color-scheme` variants, which ignore the in-app theme toggle, so
+// once JS is running we own the tag.
+function syncThemeColor(resolved: "light" | "dark") {
+  const content = resolved === "dark" ? "#111111" : "#ffffff";
+  for (const el of Array.from(document.querySelectorAll('meta[name="theme-color"]'))) el.remove();
+  const meta = document.createElement("meta");
+  meta.name = "theme-color";
+  meta.content = content;
+  document.head.appendChild(meta);
+}
+
 function applyThemeToDOM(resolved: "light" | "dark") {
   const root = document.documentElement;
+  syncThemeColor(resolved);
   // Kill transitions for this frame so every element snaps to the new theme
   // together instead of animating at different speeds.
   root.classList.add("trell-theme-switching");
