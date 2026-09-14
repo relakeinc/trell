@@ -79,12 +79,6 @@ const TABS = [
   { label: "Settings", href: "settings/general", icon: "setting-2" },
 ];
 
-function sectionTitle(pathname: string, slug: string): string {
-  if (pathname.includes(`/${slug}/settings`)) return "Settings";
-  const tab = TABS.find((t) => pathname.startsWith(`/${slug}/${t.href}`));
-  return tab?.label ?? "Analytics";
-}
-
 export function MobileShell({
   children,
   projectSlug,
@@ -103,7 +97,6 @@ export function MobileShell({
   const t = useMounted(sidebarOpen, 200);
   const pathname = usePathname();
   const project = projects.find((p) => p.slug === projectSlug);
-  const title = sectionTitle(pathname, projectSlug);
 
   useEffect(() => {
     closeSidebar();
@@ -124,28 +117,41 @@ export function MobileShell({
     <>
       {/* ── Top app bar (mobile only) ─────────────────────────────── */}
       <header className="trell-mobile-bar fixed inset-x-0 top-0 z-40 md:hidden">
-        <div className="flex h-14 items-center gap-2 px-2">
+        <div className="flex h-14 items-center gap-1.5 px-2">
+          {/* Workspace switcher: avatar + name + chevron (ClickUp-style). */}
           <button
             onClick={openSidebar}
-            className="flex size-10 shrink-0 items-center justify-center rounded-xl text-neutral-600 active:bg-neutral-100"
-            aria-label="Open menu"
-          >
-            <Icon name="menu-01" size={20} />
-          </button>
-          <h1 className="min-w-0 flex-1 truncate text-[15px] font-semibold text-trell-ink">{title}</h1>
-          {topBarActions}
-          <button
-            onClick={openSidebar}
-            className="flex size-10 shrink-0 items-center justify-center rounded-xl active:bg-neutral-100"
-            aria-label="Switch project"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-1 py-1.5 text-left active:bg-black/5 dark:active:bg-white/10"
+            aria-label="Switch workspace"
           >
             {project ? (
-              <WorkspaceIcon name={project.name} variant={project.logoVariant} size={26} className="rounded-lg" />
+              <WorkspaceIcon
+                name={project.name}
+                variant={project.logoVariant}
+                size={28}
+                className="shrink-0 rounded-lg"
+              />
             ) : (
-              <span className="flex size-6 items-center justify-center rounded-lg bg-neutral-200 text-[11px] font-medium text-neutral-600">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-neutral-200 text-[12px] font-medium text-neutral-600">
                 {projectName.charAt(0).toUpperCase()}
               </span>
             )}
+            <span className="min-w-0 truncate text-[16px] font-semibold tracking-tight text-trell-ink">
+              {projectName}
+            </span>
+            <Icon name="arrow-down-01" size={14} className="shrink-0 text-neutral-400" />
+          </button>
+
+          {topBarActions}
+
+          <button
+            onClick={openSidebar}
+            className="flex size-9 shrink-0 items-center justify-center rounded-full active:opacity-80"
+            aria-label="Account and workspace menu"
+          >
+            <span className="flex size-8 items-center justify-center rounded-full bg-[#1f1f1f] text-[12px] font-semibold text-white dark:bg-[#CDCCCC] dark:text-[#111111]">
+              {(userEmail.charAt(0) || "T").toUpperCase()}
+            </span>
           </button>
         </div>
       </header>
@@ -176,8 +182,8 @@ export function MobileShell({
 
       {/* ── Bottom dock (mobile only): tabs + Yoi, one row ────────── */}
       <div className="trell-mobile-dockrow fixed inset-x-0 bottom-0 z-40 px-3 md:hidden">
-        <div className="mx-auto flex max-w-md items-stretch gap-2">
-          <nav className="trell-mobile-dock flex flex-1 items-stretch rounded-[22px] p-1" aria-label="Primary">
+        <div className="mx-auto flex max-w-md items-center gap-2">
+          <nav className="trell-mobile-dock flex flex-1 items-stretch rounded-[26px] p-1" aria-label="Primary">
             {TABS.map((tab) => {
               const active = tab.href.startsWith("settings/")
                 ? pathname.startsWith(`/${projectSlug}/settings`)
@@ -204,10 +210,9 @@ export function MobileShell({
             type="button"
             onClick={openChat}
             aria-label="Ask Yoi"
-            className="trell-mobile-dock flex w-[82px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[22px] p-1 text-[10px] font-medium text-neutral-400 transition-colors active:bg-black/5 dark:active:bg-white/10"
+            className="trell-mobile-dock flex size-[54px] shrink-0 items-center justify-center rounded-full text-neutral-500 transition-opacity active:opacity-80 dark:text-neutral-300"
           >
-            <Icon name="chat" size={21} strokeWidth={1.6} />
-            Ask Yoi
+            <Icon name="chat" size={22} strokeWidth={1.7} />
           </button>
         </div>
       </div>

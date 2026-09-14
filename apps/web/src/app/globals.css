@@ -674,12 +674,10 @@ body {
 .trell-mobile-bar {
   padding-top: env(safe-area-inset-top, 0px);
   background-color: #ffffff;
-  border-bottom: 1px solid var(--border-card);
 }
 
 .dark .trell-mobile-bar {
   background-color: #111111 !important;
-  border-color: var(--trell-dark-border) !important;
 }
 
 /* Floating dock (iOS-style). Solid, not frosted: the translucent + blurred
