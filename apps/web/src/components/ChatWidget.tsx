@@ -675,10 +675,13 @@ export function ChatWidget() {
           messages: base.map(({ role, text }) => ({ role, text })),
         }),
       });
-      if (!res.ok || !res.body)
-        throw new Error(
-          res.status === 401 ? "Session expired" : res.status === 503 ? "Chat not configured" : "Chat error",
-        );
+      if (res.status === 401) {
+        // Stale or expired session (e.g. it predates a session-strategy change):
+        // send the user through sign-in rather than leaving a dead chat.
+        window.location.assign("/signin");
+        throw new Error("Session expired — signing you in again…");
+      }
+      if (!res.ok || !res.body) throw new Error(res.status === 503 ? "Chat not configured" : "Chat error");
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";
@@ -816,7 +819,10 @@ export function ChatWidget() {
               <Plus size={14} />
             </button>
             <button onClick={close} className="trell-btn-outline h-9 w-9 !px-0" title="Close" aria-label="Close">
-              <PanelCloseIcon />
+              <span className="hidden md:inline-flex">
+                <PanelCloseIcon />
+              </span>
+              <X size={16} className="md:hidden" />
             </button>
           </div>
 
