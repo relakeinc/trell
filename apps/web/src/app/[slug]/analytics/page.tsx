@@ -13,6 +13,7 @@ import { DimIcon } from "@/components/DimIcon";
 import { AreaChart } from "@/components/AreaChart";
 import { SegmentedControl } from "@/components/SegmentedControl";
 import { AskYoiButton } from "@/components/AskYoiButton";
+import { MobileTopBarActions } from "../MobileShell";
 import { EventsFeed } from "@/components/analytics/EventsFeed";
 import { FormsRanking } from "@/components/analytics/FormsRanking";
 import {
@@ -36,25 +37,43 @@ const DIM_LABEL: Record<string, string> = {
   os: "OS",
 };
 
-export default function AnalyticsPage() {
-  const { projectId, isLoading: projectLoading } = useProjectId();
-  const { slug } = useParams<{ slug: string }>();
-  const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
-  const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000)));
-  const [interval, setInterval] = useState("day");
-  const [dim, setDim] = useState<(typeof DIMS)[number]>("page");
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [preset, setPresetSel] = useState<number | null>(30);
-  const filtersT = useMounted(filtersOpen, 150);
-  const filtersRef = useRef<HTMLDivElement>(null);
+function FiltersMenu({
+  from,
+  to,
+  interval,
+  preset,
+  onFrom,
+  onTo,
+  onInterval,
+  onPreset,
+  onRefresh,
+  refreshing,
+  compact,
+}: {
+  from: string;
+  to: string;
+  interval: string;
+  preset: number | null;
+  onFrom: (v: string) => void;
+  onTo: (v: string) => void;
+  onInterval: (v: string) => void;
+  onPreset: (days: number) => void;
+  onRefresh: () => void;
+  refreshing: boolean;
+  /** Mobile top bar: always the short label, the date span does not fit. */
+  compact?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const t = useMounted(open, 150);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!filtersOpen) return;
+    if (!open) return;
     function onDown(e: MouseEvent) {
-      if (filtersRef.current && !filtersRef.current.contains(e.target as Node)) setFiltersOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setFiltersOpen(false);
+      if (e.key === "Escape") setOpen(false);
     }
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
@@ -62,7 +81,94 @@ export default function AnalyticsPage() {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [filtersOpen]);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="trell-btn-outline h-9 gap-1.5"
+        aria-expanded={open}
+        aria-label="Filters"
+      >
+        <Icon name="filter-square" size={16} />
+        {compact ? (
+          <span className="text-xs text-trell-ink-muted">Filters</span>
+        ) : (
+          <>
+            <span className="hidden text-xs text-trell-ink-muted sm:inline">
+              {fmtShortDate(from)} – {fmtShortDate(to)} ·{" "}
+              {interval === "hour" ? "Hourly" : interval === "week" ? "Weekly" : "Daily"}
+            </span>
+            <span className="text-xs text-trell-ink-muted sm:hidden">Filters</span>
+          </>
+        )}
+        <Icon name="arrow-down-01" size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {t.mounted && (
+        <div
+          className={`absolute right-0 top-full z-50 mt-2 w-72 rounded-xl border border-trell-line bg-white p-4 shadow-xl ${t.closing ? "trell-pop-out" : "trell-pop-in"}`}
+        >
+          <div className="mb-3 text-xs font-medium text-trell-ink-muted">Range</div>
+          <div className="mb-3">
+            <SegmentedControl
+              className="w-full [&>div]:flex-1 [&_button]:w-full"
+              ariaLabel="Date range"
+              value={preset != null ? String(preset) : null}
+              onChange={(v) => onPreset(Number(v))}
+              options={[
+                { value: "7", label: "7D" },
+                { value: "30", label: "30D" },
+                { value: "90", label: "90D" },
+              ]}
+            />
+          </div>
+          <label className="mb-1 block text-xs text-trell-ink-muted">From</label>
+          <div className="mb-3">
+            <DateTimeField value={from} onChange={onFrom} />
+          </div>
+          <label className="mb-1 block text-xs text-trell-ink-muted">To</label>
+          <div className="mb-3">
+            <DateTimeField value={to} onChange={onTo} />
+          </div>
+          <label className="mb-1 block text-xs text-trell-ink-muted">Bucket interval</label>
+          <div className="mb-4">
+            <SelectField
+              value={interval}
+              ariaLabel="Bucket interval"
+              onChange={onInterval}
+              options={[
+                { value: "hour", label: "Hourly", hint: "One bar per hour" },
+                { value: "day", label: "Daily", hint: "One bar per day" },
+                { value: "week", label: "Weekly", hint: "One bar per week" },
+              ]}
+            />
+          </div>
+          <button
+            onClick={() => {
+              onRefresh();
+              setOpen(false);
+            }}
+            className="trell-btn-outline h-9 w-full justify-center gap-1.5"
+          >
+            <Icon name="refresh-right" size={16} className={refreshing ? "animate-spin" : ""} />
+            Refresh
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function AnalyticsPage() {
+  const { projectId, isLoading: projectLoading } = useProjectId();
+  const { slug } = useParams<{ slug: string }>();
+  const [from, setFrom] = useState(localInput(new Date(Date.now() - 30 * 86400000)));
+  const [to, setTo] = useState(localInput(new Date(Date.now() + 86400000)));
+  const [interval, setInterval] = useState("day");
+  const [dim, setDim] = useState<(typeof DIMS)[number]>("page");
+  const [preset, setPresetSel] = useState<number | null>(30);
 
   function setPreset(days: number) {
     const t = new Date();
@@ -121,91 +227,52 @@ export default function AnalyticsPage() {
 
   return (
     <div className="trell-content">
+      {/* On phones the app bar already carries the title, so the filters move up
+          there instead of sitting alone in the page header. */}
+      <MobileTopBarActions>
+        <FiltersMenu
+          compact
+          from={from}
+          to={to}
+          interval={interval}
+          preset={preset}
+          onFrom={(v) => {
+            setFrom(v);
+            setPresetSel(null);
+          }}
+          onTo={(v) => {
+            setTo(v);
+            setPresetSel(null);
+          }}
+          onInterval={setInterval}
+          onPreset={setPreset}
+          onRefresh={() => void refetchStats()}
+          refreshing={statsLoading}
+        />
+      </MobileTopBarActions>
+
       <header className="trell-header -mx-6 -mt-3 mb-6 px-6 pt-6">
         <h1 className="hidden text-base font-semibold text-trell-ink md:block">Analytics</h1>
         <div className="ml-auto flex items-center gap-2">
-          <div ref={filtersRef} className="relative">
-            <button
-              onClick={() => setFiltersOpen((o) => !o)}
-              className="trell-btn-outline h-9 gap-1.5"
-              aria-expanded={filtersOpen}
-            >
-              <Icon name="filter-square" size={16} />
-              <span className="hidden text-xs text-trell-ink-muted sm:inline">
-                {fmtShortDate(from)} – {fmtShortDate(to)} ·{" "}
-                {interval === "hour" ? "Hourly" : interval === "week" ? "Weekly" : "Daily"}
-              </span>
-              <span className="sm:hidden">Filters</span>
-              <Icon
-                name="arrow-down-01"
-                size={14}
-                className={`transition-transform ${filtersOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {filtersT.mounted && (
-              <div
-                className={`absolute right-0 z-30 mt-2 w-72 rounded-xl border border-trell-line bg-white p-4 shadow-xl ${filtersT.closing ? "trell-pop-out" : "trell-pop-in"}`}
-              >
-                <div className="mb-3 text-xs font-medium text-trell-ink-muted">Range</div>
-                <div className="mb-3">
-                  <SegmentedControl
-                    className="w-full [&>div]:flex-1 [&_button]:w-full"
-                    ariaLabel="Date range"
-                    value={preset != null ? String(preset) : null}
-                    onChange={(v) => setPreset(Number(v))}
-                    options={[
-                      { value: "7", label: "7D" },
-                      { value: "30", label: "30D" },
-                      { value: "90", label: "90D" },
-                    ]}
-                  />
-                </div>
-                <label className="mb-1 block text-xs text-trell-ink-muted">From</label>
-                <div className="mb-3">
-                  <DateTimeField
-                    value={from}
-                    onChange={(v) => {
-                      setFrom(v);
-                      setPresetSel(null);
-                    }}
-                  />
-                </div>
-                <label className="mb-1 block text-xs text-trell-ink-muted">To</label>
-                <div className="mb-3">
-                  <DateTimeField
-                    value={to}
-                    onChange={(v) => {
-                      setTo(v);
-                      setPresetSel(null);
-                    }}
-                  />
-                </div>
-                <label className="mb-1 block text-xs text-trell-ink-muted">Bucket interval</label>
-                <div className="mb-4">
-                  <SelectField
-                    value={interval}
-                    ariaLabel="Bucket interval"
-                    onChange={setInterval}
-                    options={[
-                      { value: "hour", label: "Hourly", hint: "One bar per hour" },
-                      { value: "day", label: "Daily", hint: "One bar per day" },
-                      { value: "week", label: "Weekly", hint: "One bar per week" },
-                    ]}
-                  />
-                </div>
-                <button
-                  onClick={() => {
-                    void refetchStats();
-                    setFiltersOpen(false);
-                  }}
-                  className="trell-btn-outline h-9 w-full justify-center gap-1.5"
-                >
-                  <Icon name="refresh-right" size={16} className={statsLoading ? "animate-spin" : ""} />
-                  Refresh
-                </button>
-              </div>
-            )}
+          <div className="hidden md:block">
+            <FiltersMenu
+              from={from}
+              to={to}
+              interval={interval}
+              preset={preset}
+              onFrom={(v) => {
+                setFrom(v);
+                setPresetSel(null);
+              }}
+              onTo={(v) => {
+                setTo(v);
+                setPresetSel(null);
+              }}
+              onInterval={setInterval}
+              onPreset={setPreset}
+              onRefresh={() => void refetchStats()}
+              refreshing={statsLoading}
+            />
           </div>
           <AskYoiButton />
         </div>

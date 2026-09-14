@@ -21,20 +21,39 @@ interface MobileShellContextValue {
   sidebarOpen: boolean;
   openSidebar: () => void;
   closeSidebar: () => void;
+  topBarActions: ReactNode;
+  setTopBarActions: (node: ReactNode) => void;
 }
 
 const MobileShellContext = createContext<MobileShellContextValue>({
   sidebarOpen: false,
   openSidebar: () => {},
   closeSidebar: () => {},
+  topBarActions: null,
+  setTopBarActions: () => {},
 });
 
 export function useMobileShell() {
   return useContext(MobileShellContext);
 }
 
+/**
+ * Renders its children inside the mobile top app bar (no-op on desktop, where
+ * the bar is hidden). Lets a page surface its own controls up there instead of
+ * leaving them stranded in the page header on phones.
+ */
+export function MobileTopBarActions({ children }: { children: ReactNode }) {
+  const { setTopBarActions } = useMobileShell();
+  useEffect(() => {
+    setTopBarActions(children);
+    return () => setTopBarActions(null);
+  }, [children, setTopBarActions]);
+  return null;
+}
+
 export function MobileShellProvider({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [topBarActions, setTopBarActions] = useState<ReactNode>(null);
 
   return (
     <MobileShellContext.Provider
@@ -42,6 +61,8 @@ export function MobileShellProvider({ children }: { children: ReactNode }) {
         sidebarOpen,
         openSidebar: useCallback(() => setSidebarOpen(true), []),
         closeSidebar: useCallback(() => setSidebarOpen(false), []),
+        topBarActions,
+        setTopBarActions,
       }}
     >
       {children}
@@ -77,7 +98,7 @@ export function MobileShell({
   projects: SidebarProject[];
   userEmail: string;
 }) {
-  const { sidebarOpen, openSidebar, closeSidebar } = useMobileShell();
+  const { sidebarOpen, openSidebar, closeSidebar, topBarActions } = useMobileShell();
   const { openChat } = useChat();
   const t = useMounted(sidebarOpen, 200);
   const pathname = usePathname();
@@ -112,6 +133,7 @@ export function MobileShell({
             <Icon name="menu-01" size={20} />
           </button>
           <h1 className="min-w-0 flex-1 truncate text-[15px] font-semibold text-trell-ink">{title}</h1>
+          {topBarActions}
           <button
             onClick={openSidebar}
             className="flex size-10 shrink-0 items-center justify-center rounded-xl active:bg-neutral-100"
@@ -182,10 +204,10 @@ export function MobileShell({
             type="button"
             onClick={openChat}
             aria-label="Ask Yoi"
-            className="trell-mobile-dock flex w-[82px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[22px] p-1 text-[10px] font-medium text-neutral-400 transition-colors active:bg-black/5 dark:active:bg-white/10"
+            className="trell-mobile-dock flex w-[67px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[22px] p-1 text-[10px] font-medium text-neutral-400 transition-colors active:bg-black/5 dark:active:bg-white/10"
           >
             <Icon name="chat" size={21} strokeWidth={1.6} />
-            Ask Yoi
+            Ask
           </button>
         </div>
       </div>
