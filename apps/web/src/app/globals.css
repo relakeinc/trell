@@ -693,6 +693,19 @@ body {
   box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.7);
 }
 
+/* Bottom dock row. In a browser the extra padding clears the browser's own
+   bottom bar; once installed as a PWA there is no such bar, so the dock drops
+   down to just the home-indicator inset. */
+.trell-mobile-dockrow {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+  .trell-mobile-dockrow {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 2px);
+  }
+}
+
 /* Hide on phones. Needed because the button classes below are unlayered and
    would otherwise beat a `hidden` utility. */
 @media (max-width: 767px) {

@@ -2,7 +2,6 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { Icon } from "@/components/Icon";
@@ -154,7 +153,7 @@ export function MobileShell({
       {children}
 
       {/* ── Bottom dock (mobile only): tabs + Yoi, one row ────────── */}
-      <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+8px)] md:hidden">
+      <div className="trell-mobile-dockrow fixed inset-x-0 bottom-0 z-40 px-3 md:hidden">
         <div className="mx-auto flex max-w-md items-stretch gap-2">
           <nav className="trell-mobile-dock flex flex-1 items-stretch rounded-[22px] p-1" aria-label="Primary">
             {TABS.map((tab) => {
@@ -183,9 +182,9 @@ export function MobileShell({
             type="button"
             onClick={openChat}
             aria-label="Ask Yoi"
-            className="trell-mobile-dock flex w-[64px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[22px] p-1 text-[10px] font-medium text-neutral-400 transition-colors active:bg-black/5 dark:active:bg-white/10"
+            className="flex w-[58px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10px] font-medium text-neutral-400 transition-colors active:bg-black/5 dark:active:bg-white/10"
           >
-            <Image src="/yoi-logo.png" alt="" width={21} height={21} className="rounded-full" />
+            <Icon name="chat" size={21} strokeWidth={1.6} />
             Yoi
           </button>
         </div>
