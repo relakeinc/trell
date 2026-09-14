@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ProjectSidebar } from "@/components/ProjectSidebar";
 import { Icon } from "@/components/Icon";
@@ -152,41 +153,43 @@ export function MobileShell({
 
       {children}
 
-      {/* ── Yoi action (mobile only): floats just above the dock ─── */}
-      <button
-        onClick={openChat}
-        aria-label="Ask Yoi"
-        className="trell-mobile-fab fixed right-4 z-40 flex h-[52px] w-[52px] items-center justify-center rounded-full text-white transition-transform active:scale-95 md:hidden"
-      >
-        <Icon name="magic-star" size={22} />
-      </button>
+      {/* ── Bottom dock (mobile only): tabs + Yoi, one row ────────── */}
+      <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+8px)] md:hidden">
+        <div className="mx-auto flex max-w-md items-stretch gap-2">
+          <nav className="trell-mobile-dock flex flex-1 items-stretch rounded-[22px] p-1" aria-label="Primary">
+            {TABS.map((tab) => {
+              const active = tab.href.startsWith("settings/")
+                ? pathname.startsWith(`/${projectSlug}/settings`)
+                : pathname.startsWith(`/${projectSlug}/${tab.href}`);
+              return (
+                <Link
+                  key={tab.href}
+                  href={`/${projectSlug}/${tab.href}`}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 text-[10px] font-medium transition-colors ${
+                    active
+                      ? "bg-blue-500/10 text-blue-600"
+                      : "text-neutral-400 active:bg-black/5 dark:active:bg-white/10"
+                  }`}
+                >
+                  <Icon name={tab.icon} size={21} strokeWidth={active ? 2.1 : 1.6} />
+                  {tab.label}
+                </Link>
+              );
+            })}
+          </nav>
 
-      {/* ── Bottom dock (mobile only) ─────────────────────────────── */}
-      <nav
-        className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+8px)] md:hidden"
-        aria-label="Primary"
-      >
-        <div className="trell-mobile-dock mx-auto flex max-w-md items-stretch rounded-[22px] p-1">
-          {TABS.map((tab) => {
-            const active = tab.href.startsWith("settings/")
-              ? pathname.startsWith(`/${projectSlug}/settings`)
-              : pathname.startsWith(`/${projectSlug}/${tab.href}`);
-            return (
-              <Link
-                key={tab.href}
-                href={`/${projectSlug}/${tab.href}`}
-                aria-current={active ? "page" : undefined}
-                className={`flex flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 text-[10px] font-medium transition-colors ${
-                  active ? "bg-blue-500/10 text-blue-600" : "text-neutral-400 active:bg-black/5 dark:active:bg-white/10"
-                }`}
-              >
-                <Icon name={tab.icon} size={21} strokeWidth={active ? 2.1 : 1.6} />
-                {tab.label}
-              </Link>
-            );
-          })}
+          <button
+            type="button"
+            onClick={openChat}
+            aria-label="Ask Yoi"
+            className="trell-mobile-dock flex w-[64px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[22px] p-1 text-[10px] font-medium text-neutral-400 transition-colors active:bg-black/5 dark:active:bg-white/10"
+          >
+            <Image src="/yoi-logo.png" alt="" width={21} height={21} className="rounded-full" />
+            Yoi
+          </button>
         </div>
-      </nav>
+      </div>
     </>
   );
 }

@@ -638,6 +638,9 @@ body {
     /* Floating dock (~62px) + its 8px gap + a little breathing room. */
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px);
     height: 100dvh;
+    /* Match the content surface so the chrome band behind the dock is not a
+       gray strip (desktop keeps the gray frame). */
+    background-color: #ffffff;
   }
 }
 
@@ -696,16 +699,6 @@ body {
   .trell-mobile-hidden {
     display: none !important;
   }
-}
-
-/* Yoi action, hovering just above the dock. */
-.trell-mobile-fab {
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 74px);
-  background-color: #2563eb;
-  background-image: linear-gradient(to bottom, #8b5cf6, #2563eb);
-  box-shadow:
-    0 12px 26px -8px rgb(37 99 235 / 0.55),
-    inset 0 1px 0 0 rgb(255 255 255 / 0.25);
 }
 
 .trell-mobile-drawer {
