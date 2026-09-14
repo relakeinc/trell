@@ -665,32 +665,32 @@ body {
 
 /* ── Mobile app chrome (top bar, tab bar, drawer) ────────────────
    Only ever attached to md:hidden elements, so desktop is untouched. */
+/* Solid (not translucent) on purpose: this element also paints the status-bar
+   / notch strip, and any alpha there mixes with whatever scrolls behind and
+   reads as a gray band. */
 .trell-mobile-bar {
   padding-top: env(safe-area-inset-top, 0px);
-  background-color: rgba(255, 255, 255, 0.92);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background-color: #ffffff;
   border-bottom: 1px solid var(--border-card);
 }
 
 .dark .trell-mobile-bar {
-  background-color: rgba(17, 17, 17, 0.92) !important;
+  background-color: #111111 !important;
   border-color: var(--trell-dark-border) !important;
 }
 
-/* Floating dock (iOS-style) instead of an edge-to-edge tab bar. */
+/* Floating dock (iOS-style). Solid, not frosted: the translucent + blurred
+   fill picked up whatever scrolled underneath and read as a gray slab. */
 .trell-mobile-dock {
-  background-color: rgba(255, 255, 255, 0.82);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
+  background-color: #ffffff;
   border: 1px solid rgb(0 0 0 / 0.06);
-  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.25);
+  box-shadow: 0 8px 24px -14px rgb(0 0 0 / 0.22);
 }
 
 .dark .trell-mobile-dock {
-  background-color: rgba(30, 30, 29, 0.82) !important;
+  background-color: #1e1e1d !important;
   border-color: var(--trell-dark-border) !important;
-  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.7);
+  box-shadow: 0 8px 24px -14px rgb(0 0 0 / 0.75);
 }
 
 /* Bottom dock row. In a browser the extra padding clears the browser's own

@@ -38,16 +38,17 @@ function getSystemTheme(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-// The device status bar / PWA chrome colour. The viewport export emits
-// `prefers-color-scheme` variants, which ignore the in-app theme toggle, so
-// once JS is running we own the tag.
+// The device status bar / PWA chrome colour. Updated in place (never removed)
+// so React never sees a head node disappear from under it.
 function syncThemeColor(resolved: "light" | "dark") {
-  const content = resolved === "dark" ? "#111111" : "#ffffff";
-  for (const el of Array.from(document.querySelectorAll('meta[name="theme-color"]'))) el.remove();
-  const meta = document.createElement("meta");
-  meta.name = "theme-color";
-  meta.content = content;
-  document.head.appendChild(meta);
+  let meta = document.head.querySelector<HTMLMetaElement>('meta[name="theme-color"][data-trell]');
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.name = "theme-color";
+    meta.setAttribute("data-trell", "");
+    document.head.appendChild(meta);
+  }
+  meta.content = resolved === "dark" ? "#111111" : "#ffffff";
 }
 
 function applyThemeToDOM(resolved: "light" | "dark") {
